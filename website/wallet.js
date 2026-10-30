@@ -293,7 +293,7 @@
   function tabReceive(body) {
     body.innerHTML = '<h3 style="margin-top:0">Receive AUR</h3><p class="note">Share this address to get paid. It is safe to share.</p>' +
       '<div class="addrbox"><code id="myaddr">' + esc(address) + '</code></div>' +
-      '<div class="rowbtns"><button class="btn primary" id="copyaddr">Copy address</button>' + (status.network !== 'mainnet' ? '<button class="btn" id="faucet">Get AUR from the faucet</button>' : '') + '</div>';
+      '<div class="rowbtns"><button class="btn primary" id="copyaddr">Copy address</button>' + (status.network !== 'mainnet' ? '<button class="btn" id="faucet">Get 1,000 AUR</button>' : '') + '</div>';
     $('copyaddr').onclick = async () => { try { await navigator.clipboard.writeText(address); notify('Address copied.'); } catch { notify('Select and copy the address by hand.', 'err'); } };
     if ($('faucet')) $('faucet').onclick = requestFaucet;
   }
