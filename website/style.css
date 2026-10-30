@@ -272,3 +272,17 @@ button.linklike { background: none; border: 0; color: var(--text); text-decorati
 .dlcard p { color: var(--muted); margin: 0 0 14px; font-size: .94rem; }
 .dlbtns { display: flex; flex-wrap: wrap; gap: 10px; }
 .dlsize { opacity: .65; font-weight: 400; margin-left: 4px; }
+
+/* docs extras */
+#dsearch { margin-bottom: 8px; padding: 8px 12px; font-size: .88rem; }
+#dresults a { display: block; padding: 8px 0; border-bottom: 1px solid var(--line); color: var(--text); text-decoration: none; }
+#dresults a small { display: block; color: var(--muted); font-size: .78rem; margin-top: 2px; }
+.docs-toc a.on { color: var(--text); font-weight: 600; }
+.pn { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 48px; }
+.pn a { display: block; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--text); text-decoration: none; }
+.pn a:hover { border-color: var(--text); }
+.pn a.next { text-align: right; grid-column: 2; }
+.pn small { display: block; color: var(--muted); font-size: .74rem; text-transform: uppercase; letter-spacing: .08em; }
+.doc .codebox .copy { opacity: 0; transition: opacity .15s; }
+.doc .codebox:hover .copy, .doc .codebox .copy:focus { opacity: 1; }
+.doc table td code { white-space: nowrap; }

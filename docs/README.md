@@ -22,6 +22,11 @@
 | Build your first app | [developer-quickstart.md](developer-quickstart.md) |
 | Integrate into a wallet or app (SDKs, signing) | [integrate.md](integrate.md) |
 | Command-line reference | [cli.md](cli.md) |
+| Build a wallet app | [build-a-wallet.md](build-a-wallet.md) |
+| Accept AUR payments in a shop or game | [accept-payments.md](accept-payments.md) |
+| Deploy a smart contract | [smart-contracts.md](smart-contracts.md) |
+| Look up a transaction type, setting or error code | [transactions.md](transactions.md), [parameters.md](parameters.md), [errors.md](errors.md) |
+| Understand how it all fits together | [architecture.md](architecture.md) |
 | JSON-RPC and REST API | [rpc-api.md](rpc-api.md) |
 | Smart contracts and Ethereum tools | [evm.md](evm.md) |
 | Transactions and encoding | [protocol.md](protocol.md) |

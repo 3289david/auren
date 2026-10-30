@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build a wallet app · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><input type="search" id="dsearch" placeholder="Search the docs" autocomplete="off" aria-label="Search the docs"><div id="dresults" hidden></div><div id="dnav"><a href="index.html">Overview</a><h4>Start here</h4><a href="START-HERE.html">Start here</a><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="wallet-guide.html">Wallet guide</a><a href="explorer-guide.html">Explorer guide</a><a href="staking-guide.html">Staking guide</a><a href="domains.html">Names, domains and your own TLD</a><a href="faq.html">FAQ</a><a href="troubleshooting.html">Troubleshooting</a><a href="glossary.html">Glossary</a><h4>Run a node</h4><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="validators.html">Running a validator</a><a href="cli.html">Command-line reference</a><h4>Build on AUREN</h4><a href="developer-quickstart.html">Developer quickstart</a><a href="build-a-wallet.html" class="on">Build a wallet app</a><a href="accept-payments.html">Accept AUR payments (merchant guide)</a><a href="smart-contracts.html">Deploy a smart contract</a><a href="integrate.html">Integrate AUREN into your wallet or app</a><a href="rpc-api.html">Node API</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><a href="evm.html">EVM layer</a><h4>Reference</h4><a href="transactions.html">Transaction types</a><a href="parameters.html">Network parameters</a><a href="errors.html">Error codes</a><a href="protocol.html">Protocol specification (v0.1)</a><h4>How it works</h4><a href="architecture.html">How AUREN works (architecture)</a><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a><h4>Project</h4><a href="changelog.html">Changelog</a><a href="contributing.html">Contributing</a><a href="security-policy.html">Security policy</a></div></aside>
+  <article class="doc">
+<h1 id="build-a-wallet-app">Build a wallet app</h1>
+<p>A checklist and walkthrough for making your own wallet on AUREN, in any language.</p>
+<h2 id="what-a-wallet-must-do">What a wallet must do</h2>
+<ol><li><b>Make and store keys safely.</b></li><li><b>Show a balance</b> and activity.</li><li><b>Send</b> payments with a preview.</li><li><b>Receive</b> (show an address).</li><li>Optionally: staking, names, security settings.</li></ol>
+<h2 id="1-keys">1. Keys</h2>
+<p>Generate 32 random bytes (the seed). From it make an Ed25519 key pair. The address is Bech32 of the scheme byte and the first 20 bytes of <code>sha256(scheme ‖ public key)</code> with the network prefix (<code>aur</code>, <code>taur</code>, <code>daur</code>). The same seed works on all networks; only the prefix differs. Details and code: <a href="integrate.html">Integrate</a>.</p>
+<p>Store the seed encrypted with a user password (a slow password hash such as PBKDF2 or Argon2, then AES-GCM). Offer a printed recovery key. Never send it anywhere or write it to logs.</p>
+<p>Device keys (passkeys, security keys) use scheme 2. The private key never leaves the device and signing goes through WebAuthn.</p>
+<h2 id="2-connect">2. Connect</h2>
+<p>Let the user pick Devnet, Testnet or Mainnet. Ask a node for <code>aur_status</code>. Check <code>status.network</code> matches what the user picked, and refuse to continue if not. Pin the genesis hash from <code>networks/networks.json</code>.</p>
+<h2 id="3-balance-and-activity">3. Balance and activity</h2>
+<div class="codebox"><pre><code>curl http://NODE:9650/account/ADDRESS          # balance, spendable, nonce, stake
+curl &quot;http://NODE:9650/account/ADDRESS/txs?limit=30&quot;</code></pre></div>
+<p>Show <b>spendable</b> as the headline number. Show amounts in AUR, never sparks.</p>
+<h2 id="4-send-with-a-preview">4. Send with a preview</h2>
+<div class="codebox"><pre><code>const tx = await wallet.build(node, 'transfer', { to, amount });    // fills in nonce and fee
+const sim = await node.simulate(tx);                                // ok? fee? effects?
+// show the user: recipient, amount, fee, &quot;should go through&quot;
+const { hash } = await node.sendTx(tx);
+const t = await node.wait(hash);                                    // confirmed</code></pre></div>
+<p>Always preview with <code>aur_simulate</code> and show the fee and result. If <code>sim.ok</code> is false, show the reason and do not send.</p>
+<h2 id="5-names">5. Names</h2>
+<p>Before paying a name, resolve it with <code>aur_resolve</code> and verify the proof (<code>website/anr.js</code>). If the same name gives different addresses on different networks, refuse and ask for the address. Show the verified name next to the address the user is paying.</p>
+<h2 id="6-receive">6. Receive</h2>
+<p>Show the address with a copy button. Optionally a QR code. On test networks add a faucet button (<code>POST /drip</code> on the faucet).</p>
+<h2 id="7-recommended-extras">7. Recommended extras</h2>
+<ul><li><b>Lock after inactivity</b> (the AUREN wallet uses 10 minutes).</li><li><b>Daily limit and trusted helpers</b> from the Security screen: <code>setSecurity</code> (<a href="wallet-guide.html">Wallet guide</a>).</li><li><b>Plain language.</b> Say &quot;recovery key&quot;, &quot;payment&quot; and &quot;fee&quot;, not nonce or seed.</li><li><b>Error messages</b> from <a href="errors.html">Error codes</a>, translated for your users.</li></ul>
+<h2 id="reference-implementations">Reference implementations</h2>
+<div class="table-wrap"><table><thead><tr><th>Language</th><th>Code</th></tr></thead><tbody><tr><td>Browser JavaScript</td><td><code>website/aurlib.js</code>, <code>website/wallet.js</code></td></tr><tr><td>Node.js</td><td><code>sdk/js/index.js</code></td></tr><tr><td>Python</td><td><code>sdk/python/auren.py</code></td></tr></tbody></table></div>
+<p>Both SDKs produce byte-identical signatures; the test suite checks it.</p>
+<h2 id="test-it">Test it</h2>
+<p>Run a local devnet (<code>node scripts/devnet.js --clean</code>), take coins from its faucet, and exercise every flow before touching a real network. See the <a href="developer-quickstart.html">Developer quickstart</a>.</p>
+    <div class="pn"><a href="developer-quickstart.html"><small>Previous</small>Developer quickstart</a><a class="next" href="accept-payments.html"><small>Next</small>Accept AUR payments (merchant guide)</a></div>
+    <p class="muted" style="margin-top:28px"><a href="https://github.com/3289david/auren/blob/main/docs/build-a-wallet.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#what-a-wallet-must-do">What a wallet must do</a><a href="#1-keys">1. Keys</a><a href="#2-connect">2. Connect</a><a href="#3-balance-and-activity">3. Balance and activity</a><a href="#4-send-with-a-preview">4. Send with a preview</a><a href="#5-names">5. Names</a><a href="#6-receive">6. Receive</a><a href="#7-recommended-extras">7. Recommended extras</a><a href="#reference-implementations">Reference implementations</a><a href="#test-it">Test it</a></aside>
+</div>
+<script src="docs.js"></script>
+</body>
+</html>

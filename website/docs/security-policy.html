@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security policy · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><input type="search" id="dsearch" placeholder="Search the docs" autocomplete="off" aria-label="Search the docs"><div id="dresults" hidden></div><div id="dnav"><a href="index.html">Overview</a><h4>Start here</h4><a href="START-HERE.html">Start here</a><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="wallet-guide.html">Wallet guide</a><a href="explorer-guide.html">Explorer guide</a><a href="staking-guide.html">Staking guide</a><a href="domains.html">Names, domains and your own TLD</a><a href="faq.html">FAQ</a><a href="troubleshooting.html">Troubleshooting</a><a href="glossary.html">Glossary</a><h4>Run a node</h4><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="validators.html">Running a validator</a><a href="cli.html">Command-line reference</a><h4>Build on AUREN</h4><a href="developer-quickstart.html">Developer quickstart</a><a href="build-a-wallet.html">Build a wallet app</a><a href="accept-payments.html">Accept AUR payments (merchant guide)</a><a href="smart-contracts.html">Deploy a smart contract</a><a href="integrate.html">Integrate AUREN into your wallet or app</a><a href="rpc-api.html">Node API</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><a href="evm.html">EVM layer</a><h4>Reference</h4><a href="transactions.html">Transaction types</a><a href="parameters.html">Network parameters</a><a href="errors.html">Error codes</a><a href="protocol.html">Protocol specification (v0.1)</a><h4>How it works</h4><a href="architecture.html">How AUREN works (architecture)</a><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a><h4>Project</h4><a href="changelog.html">Changelog</a><a href="contributing.html">Contributing</a><a href="security-policy.html" class="on">Security policy</a></div></aside>
+  <article class="doc">
+<h1 id="security-policy">Security policy</h1>
+<p>AUREN is <b>unaudited, pre-testnet software</b>. Do not use it to hold value.</p>
+<h2 id="reporting-a-vulnerability">Reporting a vulnerability</h2>
+<p>Please report privately; do not open a public issue for anything that could affect a running network. Set a monitored security contact (e.g. <code>security@&lt;your-domain&gt;</code>) before any public testnet and replace this line. Include: affected component, a reproduction (a failing test is ideal), and the impact you believe it has.</p>
+<p>Targets we care most about: consensus safety (two finalized blocks at one height), state-root divergence between honest nodes, inflation/minting bugs (the token-conservation invariant is tested in <code>test/core.test.js</code>), signature or replay bypass, mempool/RPC denial of service, and keystore weaknesses.</p>
+<h2 id="scope-and-rules-of-engagement">Scope and rules of engagement</h2>
+<ul><li>Test against your own local devnet (<code>npm run devnet</code>). Never test against third-party nodes without permission.</li><li>Give us reasonable time to fix before disclosure. A bug bounty is planned for the public testnet phase.</li></ul>
+<h2 id="what-the-project-commits-to">What the project commits to</h2>
+<ul><li>Security-relevant protocol changes are published as proposals with a timelock before activation.</li><li>Audit reports and their resolutions will be published in full before any mainnet launch.</li></ul>
+    <div class="pn"><a href="contributing.html"><small>Previous</small>Contributing</a></div>
+    <p class="muted" style="margin-top:28px"><a href="https://github.com/3289david/auren/blob/main/docs/security-policy.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#reporting-a-vulnerability">Reporting a vulnerability</a><a href="#scope-and-rules-of-engagement">Scope and rules of engagement</a><a href="#what-the-project-commits-to">What the project commits to</a></aside>
+</div>
+<script src="docs.js"></script>
+</body>
+</html>

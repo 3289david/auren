@@ -82,17 +82,25 @@ function render(md) {
 const GROUPS = [
   ['Start here', ['START-HERE', 'GETTING-STARTED', 'wallet-guide', 'explorer-guide', 'staking-guide', 'domains', 'faq', 'troubleshooting', 'glossary']],
   ['Run a node', ['RUN-A-NODE', 'node-rewards', 'BUILD-APPS', 'networks', 'validators', 'cli']],
-  ['Build on AUREN', ['developer-quickstart', 'integrate', 'rpc-api', 'evm', 'protocol', 'name-resolution']],
-  ['How it works', ['whitepaper', 'consensus', 'fee-market', 'tokenomics', 'governance', 'security', 'hardware-wallets']],
+  ['Build on AUREN', ['developer-quickstart', 'build-a-wallet', 'accept-payments', 'smart-contracts', 'integrate', 'rpc-api', 'name-resolution', 'evm']],
+  ['Reference', ['transactions', 'parameters', 'errors', 'protocol']],
+  ['How it works', ['architecture', 'whitepaper', 'consensus', 'fee-market', 'tokenomics', 'governance', 'security', 'hardware-wallets']],
   ['Operate', ['deploy', 'LAUNCH', 'roadmap']],
+  ['Project', ['changelog', 'contributing', 'security-policy']],
 ];
 
 const files = fs.readdirSync(src).filter((f) => f.endsWith('.md'));
 const pages = {};
 for (const f of files) { const name = f.replace(/\.md$/, ''); pages[name] = render(fs.readFileSync(path.join(src, f), 'utf8')); }
+// project files from the repository root become pages too
+for (const [f, name] of [['CHANGELOG.md', 'changelog'], ['CONTRIBUTING.md', 'contributing'], ['SECURITY.md', 'security-policy']]) {
+  const p = path.join(root, f);
+  if (fs.existsSync(p)) pages[name] = render(fs.readFileSync(p, 'utf8'));
+}
 const listed = new Set(GROUPS.flatMap((g) => g[1]));
 const extra = Object.keys(pages).filter((n) => n !== 'README' && !listed.has(n));
 if (extra.length) GROUPS.push(['More', extra]);
+const ORDER = ['README', ...GROUPS.flatMap((x) => x[1])].filter((n) => pages[n]);
 const outName = (n) => (n === 'README' ? 'index.html' : n + '.html');
 
 fs.rmSync(out, { recursive: true, force: true });
@@ -100,6 +108,8 @@ fs.mkdirSync(out, { recursive: true });
 const nav = (cur) => `<a href="index.html"${cur === 'README' ? ' class="on"' : ''}>Overview</a>` + GROUPS.map(([g, ns]) => `<h4>${g}</h4>` + ns.filter((n) => pages[n]).map((n) => `<a href="${outName(n)}"${n === cur ? ' class="on"' : ''}>${esc(pages[n].title.replace(/^AUREN\s*[:\-–]?\s*/i, '') || pages[n].title)}</a>`).join('')).join('');
 
 for (const [name, p] of Object.entries(pages)) {
+  const i = ORDER.indexOf(name), prev = ORDER[i - 1], next = ORDER[i + 1];
+  const pn = '<div class="pn">' + (prev ? `<a href="${outName(prev)}"><small>Previous</small>${esc(pages[prev].title)}</a>` : '<span></span>') + (next ? `<a class="next" href="${outName(next)}"><small>Next</small>${esc(pages[next].title)}</a>` : '') + '</div>';
   const toc = p.headings.filter((h) => h.lvl === 2).map((h) => `<a href="#${h.id}">${esc(h.text)}</a>`).join('');
   fs.writeFileSync(path.join(out, outName(name)), `<!doctype html>
 <html lang="en">
@@ -117,15 +127,20 @@ for (const [name, p] of Object.entries(pages)) {
   <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
 </div></header>
 <div class="wrap docs">
-  <aside class="docs-nav">${nav(name)}</aside>
+  <aside class="docs-nav"><input type="search" id="dsearch" placeholder="Search the docs" autocomplete="off" aria-label="Search the docs"><div id="dresults" hidden></div><div id="dnav">${nav(name)}</div></aside>
   <article class="doc">
 ${p.html}
-    <p class="muted" style="margin-top:48px"><a href="${GH}docs/${name}.md">Edit this page on GitHub</a></p>
+    ${pn}
+    <p class="muted" style="margin-top:28px"><a href="${GH}docs/${name}.md">Edit this page on GitHub</a></p>
   </article>
   <aside class="docs-toc">${toc ? '<h4>On this page</h4>' + toc : ''}</aside>
 </div>
+<script src="docs.js"></script>
 </body>
 </html>
 `);
 }
+const strip = (h) => h.replace(/<pre[\s\S]*?<\/pre>/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/\s+/g, ' ').trim();
+fs.writeFileSync(path.join(out, 'search.json'), JSON.stringify(Object.entries(pages).map(([n, p]) => ({ u: outName(n), t: p.title, h: p.headings.map((h) => h.text).join(' | '), x: strip(p.html).slice(0, 6000) }))));
+fs.copyFileSync(path.join(__dirname, 'docs-client.js'), path.join(out, 'docs.js'));
 console.log(`wrote ${Object.keys(pages).length} pages to website/docs`);

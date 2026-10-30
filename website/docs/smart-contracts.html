@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deploy a smart contract · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><input type="search" id="dsearch" placeholder="Search the docs" autocomplete="off" aria-label="Search the docs"><div id="dresults" hidden></div><div id="dnav"><a href="index.html">Overview</a><h4>Start here</h4><a href="START-HERE.html">Start here</a><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="wallet-guide.html">Wallet guide</a><a href="explorer-guide.html">Explorer guide</a><a href="staking-guide.html">Staking guide</a><a href="domains.html">Names, domains and your own TLD</a><a href="faq.html">FAQ</a><a href="troubleshooting.html">Troubleshooting</a><a href="glossary.html">Glossary</a><h4>Run a node</h4><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="validators.html">Running a validator</a><a href="cli.html">Command-line reference</a><h4>Build on AUREN</h4><a href="developer-quickstart.html">Developer quickstart</a><a href="build-a-wallet.html">Build a wallet app</a><a href="accept-payments.html">Accept AUR payments (merchant guide)</a><a href="smart-contracts.html" class="on">Deploy a smart contract</a><a href="integrate.html">Integrate AUREN into your wallet or app</a><a href="rpc-api.html">Node API</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><a href="evm.html">EVM layer</a><h4>Reference</h4><a href="transactions.html">Transaction types</a><a href="parameters.html">Network parameters</a><a href="errors.html">Error codes</a><a href="protocol.html">Protocol specification (v0.1)</a><h4>How it works</h4><a href="architecture.html">How AUREN works (architecture)</a><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a><h4>Project</h4><a href="changelog.html">Changelog</a><a href="contributing.html">Contributing</a><a href="security-policy.html">Security policy</a></div></aside>
+  <article class="doc">
+<h1 id="deploy-a-smart-contract">Deploy a smart contract</h1>
+<p>AUREN runs an Ethereum-compatible virtual machine, so the tools you already know work.</p>
+<h2 id="connect-your-tools">Connect your tools</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th>Devnet</th><th>Testnet</th><th>Mainnet</th></tr></thead><tbody><tr><td>RPC URL</td><td><code>http://NODE:9650/rpc</code></td><td>a testnet node</td><td>a mainnet node</td></tr><tr><td>Chain ID</td><td>77001</td><td>77002</td><td>77000</td></tr><tr><td>Currency</td><td>AUR</td><td>AUR</td><td>AUR</td></tr></tbody></table></div>
+<p>In MetaMask: add a network with the RPC URL and chain ID above. Your Ethereum address (<code>0x…</code>) is also an AUREN account, so a key you use on Ethereum works here.</p>
+<h2 id="units">Units</h2>
+<p>An EVM account balance is shown in <b>wei</b>. 1 AUR = 10^18 wei in the EVM, and 1 AUR = 10^9 sparks natively. The conversion is automatic: tools see 18 decimals.</p>
+<h2 id="hardhat">Hardhat</h2>
+<div class="codebox"><pre><code>// hardhat.config.js
+module.exports = {
+  solidity: '0.8.20',
+  networks: { auren: { url: 'http://127.0.0.1:9650/rpc', chainId: 77001, accounts: [process.env.KEY] } },
+};</code></pre></div>
+<div class="codebox"><pre><code>npx hardhat run scripts/deploy.js --network auren</code></pre></div>
+<h2 id="ethers">ethers</h2>
+<div class="codebox"><pre><code>const { ethers } = require('ethers');
+const provider = new ethers.JsonRpcProvider('http://127.0.0.1:9650/rpc', 77001);
+const signer = new ethers.Wallet(process.env.KEY, provider);
+const factory = new ethers.ContractFactory(abi, bytecode, signer);
+const contract = await factory.deploy();
+await contract.waitForDeployment();</code></pre></div>
+<p>Fund the address first by sending it AUR from a wallet (an Ethereum address works as an AUREN account).</p>
+<h2 id="from-the-command-line">From the command line</h2>
+<div class="codebox"><pre><code>aurenctl evm deploy --data @contract.bin --from me
+aurenctl evm call 0xCONTRACT --data 0xCALLDATA
+aurenctl evm send 0xCONTRACT --data 0xCALLDATA --value 1 --from me</code></pre></div>
+<h2 id="what-is-supported">What is supported</h2>
+<p>AUREN runs the Shanghai version of the Ethereum virtual machine. The standard precompiled contracts 1 to 5 and 9 are available; the pairing-curve precompiles (6 to 8) are not. The interpreter was compared against the reference implementation on thousands of programs. Details and limits: <a href="evm.html">EVM</a>.</p>
+<h2 id="fees">Fees</h2>
+<p>A contract call pays for the gas it uses, in AUR, at the current fee level. The wallet or tool estimates gas for you (<code>eth_estimateGas</code>). Unused gas is refunded. Fees are burned.</p>
+<h2 id="tips">Tips</h2>
+<ul><li>Test on the devnet first; it resets and is free.</li><li>Verify addresses and chain ID before sending. A wrong chain ID makes a transaction invalid, which protects you from replay on other networks.</li><li>Contract calls run one after another, not in parallel, so heavy use of contracts competes for the same block space.</li></ul>
+    <div class="pn"><a href="accept-payments.html"><small>Previous</small>Accept AUR payments (merchant guide)</a><a class="next" href="integrate.html"><small>Next</small>Integrate AUREN into your wallet or app</a></div>
+    <p class="muted" style="margin-top:28px"><a href="https://github.com/3289david/auren/blob/main/docs/smart-contracts.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#connect-your-tools">Connect your tools</a><a href="#units">Units</a><a href="#hardhat">Hardhat</a><a href="#ethers">ethers</a><a href="#from-the-command-line">From the command line</a><a href="#what-is-supported">What is supported</a><a href="#fees">Fees</a><a href="#tips">Tips</a></aside>
+</div>
+<script src="docs.js"></script>
+</body>
+</html>

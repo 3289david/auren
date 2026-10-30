@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contributing · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><input type="search" id="dsearch" placeholder="Search the docs" autocomplete="off" aria-label="Search the docs"><div id="dresults" hidden></div><div id="dnav"><a href="index.html">Overview</a><h4>Start here</h4><a href="START-HERE.html">Start here</a><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="wallet-guide.html">Wallet guide</a><a href="explorer-guide.html">Explorer guide</a><a href="staking-guide.html">Staking guide</a><a href="domains.html">Names, domains and your own TLD</a><a href="faq.html">FAQ</a><a href="troubleshooting.html">Troubleshooting</a><a href="glossary.html">Glossary</a><h4>Run a node</h4><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="validators.html">Running a validator</a><a href="cli.html">Command-line reference</a><h4>Build on AUREN</h4><a href="developer-quickstart.html">Developer quickstart</a><a href="build-a-wallet.html">Build a wallet app</a><a href="accept-payments.html">Accept AUR payments (merchant guide)</a><a href="smart-contracts.html">Deploy a smart contract</a><a href="integrate.html">Integrate AUREN into your wallet or app</a><a href="rpc-api.html">Node API</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><a href="evm.html">EVM layer</a><h4>Reference</h4><a href="transactions.html">Transaction types</a><a href="parameters.html">Network parameters</a><a href="errors.html">Error codes</a><a href="protocol.html">Protocol specification (v0.1)</a><h4>How it works</h4><a href="architecture.html">How AUREN works (architecture)</a><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a><h4>Project</h4><a href="changelog.html">Changelog</a><a href="contributing.html" class="on">Contributing</a><a href="security-policy.html">Security policy</a></div></aside>
+  <article class="doc">
+<h1 id="contributing">Contributing</h1>
+<p>Thanks for helping. A few rules keep a consensus-critical codebase healthy.</p>
+<h2 id="ground-rules">Ground rules</h2>
+<ol><li><b>Determinism is sacred.</b> Anything reachable from <code>executeBlock</code> must produce identical results on every node: no <code>Date.now()</code>, <code>Math.random()</code>, floating-point math, or iteration over unsorted maps. Use <code>BigInt</code> for amounts.</li><li><b>Every state key a transaction touches must be in its access set</b> (<code>src/tx.js</code>). The lane scheduler relies on it. <code>test/core.test.js</code> runs a randomized lane-order test; extend it when you add a transaction type.</li><li><b>Conservation must hold.</b> <code>assertConserved()</code> in the tests checks <code>supply == balances + bonded + unbonding + accrued rewards</code>. New minting or burning paths need a test that keeps it green.</li><li><b>Consensus changes need a spec change</b> in <code>docs/</code> in the same pull request, plus a note in <code>CHANGELOG.md</code>.</li><li><b>Zero runtime dependencies.</b> Prefer <code>node:</code> built-ins. Discuss before adding one.</li></ol>
+<h2 id="workflow">Workflow</h2>
+<div class="codebox"><pre><code>npm test            # unit tests + 4-node integration test (~10 s)
+npm run bench       # check you did not regress execution speed
+npm run devnet      # manual testing; open http://127.0.0.1:8080/explorer.html</code></pre></div>
+<p>Keep pull requests small and focused; include tests that fail without your change. Code style: CommonJS, <code>'use strict'</code>, 2-space indent, comments explain <i>why</i>.</p>
+<h2 id="adding-a-transaction-type">Adding a transaction type</h2>
+<ol><li>Add an entry to <code>TYPES</code> in <code>src/tx.js</code> with <code>cost</code>, <code>check</code>, <code>access</code>, <code>run</code>.</li><li>Cost units: <code>compute</code> ~ work, <code>state</code> ~ bytes written. Pick numbers by comparison with existing types.</li><li>Add tests: success, failure (fee still charged), conservation, and lane-order independence.</li><li>Document it in <code>docs/protocol.md</code> and <code>aurenctl</code>.</li></ol>
+    <div class="pn"><a href="changelog.html"><small>Previous</small>Changelog</a><a class="next" href="security-policy.html"><small>Next</small>Security policy</a></div>
+    <p class="muted" style="margin-top:28px"><a href="https://github.com/3289david/auren/blob/main/docs/contributing.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#ground-rules">Ground rules</a><a href="#workflow">Workflow</a><a href="#adding-a-transaction-type">Adding a transaction type</a></aside>
+</div>
+<script src="docs.js"></script>
+</body>
+</html>
