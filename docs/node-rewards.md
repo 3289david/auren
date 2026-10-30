@@ -17,7 +17,7 @@ auren join testnet --earn                 # rewards go to the node's own address
 auren join testnet --earn <your-address>  # rewards go to your wallet
 ```
 
-On the devnet and testnet the node asks the faucet for test coins to cover the bond. Otherwise, send the bond (plus a little for fees) to the address the node prints when it starts. The node then registers itself and proves storage every epoch. Leave it running.
+On the devnet and testnet the node asks the faucet for coins to cover the bond. Otherwise, send the bond (plus a little for fees) to the address the node prints when it starts. The node then registers itself and proves storage every epoch. Leave it running.
 
 | | devnet | testnet | mainnet |
 |---|---|---|---|

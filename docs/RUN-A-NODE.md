@@ -6,7 +6,7 @@ There is **one mainnet, one testnet and one devnet.** You *join* them; you never
 
 | Network | Use it for | Status |
 |---|---|---|
-| **testnet** | trying everything with free coins (recommended) | official genesis in this package; join with `auren join testnet` |
+| **testnet** | trying everything with faucet coins (recommended) | official genesis in this package; join with `auren join testnet` |
 | **devnet** | early features, may be reset | same command with `devnet` |
 | **mainnet** | real value | **not launched.** It will only launch after independent audits and a long public test. `auren join mainnet` will say so. |
 

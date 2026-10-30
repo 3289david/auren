@@ -241,7 +241,7 @@
       <div id="note" class="toast ${note ? note.cls : ''}" ${note ? '' : 'hidden'}>${note ? note.html : ''}</div>
       <div class="card" style="margin-bottom:16px">
         <small class="muted">Your address on ${esc(status.chainId)}</small>
-        <div class="addr"><code id="myaddr">${esc(address)}</code><button class="btn small" id="copyaddr">Copy</button>${status.network !== 'mainnet' ? '<button class="btn small" id="faucet">Get test AUR</button>' : ''}</div>
+        <div class="addr"><code id="myaddr">${esc(address)}</code><button class="btn small" id="copyaddr">Copy</button>${status.network !== 'mainnet' ? '<button class="btn small" id="faucet">Get AUR</button>' : ''}</div>
         <small class="muted" id="height"></small>
       </div>
       <div class="stats" id="balances"></div>

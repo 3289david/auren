@@ -24,7 +24,7 @@
 <h2 id="run-an-earning-node">Run an earning node</h2>
 <div class="codebox"><pre><code>auren join testnet --earn                 # rewards go to the node's own address
 auren join testnet --earn &lt;your-address&gt;  # rewards go to your wallet</code></pre></div>
-<p>On the devnet and testnet the node asks the faucet for test coins to cover the bond. Otherwise, send the bond (plus a little for fees) to the address the node prints when it starts. The node then registers itself and proves storage every epoch. Leave it running.</p>
+<p>On the devnet and testnet the node asks the faucet for coins to cover the bond. Otherwise, send the bond (plus a little for fees) to the address the node prints when it starts. The node then registers itself and proves storage every epoch. Leave it running.</p>
 <div class="table-wrap"><table><thead><tr><th></th><th>devnet</th><th>testnet</th><th>mainnet</th></tr></thead><tbody><tr><td>Bond</td><td>100 AUR</td><td>500 AUR</td><td>10,000 AUR (default)</td></tr><tr><td>Epoch</td><td>120 blocks</td><td>1,800 blocks</td><td>14,400 blocks (default)</td></tr><tr><td>Pool share</td><td>10% of issuance</td><td>10%</td><td>10%</td></tr></tbody></table></div>
 <p><b>What 10% means:</b> it is 10% of the <i>newly issued</i> AUR, not of anyone's balance. With issuance at 3% a year, that is 0.3% of supply a year, shared between the nodes. Nobody pays it: it replaces part of what validators would have received. Fees are separate and tiny (about 0.000026 AUR for a transfer at the floor), and they are burned.</p>
 <p>The pool share comes out of the normal issuance. Validator rewards are issuance minus the pool share, so total issuance does not change.</p>

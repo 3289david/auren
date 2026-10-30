@@ -2,7 +2,7 @@
 
 **A public network with its own coin, AUR: send it in seconds, earn rewards by staking, use smart-contract apps, and check everything yourself.**
 
-> **Status: test network.** The testnet and devnet use free coins with no value. **Mainnet has not launched** and will not until independent security audits and a long public test are done. The software is unaudited.
+> **Status: pre-launch.** AUR is the coin of the AUREN mainnet. The public testnet and devnet are live now and hand out coins from a faucet. **Mainnet has not launched** and will not until independent security audits and a long public test are done. The software is unaudited.
 
 ## Start here
 

@@ -12,7 +12,7 @@ if errorlevel 1 (
 echo.
 echo  AUREN node
 echo  ----------
-echo  1) Testnet   (free test coins, recommended)
+echo  1) Testnet   (recommended)
 echo  2) Devnet
 echo  3) Mainnet   (not launched yet)
 echo.

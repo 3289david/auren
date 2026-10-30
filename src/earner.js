@@ -42,7 +42,7 @@ class Earner {
       if (a.balance < need && this.node.config.faucet && h - this.sent.drip >= 100 && !this.node.syncing) {
         this.sent.drip = h;
         fetch(this.node.config.faucet.replace(/\/$/, '') + '/drip', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ address: this.address }), signal: AbortSignal.timeout(10000) })
-          .then((r) => this.node.log(`node rewards: faucet ${r.ok ? 'sent test coins for the node bond' : 'refused (' + r.status + ')'}`)).catch(() => {});
+          .then((r) => this.node.log(`node rewards: faucet ${r.ok ? 'sent coins for the node bond' : 'refused (' + r.status + ')'}`)).catch(() => {});
       }
       if (h - this.sent.register >= 20 && spendable(a, h + 1) >= P.node.bond + costOf('registerNode', ch.baseFee) * 3n + 1000n) {
         this.sent.register = h;

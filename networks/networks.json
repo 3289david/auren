@@ -16,7 +16,7 @@
     "rpc": [],
     "faucet": null,
     "seeds": [],
-    "description": "Public test network. Generate genesis + keys with `npm run gen:testnet`, then publish the seed/RPC URLs here.",
+    "description": "Public testnet. Generate genesis + keys with `npm run gen:testnet`, then publish the seed/RPC URLs here.",
     "genesisHash": "59e1ba3e7f3346f02039d8c9dda3e679492c44f9694b4b6e2c7615315ac73c87"
   },
   "mainnet": {

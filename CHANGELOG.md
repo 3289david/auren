@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.2
+
+- Copy: removed the "test network, no monetary value" wording everywhere. AUR is presented as the mainnet coin; the testnet and devnet are described as faucet networks; mainnet is stated as not yet launched.
+
 ## 0.6.1
 
 - **Fees 10x lower:** floor `{compute 1, state 50}` sparks per unit (a transfer costs 0.000026 AUR at the floor, 0.000104 at the start). Fix: the base fee now always steps down by at least one unit, so a small fee can reach the floor instead of stalling above it.
