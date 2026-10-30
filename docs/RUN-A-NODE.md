@@ -38,24 +38,10 @@ Your node also serves the website, wallet and explorer: open the address printed
 
 | Option | Meaning |
 |---|---|
-| `--peers http://host:port,…` | nodes to connect to (default: the published seed nodes; if none are published yet, you must give at least one) |
 | `--port 9650` | port for your node |
 | `--home <dir>` | where data lives (never share one folder between two networks) |
 | `--public` | accept connections from other machines (default: only this computer) |
 | `--tls-cert f --tls-key f [--tls-port 443]` | also serve **HTTPS** |
-
-## Use the wallet from another computer or phone: HTTPS
-
-Browsers only enable wallet cryptography on **secure pages**: `https://…` (or `localhost`). If other devices open your node's address over plain `http://`, the wallet cannot create or sign anything (the browser disables it). Two ways to fix that:
-
-- **A real domain** (best): put the node behind Caddy (`deploy/Caddyfile`), which gets a trusted certificate automatically. Visitors need nothing.
-- **Your own certificate** for a private network: create one, start with `--tls-cert/--tls-key`, and install that certificate as trusted on each device. A self-signed certificate is refused by browsers until you do; AUREN cannot and will not bypass that.
-  ```bash
-  openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 365 -subj "/CN=192.168.1.20" -addext "subjectAltName=IP:192.168.1.20"
-  ./auren join testnet --public --tls-cert cert.pem --tls-key key.pem --tls-port 9660
-  ```
-
-(Verified: the HTTPS listener serves the API, wallet page and RPC. A browser accepting the certificate is on your side.)
 
 ## Keep it running
 
@@ -79,8 +65,7 @@ Your wallet seed phrase is the only copy of your funds. Node data (`~/.auren/<ne
 
 | Symptom | Fix |
 |---|---|
-| "no public seed nodes are published" | pass `--peers http://host:port` of any node you know |
+| "cannot reach the seed nodes" | the network's public address is not answering right now; try again in a minute |
 | "has not been launched yet" | the network you named has no genesis in this package (mainnet) |
 | "genesis … does not match the official one" | this copy was modified or is outdated: download a fresh package |
 | `auren status` says not running | start it first, or use `--port` if you changed the port |
-| wallet buttons do nothing on another device | you are on plain `http://`: use HTTPS (above) |

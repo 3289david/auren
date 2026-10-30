@@ -31,7 +31,7 @@ auren join testnet --earn &lt;your-address&gt;  # rewards go to your wallet</cod
 <h2 id="rules">Rules</h2>
 <ul><li>You must be bonded <b>before</b> an epoch starts to earn in it. A new node starts earning from the next epoch.</li><li>Epoch 0 has no history to challenge, so earning starts in epoch 1.</li><li>One proof per node per epoch.</li><li>A node that is offline or does not store the chain earns nothing that epoch. It loses nothing else.</li><li>Running many identities does not help: each one needs its own bond and gets one equal share, the same return as one honest node per bond.</li></ul>
 <h2 id="check-on-it">Check on it</h2>
-<div class="codebox"><pre><code>curl http://127.0.0.1:9650/nodes</code></pre></div>
+<div class="codebox"><pre><code>curl https://testnet.auren.im/nodes</code></pre></div>
 <p>Returns the pool, current epoch, the challenged block, and every registered node with whether it has proved this epoch. The explorer shows the same under <b>Nodes</b>. JSON-RPC: <code>aur_getNodes</code>.</p>
 <h2 id="manual-control-cli">Manual control (CLI)</h2>
 <div class="codebox"><pre><code>aurenctl node register --payout &lt;address&gt;   # bond (needs the bond amount in the account)

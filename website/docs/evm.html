@@ -20,9 +20,9 @@
 <p>AUREN runs Ethereum bytecode. Contracts deploy and run on the same validators, fee market and state as everything else, and Ethereum tools connect through standard JSON-RPC.</p>
 <p>Code: <code>src/evm/</code> (interpreter <code>vm.js</code>, journaled state <code>state.js</code>, chain glue <code>host.js</code>, raw-transaction parser <code>ethtx.js</code>, RPC <code>rpc.js</code>, Keccak/RLP/secp256k1). Tests: <code>test/evm.test.js</code>, <code>test/evm-chain.test.js</code>, differential harness <code>scripts/evm-diff.js</code>.</p>
 <h2 id="connecting-a-wallet-or-tool">Connecting a wallet or tool</h2>
-<div class="table-wrap"><table><thead><tr><th></th><th>devnet</th><th>testnet</th><th>mainnet</th></tr></thead><tbody><tr><td>RPC URL</td><td><code>http://127.0.0.1:9650</code></td><td>your node</td><td>not launched</td></tr><tr><td>Chain ID</td><td><b>77001</b></td><td>77002</td><td>77000</td></tr><tr><td>Currency</td><td>AUR, <b>18 decimals</b></td><td>AUR</td><td>AUR</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th></th><th>devnet</th><th>testnet</th><th>mainnet</th></tr></thead><tbody><tr><td>RPC URL</td><td><code>https://devnet.auren.im</code></td><td><code>https://testnet.auren.im</code></td><td><code>https://mainnet.auren.im</code></td></tr><tr><td>Chain ID</td><td><b>77001</b></td><td>77002</td><td>77000</td></tr><tr><td>Currency</td><td>AUR, <b>18 decimals</b></td><td>AUR</td><td>AUR</td></tr></tbody></table></div>
 <p>(Check chainlist.org for conflicts before any public launch; these numbers are placeholders.)</p>
-<div class="codebox"><pre><code>const provider = new ethers.JsonRpcProvider('http://127.0.0.1:9650', { chainId: 77001, name: 'auren-devnet' });
+<div class="codebox"><pre><code>const provider = new ethers.JsonRpcProvider('https://devnet.auren.im', { chainId: 77001, name: 'auren-devnet' });
 const wallet = new ethers.Wallet(privateKey, provider);
 await (await wallet.sendTransaction({ data: initcode })).wait();   // deploy</code></pre></div>
 <p>To get test funds, ask the faucet for the account's <b>AUREN address</b>, which for an Ethereum key is <code>bech32(&quot;daur&quot;, [4, ...20-byte Ethereum address])</code> (helper: <code>keyFromHex(addrHex, 4, 'daur')</code> in <code>src/evm/host.js</code>).</p>

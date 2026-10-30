@@ -2,7 +2,7 @@
 
     from auren import Client, Wallet
 
-    node = Client("http://127.0.0.1:9650")
+    node = Client("https://testnet.auren.im")
     wallet = Wallet.generate("daur")            # or Wallet.from_seed("<64 hex>", "daur")
     print(wallet.address)
     print(node.balance(wallet.address))

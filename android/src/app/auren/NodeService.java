@@ -43,7 +43,7 @@ public class NodeService extends Service {
         lock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "auren:node");
         lock.acquire();
         starting = true;
-        final String net = i.getStringExtra("network"), peers = i.getStringExtra("peers"), payout = i.getStringExtra("payout");
+        final String net = i.getStringExtra("network"), peers = "", payout = i.getStringExtra("payout");
         final boolean earn = i.getBooleanExtra("earn", false);
         new Thread(new Runnable() { public void run() { runNode(net, peers, earn, payout); } }).start();
         return START_STICKY;

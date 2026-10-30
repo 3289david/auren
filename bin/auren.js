@@ -27,7 +27,6 @@ Options for join:
   --peers <url,url>   nodes to connect to (default: the public seed nodes for that network)
   --earn [address]    earn AUR: bond this node and prove it stores the chain each epoch; rewards go to [address] (default: the node's own address)
   --public            accept connections on all network interfaces (default: only this computer)
-  --port <n>          port for this node (default 9650)
   --tls-cert <f> --tls-key <f> [--tls-port <n>]   also serve HTTPS (needed for the wallet on a non-local web address)
 
 There is exactly one mainnet, one testnet and one devnet. You join them; you do not create them.`;
@@ -60,7 +59,7 @@ async function main() {
     try {
       const s = await (await fetch(`http://127.0.0.1:${port}/status`, { signal: AbortSignal.timeout(3000) })).json();
       console.log(`running · ${s.chainId} · block ${s.height} · ${s.peers} peers · ${s.catchingUp ? 'catching up' : 'in sync'}`);
-    } catch { console.log(`not running (nothing answered on port ${port})`); process.exitCode = 1; }
+    } catch { console.log(`not running`); process.exitCode = 1; }
     return;
   }
 

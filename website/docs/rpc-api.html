@@ -19,7 +19,7 @@
 <h1 id="node-api">Node API</h1>
 <p>Every node serves HTTP on its RPC port (default <code>9650</code>). CORS is open (<code>*</code>) for read use; put a proxy with TLS and rate limits in front of public endpoints. Amounts are decimal strings of sparks.</p>
 <h2 id="json-rpc-2-0-post-rpc">JSON-RPC 2.0: <code>POST /rpc</code></h2>
-<div class="codebox"><pre><code>curl -s localhost:9650/rpc -H 'content-type: application/json' \
+<div class="codebox"><pre><code>curl -s https://testnet.auren.im/rpc -H 'content-type: application/json' \
   -d '{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:1,&quot;method&quot;:&quot;aur_status&quot;,&quot;params&quot;:[]}'</code></pre></div>
 <p>Batches (arrays, ≤ 50) are supported.</p>
 <div class="table-wrap"><table><thead><tr><th>Method</th><th>Params</th><th>Returns</th></tr></thead><tbody><tr><td><code>aur_status</code></td><td></td><td>chain ID, height, base fees, transfer fee quote, supply/burned/bonded, issuance rate, validator concentration, peers, mempool</td></tr><tr><td><code>aur_getParams</code></td><td></td><td>resolved protocol parameters</td></tr><tr><td><code>aur_getNodes</code></td><td><code>[address?]</code></td><td>node-reward pool, epoch, challenged block and registered nodes</td></tr><tr><td><code>aur_getTlds</code></td><td></td><td>every TLD (built-in <code>.aur</code> first): owner, open, price, owner share, name count</td></tr><tr><td><code>aur_getTld</code></td><td><code>[tld]</code></td><td>one TLD's rules, or <code>null</code></td></tr><tr><td><code>aur_getBlock</code></td><td><code>[height | &quot;latest&quot;]</code></td><td>block + commit certificate</td></tr><tr><td><code>aur_getTx</code></td><td><code>[hash]</code></td><td><code>{status: &quot;confirmed&quot;|&quot;pending&quot;, tx, height, receipt}</code></td></tr><tr><td><code>aur_getAccount</code></td><td><code>[address]</code></td><td>balance, spendable, nonce, <code>pendingNonce</code>, security config, delegations, unbonding</td></tr><tr><td><code>aur_getValidators</code></td><td></td><td>validators (power, status) + concentration</td></tr><tr><td><code>aur_feeQuote</code></td><td></td><td>base fees and the exact base cost per transaction type</td></tr><tr><td><code>aur_sendTx</code></td><td><code>[signedTx]</code></td><td><code>{hash, isNew}</code>; error <code>-32010</code> with <code>data</code> = reason code</td></tr><tr><td><code>aur_simulate</code></td><td><code>[signedTx]</code></td><td><code>{ok, code, fee, burned, effects[]}</code> without changing state</td></tr><tr><td><code>aur_resolveDomain</code></td><td><code>[name]</code></td><td>owner, target, expiry, or <code>null</code></td></tr><tr><td><code>aur_getPeers</code></td><td></td><td>peer URLs</td></tr></tbody></table></div>
@@ -31,7 +31,7 @@
 <div class="codebox"><pre><code>const { RpcClient, Wallet } = require('./src/client');
 const { Keypair } = require('./src/crypto');
 
-const rpc = new RpcClient('http://127.0.0.1:9650');
+const rpc = new RpcClient('https://testnet.auren.im');
 const st = await rpc.status();
 const wallet = new Wallet(Keypair.fromSeedHex(process.env.SEED), st.addressPrefix);
 const res = await wallet.send(rpc, 'transfer', { to: 'daur1…', amount: '1500000000' });   // waits for inclusion</code></pre></div>

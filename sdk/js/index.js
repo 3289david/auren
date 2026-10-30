@@ -3,7 +3,7 @@
  * AUREN SDK for JavaScript (Node.js 20+). No dependencies.
  *
  *   const { Client, Wallet } = require('./sdk/js');
- *   const node = new Client('http://127.0.0.1:9650');
+ *   const node = new Client('https://testnet.auren.im');
  *   const wallet = Wallet.generate('daur');
  *   console.log(wallet.address, await node.balance(wallet.address));
  *   await wallet.transfer(node, 'daur1...', '1.5');     // amounts are in AUR

@@ -15,7 +15,7 @@ const NETS = JSON.parse(fs.readFileSync(path.join(ROOT, 'networks', 'networks.js
 
 const USAGE = `aurenctl: AUREN wallet & chain CLI
 
-Global flags: --network <devnet|testnet|mainnet> | --rpc <url>   --from <key name>   --simulate   --no-wait   --tip <AUR>
+Global flags: --network <devnet|testnet|mainnet> (default testnet)   --from <key name>   --simulate   --no-wait   --tip <AUR>
 
 Keys        keys new <name> | keys import <name> --seed <hex> | keys list | keys show <name> | keys export <name>
 Chain       status | block [height] | validators | fees | params | tx <hash> | balance <addr|key|name.aur> | account <addr>
@@ -100,11 +100,15 @@ async function main() {
   }
 
   // ---- everything below talks to a node ----
-  const netMeta = flags.network ? NETS[flags.network] : null;
-  if (flags.network && !netMeta) throw new Error(`unknown network ${flags.network}`);
-  const rpcUrl = flags.rpc || process.env.AUREN_RPC || (netMeta && netMeta.rpc[0]) || 'http://127.0.0.1:9650';
-  const rpc = new RpcClient(rpcUrl);
-  const status = await rpc.status().catch((e) => { throw new Error(`cannot reach ${rpcUrl}: ${e.message}`); });
+  const netName = flags.network || 'testnet';
+  const netMeta = NETS[netName];
+  if (!netMeta) throw new Error(`unknown network ${netName}: use devnet, testnet or mainnet`);
+  // every network has two official addresses (mirrors); use the first that answers
+  let rpcUrl = netMeta.rpc[0], rpc = new RpcClient(rpcUrl), status = null, lastErr = null;
+  for (const u of netMeta.rpc) {
+    try { const c = new RpcClient(u); status = await c.status(); rpcUrl = u; rpc = c; break; } catch (e) { lastErr = e; }
+  }
+  if (!status) throw new Error(netName === 'mainnet' ? 'the mainnet has not launched yet' : `cannot reach the ${netName} right now: ${lastErr && lastErr.message}`);
   if (netMeta && status.chainId !== netMeta.chainId) throw new Error(`refusing to continue: node at ${rpcUrl} is chain ${status.chainId}, expected ${netMeta.chainId}`);
   const prefix = status.addressPrefix;
 

@@ -40,7 +40,7 @@ The pool share comes out of the normal issuance. Validator rewards are issuance 
 ## Check on it
 
 ```bash
-curl http://127.0.0.1:9650/nodes
+curl https://testnet.auren.im/nodes
 ```
 
 Returns the pool, current epoch, the challenged block, and every registered node with whether it has proved this epoch. The explorer shows the same under **Nodes**. JSON-RPC: `aur_getNodes`.

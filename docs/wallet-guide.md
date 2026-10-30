@@ -4,7 +4,7 @@ A tour of every screen in the AUREN wallet (website, Windows app and Android app
 
 ## Connecting
 
-At the top you pick a network: **Devnet**, **Testnet**, **Mainnet**, or **Custom node…** (for people who run their own node; it reveals an address box). The tag next to the title shows which network you are on. If a network is not reachable, the wallet says so instead of switching silently.
+At the top you pick a network: **Devnet**, **Testnet** or **Mainnet**. Each has one official address (see [Networks](networks.md)), and the wallet connects to it for you. The tag next to the title shows which network you are on. If a network is not reachable, the wallet says so instead of switching silently.
 
 ## Making or adding a wallet
 

@@ -19,7 +19,7 @@
 <h1 id="deploy-a-smart-contract">Deploy a smart contract</h1>
 <p>AUREN runs an Ethereum-compatible virtual machine, so the tools you already know work.</p>
 <h2 id="connect-your-tools">Connect your tools</h2>
-<div class="table-wrap"><table><thead><tr><th></th><th>Devnet</th><th>Testnet</th><th>Mainnet</th></tr></thead><tbody><tr><td>RPC URL</td><td><code>http://NODE:9650/rpc</code></td><td>a testnet node</td><td>a mainnet node</td></tr><tr><td>Chain ID</td><td>77001</td><td>77002</td><td>77000</td></tr><tr><td>Currency</td><td>AUR</td><td>AUR</td><td>AUR</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th></th><th>Devnet</th><th>Testnet</th><th>Mainnet</th></tr></thead><tbody><tr><td>RPC URL</td><td><code>https://devnet.auren.im/rpc</code></td><td><code>https://testnet.auren.im/rpc</code></td><td><code>https://mainnet.auren.im/rpc</code></td></tr><tr><td>Chain ID</td><td>77001</td><td>77002</td><td>77000</td></tr><tr><td>Currency</td><td>AUR</td><td>AUR</td><td>AUR</td></tr></tbody></table></div>
 <p>In MetaMask: add a network with the RPC URL and chain ID above. Your Ethereum address (<code>0x…</code>) is also an AUREN account, so a key you use on Ethereum works here.</p>
 <h2 id="units">Units</h2>
 <p>An EVM account balance is shown in <b>wei</b>. 1 AUR = 10^18 wei in the EVM, and 1 AUR = 10^9 sparks natively. The conversion is automatic: tools see 18 decimals.</p>
@@ -27,12 +27,12 @@
 <div class="codebox"><pre><code>// hardhat.config.js
 module.exports = {
   solidity: '0.8.20',
-  networks: { auren: { url: 'http://127.0.0.1:9650/rpc', chainId: 77001, accounts: [process.env.KEY] } },
+  networks: { auren: { url: 'https://devnet.auren.im/rpc', chainId: 77001, accounts: [process.env.KEY] } },
 };</code></pre></div>
 <div class="codebox"><pre><code>npx hardhat run scripts/deploy.js --network auren</code></pre></div>
 <h2 id="ethers">ethers</h2>
 <div class="codebox"><pre><code>const { ethers } = require('ethers');
-const provider = new ethers.JsonRpcProvider('http://127.0.0.1:9650/rpc', 77001);
+const provider = new ethers.JsonRpcProvider('https://devnet.auren.im/rpc', 77001);
 const signer = new ethers.Wallet(process.env.KEY, provider);
 const factory = new ethers.ContractFactory(abi, bytecode, signer);
 const contract = await factory.deploy();

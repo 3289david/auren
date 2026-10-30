@@ -17,10 +17,10 @@ Everything below is implemented in this repository and was exercised on a real m
 5. Start all four within a few minutes of the genesis time: `sh start.sh` (or install the systemd unit). One instance per key, ever.
 6. Verify from your laptop:
    ```bash
-   node scripts/verify-network.js http://203.0.113.10:9650 http://203.0.113.11:9650 http://203.0.113.12:9650 http://203.0.113.13:9650
+   node scripts/verify-network.js <the four validator servers>
    ```
 7. Public access: put `deploy/Caddyfile` in front of one full node (not a validator) and point a domain at it. Each node serves the **website, wallet and explorer** itself (`--website`), plus Ethereum-compatible RPC (chain id 77002 on testnet).
-8. Faucet: `node bin/auren-faucet.js --rpc http://127.0.0.1:9650 --key-file bundles/faucet.json --amount 100`.
+8. Faucet: `node bin/auren-faucet.js --rpc <the node on this server> --key-file bundles/faucet.json --amount 100`.
 9. Publish `genesis.json`, its hash, seed URLs, and add them to `networks/networks.json`. Invite outside validators with `docs/validators.md`.
 
 This was tested locally with four separate processes started from generated bundles: all nodes agreed on genesis, blocks, state roots and finality certificates (`scripts/verify-network.js` passed).

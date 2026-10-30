@@ -2,31 +2,23 @@
 
 Send your first payment from code in about ten minutes.
 
-## 1. Get a node
+## 1. Pick a network
 
-Run a devnet on your computer (needs Node.js 20 or newer, nothing else):
-
-```bash
-git clone https://github.com/3289david/auren
-cd auren
-node scripts/devnet.js --clean
-```
-
-It starts four validators. The first one answers on `http://127.0.0.1:9650`, and a faucet runs on port 9690. (To use a public network instead, connect to a node of that network.)
+Use the public devnet: `https://devnet.auren.im` (mirror `https://devnet.krl.kr`). It has a faucet at `https://devnet.auren.im/faucet`. The testnet and mainnet work the same way; see [Networks](networks.md).
 
 Check it:
 
 ```bash
-curl http://127.0.0.1:9650/status
+curl https://devnet.auren.im/status
 ```
 
 ## 2. Make a wallet and get coins (JavaScript)
 
 ```js
 const { Client, Wallet } = require('./sdk/js');
-const node = new Client('http://127.0.0.1:9650');
+const node = new Client('https://devnet.auren.im');
 const wallet = Wallet.generate('daur');
-await fetch('http://127.0.0.1:9690/drip', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ address: wallet.address }) });
+await fetch('https://devnet.auren.im/faucet/drip', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ address: wallet.address }) });
 console.log(wallet.address, await node.balance(wallet.address));
 ```
 
@@ -42,7 +34,7 @@ console.log(tx.receipt.status === 1 ? 'confirmed' : 'failed', await node.balance
 
 ```python
 from auren import Client, Wallet
-node = Client("http://127.0.0.1:9650")
+node = Client("https://devnet.auren.im")
 wallet = Wallet.generate("daur")
 friend = Wallet.generate("daur")
 # fund the wallet from the faucet first, then:
@@ -61,9 +53,9 @@ console.log(await node.resolve('bob.david'));                   // owner, target
 ## 6. Read the chain
 
 ```bash
-curl http://127.0.0.1:9650/blocks?limit=5
-curl http://127.0.0.1:9650/account/<address>
-curl http://127.0.0.1:9650/tlds
+curl https://devnet.auren.im/blocks?limit=5
+curl https://devnet.auren.im/account/<address>
+curl https://devnet.auren.im/tlds
 ```
 
 Every call is also available as JSON-RPC at `POST /rpc`, including the Ethereum `eth_*` methods.
@@ -72,7 +64,7 @@ Every call is also available as JSON-RPC at `POST /rpc`, including the Ethereum 
 
 ```js
 const { ethers } = require('ethers');
-const provider = new ethers.JsonRpcProvider('http://127.0.0.1:9650/rpc', 77001);
+const provider = new ethers.JsonRpcProvider('https://devnet.auren.im/rpc', 77001);
 ```
 
 Chain IDs: devnet 77001, testnet 77002, mainnet 77000. More in [EVM](evm.md).
@@ -85,4 +77,4 @@ Chain IDs: devnet 77001, testnet 77002, mainnet 77000. More in [EVM](evm.md).
 | Signing a transaction yourself | [Integrate](integrate.md) |
 | Smart contracts | [EVM](evm.md) |
 | Command-line tool | [CLI reference](cli.md) |
-| Running a local test network | [Networks](networks.md) |
+| The three networks and their addresses | [Networks](networks.md) |

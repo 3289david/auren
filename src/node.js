@@ -22,7 +22,7 @@ const { ethMethods } = require('./evm/rpc');
 const { hexOf, ChainBackend } = require('./evm/host');
 const { nameValid, fullName } = require('./tld');
 
-const VERSION = '0.7.0';
+const VERSION = '0.8.0';
 const MAX_BODY = 8 * 1024 * 1024;
 
 class AurenNode extends EventEmitter {
@@ -94,7 +94,7 @@ class AurenNode extends EventEmitter {
     this.syncTimer = setInterval(() => this._syncOnce().catch(() => {}), 1000);
     this.repairTimer = setInterval(() => this._repair().catch(() => {}), 500);
     this._scheduleHeight(Math.max(0, this.config.startDelayMs ?? 300));
-    this.log(`listening on ${this.config.selfUrl}, chain ${this.chain.chainId}${this.key ? ', validator ' + this.operator : ''}`);
+    this.log(`node is running, chain ${this.chain.chainId}${this.key ? ', validator ' + this.operator : ''}`);
     for (const p of this.peers.keys()) this._post(p, '/p2p/hello', { url: this.config.selfUrl }, 1500).catch(() => {});
     return this;
   }

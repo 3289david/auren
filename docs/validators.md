@@ -16,13 +16,13 @@ node bin/auren-node.js init --network testnet --home /var/lib/auren --moniker my
 chmod 600 /var/lib/auren/priv_validator_key.json
 ```
 
-Edit `/var/lib/auren/config.json`: add seed `peers`, and set `rpcHost` to `127.0.0.1` (put TLS + rate limiting in front if you serve public RPC). Leave `operator` as `null` until step 4.
+Edit `/var/lib/auren/config.json`: add seed `peers`, and keep `rpcHost` on its default so the node is only reachable from its own server (put TLS + rate limiting in front if you serve public RPC). Leave `operator` as `null` until step 4.
 
 ## 3. Start as a full node and let it sync
 
 ```bash
 node bin/auren-node.js start --home /var/lib/auren
-node bin/aurenctl.js status --rpc http://127.0.0.1:9650    # catchingUp must be false
+node bin/aurenctl.js status --network testnet    # catchingUp must be false
 ```
 
 A systemd unit is in `deploy/auren-node.service`.

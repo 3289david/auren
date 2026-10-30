@@ -10,8 +10,8 @@
   },
   "servers": [
     {
-      "url": "http://127.0.0.1:9650",
-      "description": "A node on this computer"
+      "url": "https://testnet.auren.im",
+      "description": "The testnet (mirror: https://testnet.krl.kr)"
     }
   ],
   "tags": [

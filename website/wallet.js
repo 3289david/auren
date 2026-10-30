@@ -301,14 +301,15 @@
   }
 
   async function requestFaucet() {
-    const u = new URL(rpc.url);
-    const url = store.get('auren.faucet') || `${u.protocol}//${u.hostname}:9690`;
+    const net = Aur.NETWORKS[status.network];
+    const url = net && net.faucet;
+    if (!url) return notify('There is no faucet on this network.', 'err');
     try {
       const r = await fetch(url + '/drip', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ address }) });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error);
       notify(`Faucet sent ${esc(j.amount)} · <a href="explorer.html?tx=${j.hash}">${esc(short(j.hash, 8))}</a>`);
-    } catch (e) { notify(`Faucet unavailable at ${esc(url)}: ${esc(e.message)}`, 'err'); }
+    } catch (e) { notify(`Could not get coins right now: ${esc(e.message)}`, 'err'); }
   }
 
   function renderTab() {
@@ -600,7 +601,7 @@
 
   // ------------------------------------------------------------ entry
   function render() {
-    if (!status) { $('app').innerHTML = `<div class="card"><p class="msg err">Can't connect to the network. Check your internet connection, then pick a network above and press Connect.</p></div>`; return; }
+    if (!status) { $('app').innerHTML = `<div class="card"><p class="msg err">Can't connect to the network. Check your internet connection, then pick a network above.</p></div>`; return; }
     if (key) return viewDashboard();
     return wallets.length ? viewUnlock() : viewOnboard();
   }

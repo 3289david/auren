@@ -18,19 +18,15 @@
   <article class="doc">
 <h1 id="developer-quickstart">Developer quickstart</h1>
 <p>Send your first payment from code in about ten minutes.</p>
-<h2 id="1-get-a-node">1. Get a node</h2>
-<p>Run a devnet on your computer (needs Node.js 20 or newer, nothing else):</p>
-<div class="codebox"><pre><code>git clone https://github.com/3289david/auren
-cd auren
-node scripts/devnet.js --clean</code></pre></div>
-<p>It starts four validators. The first one answers on <code>http://127.0.0.1:9650</code>, and a faucet runs on port 9690. (To use a public network instead, connect to a node of that network.)</p>
+<h2 id="1-pick-a-network">1. Pick a network</h2>
+<p>Use the public devnet: <code>https://devnet.auren.im</code> (mirror <code>https://devnet.krl.kr</code>). It has a faucet at <code>https://devnet.auren.im/faucet</code>. The testnet and mainnet work the same way; see <a href="networks.html">Networks</a>.</p>
 <p>Check it:</p>
-<div class="codebox"><pre><code>curl http://127.0.0.1:9650/status</code></pre></div>
+<div class="codebox"><pre><code>curl https://devnet.auren.im/status</code></pre></div>
 <h2 id="2-make-a-wallet-and-get-coins-javascript">2. Make a wallet and get coins (JavaScript)</h2>
 <div class="codebox"><pre><code>const { Client, Wallet } = require('./sdk/js');
-const node = new Client('http://127.0.0.1:9650');
+const node = new Client('https://devnet.auren.im');
 const wallet = Wallet.generate('daur');
-await fetch('http://127.0.0.1:9690/drip', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ address: wallet.address }) });
+await fetch('https://devnet.auren.im/faucet/drip', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ address: wallet.address }) });
 console.log(wallet.address, await node.balance(wallet.address));</code></pre></div>
 <h2 id="3-send-a-payment">3. Send a payment</h2>
 <div class="codebox"><pre><code>const friend = Wallet.generate('daur');
@@ -38,7 +34,7 @@ const tx = await wallet.transfer(node, friend.address, '1.5');
 console.log(tx.receipt.status === 1 ? 'confirmed' : 'failed', await node.balance(friend.address));</code></pre></div>
 <h2 id="4-the-same-in-python">4. The same in Python</h2>
 <div class="codebox"><pre><code>from auren import Client, Wallet
-node = Client(&quot;http://127.0.0.1:9650&quot;)
+node = Client(&quot;https://devnet.auren.im&quot;)
 wallet = Wallet.generate(&quot;daur&quot;)
 friend = Wallet.generate(&quot;daur&quot;)
 # fund the wallet from the faucet first, then:
@@ -49,20 +45,20 @@ await wallet.createTld(node, 'david', { price: '1' });          // your own endi
 await wallet.registerName(node, 'bob.david');
 console.log(await node.resolve('bob.david'));                   // owner, target, proof</code></pre></div>
 <h2 id="6-read-the-chain">6. Read the chain</h2>
-<div class="codebox"><pre><code>curl http://127.0.0.1:9650/blocks?limit=5
-curl http://127.0.0.1:9650/account/&lt;address&gt;
-curl http://127.0.0.1:9650/tlds</code></pre></div>
+<div class="codebox"><pre><code>curl https://devnet.auren.im/blocks?limit=5
+curl https://devnet.auren.im/account/&lt;address&gt;
+curl https://devnet.auren.im/tlds</code></pre></div>
 <p>Every call is also available as JSON-RPC at <code>POST /rpc</code>, including the Ethereum <code>eth_*</code> methods.</p>
 <h2 id="7-use-ethereum-tools">7. Use Ethereum tools</h2>
 <div class="codebox"><pre><code>const { ethers } = require('ethers');
-const provider = new ethers.JsonRpcProvider('http://127.0.0.1:9650/rpc', 77001);</code></pre></div>
+const provider = new ethers.JsonRpcProvider('https://devnet.auren.im/rpc', 77001);</code></pre></div>
 <p>Chain IDs: devnet 77001, testnet 77002, mainnet 77000. More in <a href="evm.html">EVM</a>.</p>
 <h2 id="where-next">Where next</h2>
-<div class="table-wrap"><table><thead><tr><th>Topic</th><th>Read</th></tr></thead><tbody><tr><td>All API methods</td><td><a href="integrate.html">Integrate</a>, <a href="rpc-api.html">RPC API</a></td></tr><tr><td>Signing a transaction yourself</td><td><a href="integrate.html">Integrate</a></td></tr><tr><td>Smart contracts</td><td><a href="evm.html">EVM</a></td></tr><tr><td>Command-line tool</td><td><a href="cli.html">CLI reference</a></td></tr><tr><td>Running a local test network</td><td><a href="networks.html">Networks</a></td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Topic</th><th>Read</th></tr></thead><tbody><tr><td>All API methods</td><td><a href="integrate.html">Integrate</a>, <a href="rpc-api.html">RPC API</a></td></tr><tr><td>Signing a transaction yourself</td><td><a href="integrate.html">Integrate</a></td></tr><tr><td>Smart contracts</td><td><a href="evm.html">EVM</a></td></tr><tr><td>Command-line tool</td><td><a href="cli.html">CLI reference</a></td></tr><tr><td>The three networks and their addresses</td><td><a href="networks.html">Networks</a></td></tr></tbody></table></div>
     <div class="pn"><a href="cli.html"><small>Previous</small>Command-line reference</a><a class="next" href="build-a-wallet.html"><small>Next</small>Build a wallet app</a></div>
     <p class="muted" style="margin-top:28px"><a href="https://github.com/3289david/auren/blob/main/docs/developer-quickstart.md">Edit this page on GitHub</a></p>
   </article>
-  <aside class="docs-toc"><h4>On this page</h4><a href="#1-get-a-node">1. Get a node</a><a href="#2-make-a-wallet-and-get-coins-javascript">2. Make a wallet and get coins (JavaScript)</a><a href="#3-send-a-payment">3. Send a payment</a><a href="#4-the-same-in-python">4. The same in Python</a><a href="#5-names-and-name-endings">5. Names and name endings</a><a href="#6-read-the-chain">6. Read the chain</a><a href="#7-use-ethereum-tools">7. Use Ethereum tools</a><a href="#where-next">Where next</a></aside>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#1-pick-a-network">1. Pick a network</a><a href="#2-make-a-wallet-and-get-coins-javascript">2. Make a wallet and get coins (JavaScript)</a><a href="#3-send-a-payment">3. Send a payment</a><a href="#4-the-same-in-python">4. The same in Python</a><a href="#5-names-and-name-endings">5. Names and name endings</a><a href="#6-read-the-chain">6. Read the chain</a><a href="#7-use-ethereum-tools">7. Use Ethereum tools</a><a href="#where-next">Where next</a></aside>
 </div>
 <script src="docs.js"></script>
 </body>

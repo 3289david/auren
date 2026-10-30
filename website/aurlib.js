@@ -88,7 +88,7 @@
 
   /** Ask the authenticator to create a new P-256 key. The private key never leaves the device. */
   async function createPasskey(label) {
-    if (!webauthnAvailable()) throw new Error('This browser does not support WebAuthn (needs HTTPS or localhost)');
+    if (!webauthnAvailable()) throw new Error('This browser does not support WebAuthn (it needs a secure connection)');
     const cred = await navigator.credentials.create({ publicKey: {
       rp: { name: 'AUREN Wallet', id: location.hostname },
       user: { id: globalThis.crypto.getRandomValues(new Uint8Array(16)), name: label, displayName: label },
@@ -163,56 +163,64 @@
     return signTx(key, { chainId: st.chainId, type, from, nonce: acct.pendingNonce, maxFee: (base * 2n + BigInt(tip)).toString(), tip: BigInt(tip).toString(), body });
   }
 
-  /** Pick the first reachable node: ?rpc= param, saved choice, the page's own origin, then localhost. */
-  async function detectRpc(saved) {
-    const q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('rpc') : null;
-    const cands = [q, saved, typeof location !== 'undefined' && /^https?:/.test(location.protocol) ? location.origin : null].filter(Boolean);
-    try { // finally, the public node list published with the site (networks.json)
-      const nets = await (await fetch('/networks.json', { cache: 'no-store', signal: AbortSignal.timeout(2000) })).json();
-      for (const n of Object.values(nets)) for (const u of n.rpc || []) cands.push(u);
-    } catch { /* no list published */ }
-    for (const c of cands) {
-      try {
-        const r = await fetch(c.replace(/\/$/, '') + '/status', { cache: 'no-store', signal: AbortSignal.timeout(2500) });
-        if ((await r.json()).chainId) return c.replace(/\/$/, '');
-      } catch { /* try next */ }
-    }
-    return cands[0] || '';
-  }
   /**
-   * Network chooser next to the node-URL box: Devnet / Testnet / Mainnet (URLs from networks.json) or a custom node.
-   * Picking a network fills the URL and connects. A network with no published public node falls back to this computer.
+   * The official networks and their public endpoints. Every network has exactly these addresses (two mirrors);
+   * nobody creates a new one by running a node. Wallets and the explorer connect only to these.
+   */
+  const NETWORKS = {
+    devnet: { label: 'Devnet', rpc: ['https://devnet.auren.im', 'https://devnet.krl.kr'], faucet: 'https://devnet.auren.im/faucet' },
+    testnet: { label: 'Testnet', rpc: ['https://testnet.auren.im', 'https://testnet.krl.kr'], faucet: 'https://testnet.auren.im/faucet' },
+    mainnet: { label: 'Mainnet', rpc: ['https://mainnet.auren.im', 'https://mainnet.krl.kr'], faucet: null },
+  };
+
+  /** First reachable endpoint of a network (null if none answers). */
+  async function reach(network) {
+    for (const u of (NETWORKS[network] || { rpc: [] }).rpc) {
+      try {
+        const r = await fetch(u + '/status', { cache: 'no-store', signal: AbortSignal.timeout(4000) });
+        const j = await r.json();
+        if (j.chainId && (!j.network || j.network === network)) return u;
+      } catch { /* try the mirror */ }
+    }
+    return null;
+  }
+
+  /** Which network to open first: the last one used, else the testnet. Returns { network, url }. */
+  async function detectRpc(saved) {
+    let net = null;
+    try { net = (typeof location !== 'undefined' && new URLSearchParams(location.search).get('network')) || localStorage.getItem('auren.network'); } catch { /* storage blocked */ }
+    if (!NETWORKS[net]) net = 'testnet';
+    const url = await reach(net);
+    return url ? url : NETWORKS[net].rpc[0];
+  }
+
+  /**
+   * Network chooser: Devnet, Testnet or Mainnet. Choosing one connects to its official address.
+   * There is no custom node: every network has one public address.
    */
   async function initNetPicker(sel, input, form) {
     if (!sel) return;
-    let nets = {};
-    try { nets = await (await fetch('/networks.json', { cache: 'no-store', signal: AbortSignal.timeout(2500) })).json(); } catch { /* none published */ }
-    const names = Object.keys(nets).length ? Object.keys(nets) : ['devnet', 'testnet', 'mainnet'];
-    sel.innerHTML = names.map((n) => '<option value="' + n + '">' + n[0].toUpperCase() + n.slice(1) + (nets[n] && nets[n].chainId ? '' : '') + '</option>').join('') + '<option value="custom">Custom node…</option>';
-    // The node address is hidden: people pick a network. "Custom node…" reveals the address box.
-    input.hidden = true;
-    let custom = false;
+    if (input) input.hidden = true;
+    const names = Object.keys(NETWORKS);
+    sel.innerHTML = names.map((n) => '<option value="' + n + '">' + NETWORKS[n].label + '</option>').join('');
+    let saved = null;
+    try { saved = localStorage.getItem('auren.network'); } catch { /* storage blocked */ }
+    sel.value = names.includes(saved) ? saved : 'testnet';
+    let msg = document.getElementById('netmsg');
+    if (!msg) { msg = document.createElement('p'); msg.id = 'netmsg'; msg.className = 'toast err'; msg.hidden = true; form.parentElement.insertAdjacentElement('afterend', msg); }
     const sync = () => {
-      if (custom) return;
       const chip = document.getElementById('conn');
       const net = chip && chip.textContent.split(' ')[0];
       if (net && names.includes(net)) sel.value = net;
     };
-    // Which network does a node answer for? (null if unreachable)
-    const probe = async (url) => { try { const j = await (await fetch(url.replace(/\/$/, '') + '/status', { cache: 'no-store', signal: AbortSignal.timeout(2500) })).json(); return j.network || null; } catch { return null; } };
-    let msg = document.getElementById('netmsg');
-    if (!msg) { msg = document.createElement('p'); msg.id = 'netmsg'; msg.className = 'toast err'; msg.hidden = true; form.parentElement.insertAdjacentElement('afterend', msg); }
     sel.addEventListener('change', async () => {
       msg.hidden = true;
-      if (sel.value === 'custom') { custom = true; input.hidden = false; input.focus(); input.select(); return; }
-      custom = false; input.hidden = true;
-      const want = sel.value, n = nets[want] || {};
-      const candidates = [...(n.rpc || []), 'http://127.0.0.1:9650'];
-      for (const u of candidates) {
-        if (await probe(u) === want) { input.value = u; form.requestSubmit(); return; }
-      }
+      const want = sel.value;
+      try { localStorage.setItem('auren.network', want); } catch { /* storage blocked */ }
+      const url = await reach(want);
+      if (url) { if (input) input.value = url; form.requestSubmit(); return; }
       msg.hidden = false;
-      msg.innerHTML = 'The ' + want + ' is not reachable right now: no public ' + want + ' node is published yet' + (want === 'mainnet' ? ' (mainnet has not launched)' : '') + '. You can <a href="run-a-node.html">run a node</a> on this computer, or choose <b>Custom node…</b> and enter the address of one.';
+      msg.textContent = want === 'mainnet' ? 'The mainnet has not launched yet.' : 'The ' + want + ' is not reachable right now. Please try again in a moment.';
       sync();
     });
     const chip = document.getElementById('conn');
@@ -223,7 +231,7 @@
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   const Aur = {
-    detectRpc, initNetPicker, esc, createPasskey, webauthnAvailable, signingBytesOf: (tx) => signingBytes(tx),
+    NETWORKS, reach, detectRpc, initNetPicker, esc, createPasskey, webauthnAvailable, signingBytesOf: (tx) => signingBytes(tx),
     canon, hex, unhex, sha256, AUR, parseAur, formatAur, bech32Encode, isValidAddress, pubToAddress,
     randomSeedHex, keyFromSeed, sign, verify, signTx, signingBytes, txHash, encryptSeed, decryptSeed, Rpc, buildTx,
   };

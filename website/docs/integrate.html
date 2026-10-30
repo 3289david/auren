@@ -23,18 +23,18 @@
 <p><code>networks/networks.json</code> lists the official genesis hashes. Pin the genesis hash of the network you integrate with, so a wrong or malicious node is detected. A node serves its genesis at <code>GET /genesis</code>.</p>
 <p>Amounts everywhere are decimal strings in <b>sparks</b>: 1 AUR = 1,000,000,000 sparks.</p>
 <h2 id="the-api">The API</h2>
-<p>Every node serves one port (default <code>9650</code>):</p>
+<p>Every network has two public addresses that serve the same API (the second is a mirror):</p>
 <ul><li><b>REST</b> for reads, such as <code>GET /status</code>, <code>/account/{address}</code>, <code>/tx/{hash}</code>, <code>/tlds</code>.</li><li><b>JSON-RPC 2.0</b> at <code>POST /rpc</code> for everything, including sending transactions.</li><li><b>Ethereum JSON-RPC</b> on the same <code>/rpc</code> (<code>eth_*</code>), so ethers, viem, MetaMask and Hardhat work. Add the network with the chain ID from the table.</li></ul>
 <p>The full, machine-readable reference is the <a href="https://github.com/3289david/auren/blob/main/website/api/openapi.json">OpenAPI file</a>. Browse the methods in <a href="rpc-api.html">rpc-api.md</a>.</p>
-<div class="codebox"><pre><code>curl http://NODE:9650/status
-curl http://NODE:9650/account/daur1...
-curl -X POST http://NODE:9650/rpc -H 'content-type: application/json' \
+<div class="codebox"><pre><code>curl https://testnet.auren.im/status
+curl https://devnet.auren.im/account/daur1...
+curl -X POST https://testnet.auren.im/rpc -H 'content-type: application/json' \
   -d '{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:1,&quot;method&quot;:&quot;aur_status&quot;,&quot;params&quot;:[]}'</code></pre></div>
 <h2 id="sdks">SDKs</h2>
 <div class="table-wrap"><table><thead><tr><th>Language</th><th>Where</th><th>Notes</th></tr></thead><tbody><tr><td>JavaScript (Node 20+)</td><td><code>sdk/js</code></td><td><code>Client</code>, <code>Wallet</code>, amounts in AUR</td></tr><tr><td>JavaScript (browser)</td><td><code>website/aurlib.js</code></td><td>the library the wallet uses; global <code>Aur</code></td></tr><tr><td>Python 3</td><td><code>sdk/python/auren.py</code></td><td>no dependencies, pure-Python Ed25519</td></tr><tr><td>Any language</td><td>this page</td><td>sign a transaction yourself, below</td></tr></tbody></table></div>
 <p>JavaScript:</p>
 <div class="codebox"><pre><code>const { Client, Wallet } = require('./sdk/js');
-const node = new Client('http://127.0.0.1:9650');
+const node = new Client('https://testnet.auren.im');
 const wallet = Wallet.generate('daur');            // or Wallet.fromSeed(seedHex, 'daur')
 console.log(wallet.address, await node.balance(wallet.address));
 await wallet.transfer(node, 'daur1...', '1.5');    // amounts in AUR
@@ -42,7 +42,7 @@ await wallet.registerName(node, 'alice');          // alice.aur
 await wallet.createTld(node, 'david', { price: '1', ownerSharePercent: 80 });</code></pre></div>
 <p>Python:</p>
 <div class="codebox"><pre><code>from auren import Client, Wallet
-node = Client(&quot;http://127.0.0.1:9650&quot;)
+node = Client(&quot;https://testnet.auren.im&quot;)
 wallet = Wallet.generate(&quot;daur&quot;)
 wallet.transfer(node, &quot;daur1...&quot;, &quot;1.5&quot;)
 wallet.register_name(node, &quot;alice&quot;)</code></pre></div>
@@ -61,9 +61,9 @@ wallet.register_name(node, &quot;alice&quot;)</code></pre></div>
 <h2 id="names">Names</h2>
 <ul><li>Look up: <code>GET /domain/{name}</code> or <code>aur_resolve</code> (with a Merkle proof). <code>website/anr.js</code> verifies proofs on the client, so a wallet does not have to trust the node.</li><li>Show a name for an address: <code>aur_reverse</code>, checked in both directions.</li><li>Register <code>.aur</code> names and your own name endings with <code>registerDomain</code> and <code>registerTld</code>; see <a href="domains.html">domains.md</a>. The website's <a href="https://github.com/3289david/auren/blob/main/website/names.html">Names page</a> links straight into the wallet, so you can send users there: <code>wallet.html?tab=names&amp;name=alice.aur</code>.</li></ul>
 <h2 id="smart-contracts-and-ethereum-tools">Smart contracts and Ethereum tools</h2>
-<p>Point any Ethereum tool at <code>http://NODE:9650/rpc</code> with the Ethereum chain ID above. Raw Ethereum transactions are accepted. See <a href="evm.html">evm.md</a>.</p>
+<p>Point any Ethereum tool at the network address plus <code>/rpc</code> (for example <code>https://testnet.auren.im/rpc</code>) with the Ethereum chain ID above. Raw Ethereum transactions are accepted. See <a href="evm.html">evm.md</a>.</p>
 <h2 id="tips-for-wallet-makers">Tips for wallet makers</h2>
-<ul><li>Use <b><code>aur_simulate</code></b> before every send and show the user the fee and result.</li><li>Show amounts in AUR, never sparks. Round only for display.</li><li>Refuse to pay a name that resolves differently in two places (the <code>ambiguous</code> result of <code>aur_resolve</code> across namespaces).</li><li>Run or choose your own node for production, and pin the genesis hash.</li><li>Never log seeds. Keep them encrypted at rest.</li></ul>
+<ul><li>Use <b><code>aur_simulate</code></b> before every send and show the user the fee and result.</li><li>Show amounts in AUR, never sparks. Round only for display.</li><li>Refuse to pay a name that resolves differently in two places (the <code>ambiguous</code> result of <code>aur_resolve</code> across namespaces).</li><li>Pin the genesis hash of the network you integrate with.</li><li>Never log seeds. Keep them encrypted at rest.</li></ul>
     <div class="pn"><a href="smart-contracts.html"><small>Previous</small>Deploy a smart contract</a><a class="next" href="rpc-api.html"><small>Next</small>Node API</a></div>
     <p class="muted" style="margin-top:28px"><a href="https://github.com/3289david/auren/blob/main/docs/integrate.md">Edit this page on GitHub</a></p>
   </article>

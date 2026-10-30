@@ -1,24 +1,33 @@
-# TLS + rate limiting in front of a public AUREN node that serves the wallet and explorer itself.
-# Replace the hostname; Caddy obtains and renews certificates automatically.
-# Run the node as:  node bin/auren-node.js start --home /var/lib/auren --rpc-host 127.0.0.1 --website
-rpc.testnet.example.org {
+# Public addresses of the three official networks. One node serves each network; Caddy adds HTTPS.
+# Each network answers on two names (a mirror pair). Caddy gets and renews the certificates by itself.
+# Ports on the server: devnet node 9650 (faucet 9690), testnet node 9660 (faucet 9691), mainnet node 9670.
+
+(common) {
 	encode zstd gzip
-
-	# peers talk to each other directly on the node port; never expose /p2p/* through the public proxy
-	@p2p path /p2p/*
-	respond @p2p 404
-
-	reverse_proxy 127.0.0.1:9650
-
 	header {
 		Strict-Transport-Security "max-age=31536000"
 		X-Content-Type-Options nosniff
 		Referrer-Policy no-referrer
-		# the wallet signs in the page: lock down what scripts and connections it may use
-		Content-Security-Policy "default-src 'self'; connect-src 'self' https://faucet.testnet.example.org; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'"
 	}
 }
 
-faucet.testnet.example.org {
-	reverse_proxy 127.0.0.1:9690
+devnet.auren.im, devnet.krl.kr {
+	import common
+	handle_path /faucet/* {
+		reverse_proxy 127.0.0.1:9690
+	}
+	reverse_proxy 127.0.0.1:9650
+}
+
+testnet.auren.im, testnet.krl.kr {
+	import common
+	handle_path /faucet/* {
+		reverse_proxy 127.0.0.1:9691
+	}
+	reverse_proxy 127.0.0.1:9660
+}
+
+mainnet.auren.im, mainnet.krl.kr {
+	import common
+	reverse_proxy 127.0.0.1:9670
 }

@@ -70,11 +70,12 @@ function build(flavor) {
   const assets = path.join(dir, 'assets'), classes = path.join(dir, 'classes'), dex = path.join(dir, 'dex');
   fs.mkdirSync(assets, { recursive: true }); fs.mkdirSync(classes, { recursive: true }); fs.mkdirSync(dex, { recursive: true });
 
-  if (flavor === 'wallet') {
-    // aapt2 on Windows stores nested asset paths with backslashes, so the site is bundled flat as web_<file>
+  {
+    // both apps carry the wallet and explorer. aapt2 on Windows stores nested asset paths with backslashes, so the site is bundled flat as web_<file>
     for (const n of fs.readdirSync(path.join(root, 'website'))) if (fs.statSync(path.join(root, 'website', n)).isFile()) fs.copyFileSync(path.join(root, 'website', n), path.join(assets, 'web_' + n));
     fs.copyFileSync(path.join(root, 'networks', 'networks.json'), path.join(assets, 'networks.json'));
-  } else {
+  }
+  if (flavor === 'node') {
     const app = path.join(dir, 'app');
     for (const r of ['bin', 'src', 'website', 'networks/networks.json', 'networks/devnet', 'networks/testnet/genesis.json', 'networks/testnet/network.json', 'networks/mainnet', 'package.json']) copyTree(path.join(root, r), path.join(app, r), skipDev);
     zip(app, path.join(assets, 'auren.zip'));

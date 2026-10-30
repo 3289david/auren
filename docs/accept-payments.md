@@ -17,14 +17,14 @@ Register a name like `myshop.aur` ([Names](domains.md)). Customers can pay the n
 Poll the account's recent activity:
 
 ```bash
-curl "http://NODE:9650/account/YOUR_ADDRESS/txs?limit=25"
+curl "https://testnet.auren.im/account/YOUR_ADDRESS/txs?limit=25"
 ```
 
 or with the SDK:
 
 ```js
 const { Client } = require('./sdk/js');
-const node = new Client('http://127.0.0.1:9650');
+const node = new Client('https://testnet.auren.im');
 const seen = new Set();
 setInterval(async () => {
   const rows = await node.call('aur_getAccountTxs', ['YOUR_ADDRESS', 25]);
@@ -56,5 +56,5 @@ Send a normal transfer back to the `from` address of the payment.
 ## Safety
 
 - Keep the receiving wallet's recovery key offline. For withdrawals use a separate wallet with a daily limit and trusted helpers ([Wallet guide](wallet-guide.md)).
-- Run your own node for production so you do not depend on someone else's. Pin the network's genesis hash ([Integrate](integrate.md)).
+- Pin the network's genesis hash ([Integrate](integrate.md)) so you know you are talking to the right chain.
 - Never accept a payment as final from a transaction that is only "waiting".

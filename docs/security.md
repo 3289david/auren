@@ -50,7 +50,7 @@ Addresses embed a scheme byte; transactions will carry a scheme-tagged signature
 ## Operational checklist (validators)
 
 1. Run exactly one instance per consensus key; no hot standby sharing the key.
-2. Firewall the RPC (`--rpc-host 127.0.0.1` + reverse proxy with TLS and rate limits for public RPC).
+2. Firewall the RPC (keep the default private RPC address + reverse proxy with TLS and rate limits for public RPC).
 3. Monitor `/metrics`: `auren_block_height`, `auren_catching_up`, `auren_peers`.
 4. Back up `priv_validator_key.json` offline and `data/priv_validator_state.json` with the node.
 5. Keep operator keys off the validator host.

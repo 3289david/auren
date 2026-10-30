@@ -23,7 +23,7 @@
 <h2 id="workflow">Workflow</h2>
 <div class="codebox"><pre><code>npm test            # unit tests + 4-node integration test (~10 s)
 npm run bench       # check you did not regress execution speed
-npm run devnet      # manual testing; open http://127.0.0.1:8080/explorer.html</code></pre></div>
+npm run devnet      # manual testing on your own machine (contributors only)</code></pre></div>
 <p>Keep pull requests small and focused; include tests that fail without your change. Code style: CommonJS, <code>'use strict'</code>, 2-space indent, comments explain <i>why</i>.</p>
 <h2 id="adding-a-transaction-type">Adding a transaction type</h2>
 <ol><li>Add an entry to <code>TYPES</code> in <code>src/tx.js</code> with <code>cost</code>, <code>check</code>, <code>access</code>, <code>run</code>.</li><li>Cost units: <code>compute</code> ~ work, <code>state</code> ~ bytes written. Pick numbers by comparison with existing types.</li><li>Add tests: success, failure (fee still charged), conservation, and lane-order independence.</li><li>Document it in <code>docs/protocol.md</code> and <code>aurenctl</code>.</li></ol>

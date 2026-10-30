@@ -29,8 +29,8 @@ On each host (replace the repo path):
 
 ```bash
 node bin/auren-node.js start --home ~/nodeN --rpc-host 0.0.0.0 --website \
-  --self-url http://<this-host-public-ip>:9650 \
-  --peers http://<ip-of-node0>:9650,http://<ip-of-node1>:9650,http://<ip-of-node2>:9650
+  --self-url <this server's address> \
+  --peers <the other validators>
 ```
 
 Open TCP 9650 between the validators (security group allow-list by IP). Use `deploy/auren-node.service` to keep it running. **One instance per consensus key, ever.**
@@ -40,7 +40,7 @@ All nodes must be up within a few minutes of `genesisTime` (printed by `gen:test
 ## 3. Verify it is one network
 
 ```bash
-node scripts/verify-network.js http://ip0:9650 http://ip1:9650 http://ip2:9650 http://ip3:9650
+node scripts/verify-network.js <the four validator servers>
 ```
 
 Passes only if all nodes share the genesis hash and agree on a block hash and state root at a common height, finality certificates exist, and no node lags.
@@ -51,7 +51,7 @@ Put `deploy/Caddyfile` in front of one or two nodes (not the validators if you c
 
 ```bash
 node bin/auren-node.js init --network testnet --home /var/lib/auren --full-node
-node bin/auren-node.js start --home /var/lib/auren --rpc-host 127.0.0.1 --website --peers http://ip0:9650,...
+node bin/auren-node.js start --home /var/lib/auren --website --peers <the other validators>
 ```
 
 Block `/p2p/*` at the proxy (the Caddyfile does).
@@ -59,7 +59,7 @@ Block `/p2p/*` at the proxy (the Caddyfile does).
 ## 5. Faucet
 
 ```bash
-node bin/auren-faucet.js --rpc http://127.0.0.1:9650 \
+node bin/auren-faucet.js --rpc <the node on this server> \
   --key-file networks/testnet/_private/faucet.json --port 9690 --amount 100 --cooldown-sec 86400
 ```
 

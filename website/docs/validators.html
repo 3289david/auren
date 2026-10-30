@@ -24,10 +24,10 @@
 <div class="codebox"><pre><code>node bin/auren-node.js init --network testnet --home /var/lib/auren --moniker my-validator
 # prints your consensus public key and the genesis hash; compare the hash with the one published by the network
 chmod 600 /var/lib/auren/priv_validator_key.json</code></pre></div>
-<p>Edit <code>/var/lib/auren/config.json</code>: add seed <code>peers</code>, and set <code>rpcHost</code> to <code>127.0.0.1</code> (put TLS + rate limiting in front if you serve public RPC). Leave <code>operator</code> as <code>null</code> until step 4.</p>
+<p>Edit <code>/var/lib/auren/config.json</code>: add seed <code>peers</code>, and keep <code>rpcHost</code> on its default so the node is only reachable from its own server (put TLS + rate limiting in front if you serve public RPC). Leave <code>operator</code> as <code>null</code> until step 4.</p>
 <h2 id="3-start-as-a-full-node-and-let-it-sync">3. Start as a full node and let it sync</h2>
 <div class="codebox"><pre><code>node bin/auren-node.js start --home /var/lib/auren
-node bin/aurenctl.js status --rpc http://127.0.0.1:9650    # catchingUp must be false</code></pre></div>
+node bin/aurenctl.js status --network testnet    # catchingUp must be false</code></pre></div>
 <p>A systemd unit is in <code>deploy/auren-node.service</code>.</p>
 <h2 id="4-create-the-validator-on-chain">4. Create the validator on-chain</h2>
 <div class="codebox"><pre><code>node bin/aurenctl.js keys new operator

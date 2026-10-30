@@ -8,7 +8,9 @@
 
 **Is mainnet live?** Not yet. It launches after independent security audits and a long public test. Today the devnet and testnet are live.
 
-**What is the difference between devnet, testnet and mainnet?** Mainnet is the real network. The testnet is the official place to try everything before launch. The devnet is for early features and may be reset. There is exactly one of each; you join them rather than create them. See [Networks](networks.md).
+**What is the difference between devnet, testnet and mainnet?** Mainnet is the real network. The testnet is the official place to try everything before launch. The devnet is for early features and may be reset. There is exactly one of each, each with one public address (`devnet.auren.im`, `testnet.auren.im`, `mainnet.auren.im`, mirrored on `krl.kr`). You join them rather than create them. See [Networks](networks.md).
+
+**Does a node runner get their own network or address?** No. Running a node joins the one network and helps keep it running; it does not create a new network or a new address. This is how other blockchains work too. See [Networks](networks.md).
 
 ## Money
 

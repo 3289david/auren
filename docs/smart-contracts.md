@@ -6,7 +6,7 @@ AUREN runs an Ethereum-compatible virtual machine, so the tools you already know
 
 | | Devnet | Testnet | Mainnet |
 |---|---|---|---|
-| RPC URL | `http://NODE:9650/rpc` | a testnet node | a mainnet node |
+| RPC URL | `https://devnet.auren.im/rpc` | `https://testnet.auren.im/rpc` | `https://mainnet.auren.im/rpc` |
 | Chain ID | 77001 | 77002 | 77000 |
 | Currency | AUR | AUR | AUR |
 
@@ -22,7 +22,7 @@ An EVM account balance is shown in **wei**. 1 AUR = 10^18 wei in the EVM, and 1 
 // hardhat.config.js
 module.exports = {
   solidity: '0.8.20',
-  networks: { auren: { url: 'http://127.0.0.1:9650/rpc', chainId: 77001, accounts: [process.env.KEY] } },
+  networks: { auren: { url: 'https://devnet.auren.im/rpc', chainId: 77001, accounts: [process.env.KEY] } },
 };
 ```
 
@@ -34,7 +34,7 @@ npx hardhat run scripts/deploy.js --network auren
 
 ```js
 const { ethers } = require('ethers');
-const provider = new ethers.JsonRpcProvider('http://127.0.0.1:9650/rpc', 77001);
+const provider = new ethers.JsonRpcProvider('https://devnet.auren.im/rpc', 77001);
 const signer = new ethers.Wallet(process.env.KEY, provider);
 const factory = new ethers.ContractFactory(abi, bytecode, signer);
 const contract = await factory.deploy();

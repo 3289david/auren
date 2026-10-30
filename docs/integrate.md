@@ -16,7 +16,7 @@ Amounts everywhere are decimal strings in **sparks**: 1 AUR = 1,000,000,000 spar
 
 ## The API
 
-Every node serves one port (default `9650`):
+Every network has two public addresses that serve the same API (the second is a mirror):
 
 - **REST** for reads, such as `GET /status`, `/account/{address}`, `/tx/{hash}`, `/tlds`.
 - **JSON-RPC 2.0** at `POST /rpc` for everything, including sending transactions.
@@ -25,9 +25,9 @@ Every node serves one port (default `9650`):
 The full, machine-readable reference is the [OpenAPI file](https://github.com/3289david/auren/blob/main/website/api/openapi.json). Browse the methods in [rpc-api.md](rpc-api.md).
 
 ```bash
-curl http://NODE:9650/status
-curl http://NODE:9650/account/daur1...
-curl -X POST http://NODE:9650/rpc -H 'content-type: application/json' \
+curl https://testnet.auren.im/status
+curl https://devnet.auren.im/account/daur1...
+curl -X POST https://testnet.auren.im/rpc -H 'content-type: application/json' \
   -d '{"jsonrpc":"2.0","id":1,"method":"aur_status","params":[]}'
 ```
 
@@ -44,7 +44,7 @@ JavaScript:
 
 ```js
 const { Client, Wallet } = require('./sdk/js');
-const node = new Client('http://127.0.0.1:9650');
+const node = new Client('https://testnet.auren.im');
 const wallet = Wallet.generate('daur');            // or Wallet.fromSeed(seedHex, 'daur')
 console.log(wallet.address, await node.balance(wallet.address));
 await wallet.transfer(node, 'daur1...', '1.5');    // amounts in AUR
@@ -56,7 +56,7 @@ Python:
 
 ```python
 from auren import Client, Wallet
-node = Client("http://127.0.0.1:9650")
+node = Client("https://testnet.auren.im")
 wallet = Wallet.generate("daur")
 wallet.transfer(node, "daur1...", "1.5")
 wallet.register_name(node, "alice")
@@ -112,12 +112,12 @@ Reference implementations to copy: `signTx` in `src/tx.js` (JavaScript) and `Wal
 
 ## Smart contracts and Ethereum tools
 
-Point any Ethereum tool at `http://NODE:9650/rpc` with the Ethereum chain ID above. Raw Ethereum transactions are accepted. See [evm.md](evm.md).
+Point any Ethereum tool at the network address plus `/rpc` (for example `https://testnet.auren.im/rpc`) with the Ethereum chain ID above. Raw Ethereum transactions are accepted. See [evm.md](evm.md).
 
 ## Tips for wallet makers
 
 - Use **`aur_simulate`** before every send and show the user the fee and result.
 - Show amounts in AUR, never sparks. Round only for display.
 - Refuse to pay a name that resolves differently in two places (the `ambiguous` result of `aur_resolve` across namespaces).
-- Run or choose your own node for production, and pin the genesis hash.
+- Pin the genesis hash of the network you integrate with.
 - Never log seeds. Keep them encrypted at rest.

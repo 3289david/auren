@@ -24,10 +24,10 @@
 <p>Register a name like <code>myshop.aur</code> (<a href="domains.html">Names</a>). Customers can pay the name instead of a long address, and their wallet checks it for them.</p>
 <h2 id="watch-for-payments">Watch for payments</h2>
 <p>Poll the account's recent activity:</p>
-<div class="codebox"><pre><code>curl &quot;http://NODE:9650/account/YOUR_ADDRESS/txs?limit=25&quot;</code></pre></div>
+<div class="codebox"><pre><code>curl &quot;https://testnet.auren.im/account/YOUR_ADDRESS/txs?limit=25&quot;</code></pre></div>
 <p>or with the SDK:</p>
 <div class="codebox"><pre><code>const { Client } = require('./sdk/js');
-const node = new Client('http://127.0.0.1:9650');
+const node = new Client('https://testnet.auren.im');
 const seen = new Set();
 setInterval(async () =&gt; {
   const rows = await node.call('aur_getAccountTxs', ['YOUR_ADDRESS', 25]);
@@ -46,7 +46,7 @@ setInterval(async () =&gt; {
 <h2 id="refunds">Refunds</h2>
 <p>Send a normal transfer back to the <code>from</code> address of the payment.</p>
 <h2 id="safety">Safety</h2>
-<ul><li>Keep the receiving wallet's recovery key offline. For withdrawals use a separate wallet with a daily limit and trusted helpers (<a href="wallet-guide.html">Wallet guide</a>).</li><li>Run your own node for production so you do not depend on someone else's. Pin the network's genesis hash (<a href="integrate.html">Integrate</a>).</li><li>Never accept a payment as final from a transaction that is only &quot;waiting&quot;.</li></ul>
+<ul><li>Keep the receiving wallet's recovery key offline. For withdrawals use a separate wallet with a daily limit and trusted helpers (<a href="wallet-guide.html">Wallet guide</a>).</li><li>Pin the network's genesis hash (<a href="integrate.html">Integrate</a>) so you know you are talking to the right chain.</li><li>Never accept a payment as final from a transaction that is only &quot;waiting&quot;.</li></ul>
     <div class="pn"><a href="build-a-wallet.html"><small>Previous</small>Build a wallet app</a><a class="next" href="smart-contracts.html"><small>Next</small>Deploy a smart contract</a></div>
     <p class="muted" style="margin-top:28px"><a href="https://github.com/3289david/auren/blob/main/docs/accept-payments.md">Edit this page on GitHub</a></p>
   </article>

@@ -6,8 +6,7 @@
 
 | Flag | Meaning |
 |---|---|
-| `--network devnet\|testnet\|mainnet` | which network (sets the node and address format) |
-| `--rpc <url>` | use a specific node |
+| `--network devnet\|testnet\|mainnet` | which network (default testnet) |
 | `--from <key name>` | which wallet signs |
 | `--simulate` | preview only, send nothing |
 | `--no-wait` | do not wait for the block |

@@ -9,3 +9,5 @@ dist/
 website/downloads/
 .claude/
 *.keystore
+__pycache__/
+*.pyc

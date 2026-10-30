@@ -4,7 +4,7 @@
 
 - Check your internet connection.
 - Pick a network in the selector and press **Connect**.
-- If the message says there is no public node for that network yet, that network is not reachable right now. Mainnet has not launched. You can run your own node ([Run a node](RUN-A-NODE.md)) or choose **Custom node…** and enter the address of one.
+- If the message says the network is not reachable, its public address is not answering right now. Try again in a minute, or pick the other network. Mainnet has not launched yet.
 
 ## "That password did not work"
 
@@ -42,7 +42,6 @@ Allow installs from this source when Android asks. The node app needs a 64-bit p
 
 - Check you chose the right network.
 - If you see a message about genesis, you may have old data from another chain. Use a new data folder (`--home`).
-- A devnet on your computer is reachable from a phone only at your computer's network address, not `127.0.0.1`.
 
 ## Still stuck
 

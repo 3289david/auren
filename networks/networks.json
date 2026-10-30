@@ -3,28 +3,44 @@
     "chainId": "auren-devnet-1",
     "addressPrefix": "daur",
     "rpc": [
-      "http://127.0.0.1:9650"
+      "https://devnet.auren.im",
+      "https://devnet.krl.kr"
     ],
-    "faucet": "http://127.0.0.1:9690",
-    "seeds": [],
-    "description": "Local development network. Fully deterministic, publicly known keys. Never hold value here.",
+    "faucet": "https://devnet.auren.im/faucet",
+    "seeds": [
+      "https://devnet.auren.im",
+      "https://devnet.krl.kr"
+    ],
+    "description": "The AUREN devnet: the early-features network. It may be reset.",
     "genesisHash": "742ebeb16dae7032e92612ca8b6e8ff232b0e02672637cb6d5e0c2c72cc4a543"
   },
   "testnet": {
     "chainId": "auren-testnet-1",
     "addressPrefix": "taur",
-    "rpc": [],
-    "faucet": null,
-    "seeds": [],
-    "description": "Public testnet. Generate genesis + keys with `npm run gen:testnet`, then publish the seed/RPC URLs here.",
+    "rpc": [
+      "https://testnet.auren.im",
+      "https://testnet.krl.kr"
+    ],
+    "faucet": "https://testnet.auren.im/faucet",
+    "seeds": [
+      "https://testnet.auren.im",
+      "https://testnet.krl.kr"
+    ],
+    "description": "The AUREN testnet: the official place to try everything before mainnet.",
     "genesisHash": "59e1ba3e7f3346f02039d8c9dda3e679492c44f9694b4b6e2c7615315ac73c87"
   },
   "mainnet": {
     "chainId": "auren-mainnet-1",
     "addressPrefix": "aur",
-    "rpc": [],
+    "rpc": [
+      "https://mainnet.auren.im",
+      "https://mainnet.krl.kr"
+    ],
     "faucet": null,
-    "seeds": [],
-    "description": "NOT LAUNCHED. See networks/mainnet/README.md for the launch checklist and genesis ceremony."
+    "seeds": [
+      "https://mainnet.auren.im",
+      "https://mainnet.krl.kr"
+    ],
+    "description": "The AUREN mainnet. Not launched yet: see networks/mainnet/README.md for the launch checklist."
   }
 }

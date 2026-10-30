@@ -19,7 +19,7 @@
 <h1 id="command-line-reference">Command-line reference</h1>
 <p><code>aurenctl</code> is the AUREN wallet and chain tool for the terminal. Run it as <code>node bin/aurenctl.js …</code>, or <code>./auren ctl …</code> (the launcher), or <code>AUREN-Node.exe ctl …</code> from the Windows app.</p>
 <h2 id="global-flags">Global flags</h2>
-<div class="table-wrap"><table><thead><tr><th>Flag</th><th>Meaning</th></tr></thead><tbody><tr><td><code>--network devnet|testnet|mainnet</code></td><td>which network (sets the node and address format)</td></tr><tr><td><code>--rpc &lt;url&gt;</code></td><td>use a specific node</td></tr><tr><td><code>--from &lt;key name&gt;</code></td><td>which wallet signs</td></tr><tr><td><code>--simulate</code></td><td>preview only, send nothing</td></tr><tr><td><code>--no-wait</code></td><td>do not wait for the block</td></tr><tr><td><code>--tip &lt;AUR&gt;</code></td><td>pay an extra tip</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Flag</th><th>Meaning</th></tr></thead><tbody><tr><td><code>--network devnet|testnet|mainnet</code></td><td>which network (default testnet)</td></tr><tr><td><code>--from &lt;key name&gt;</code></td><td>which wallet signs</td></tr><tr><td><code>--simulate</code></td><td>preview only, send nothing</td></tr><tr><td><code>--no-wait</code></td><td>do not wait for the block</td></tr><tr><td><code>--tip &lt;AUR&gt;</code></td><td>pay an extra tip</td></tr></tbody></table></div>
 <p>Amounts are in AUR (up to 9 decimals). Passwords are read from the <code>AUREN_PASSWORD</code> environment variable or prompted.</p>
 <h2 id="wallets">Wallets</h2>
 <div class="codebox"><pre><code>aurenctl keys new me          # create an encrypted wallet named &quot;me&quot;

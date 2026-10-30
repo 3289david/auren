@@ -18,7 +18,7 @@ Thanks for helping. A few rules keep a consensus-critical codebase healthy.
 ```bash
 npm test            # unit tests + 4-node integration test (~10 s)
 npm run bench       # check you did not regress execution speed
-npm run devnet      # manual testing; open http://127.0.0.1:8080/explorer.html
+npm run devnet      # manual testing on your own machine (contributors only)
 ```
 
 Keep pull requests small and focused; include tests that fail without your change.

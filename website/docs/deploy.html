@@ -28,20 +28,20 @@
 <h2 id="2-start-the-validators">2. Start the validators</h2>
 <p>On each host (replace the repo path):</p>
 <div class="codebox"><pre><code>node bin/auren-node.js start --home ~/nodeN --rpc-host 0.0.0.0 --website \
-  --self-url http://&lt;this-host-public-ip&gt;:9650 \
-  --peers http://&lt;ip-of-node0&gt;:9650,http://&lt;ip-of-node1&gt;:9650,http://&lt;ip-of-node2&gt;:9650</code></pre></div>
+  --self-url &lt;this server's address&gt; \
+  --peers &lt;the other validators&gt;</code></pre></div>
 <p>Open TCP 9650 between the validators (security group allow-list by IP). Use <code>deploy/auren-node.service</code> to keep it running. <b>One instance per consensus key, ever.</b></p>
 <p>All nodes must be up within a few minutes of <code>genesisTime</code> (printed by <code>gen:testnet</code>).</p>
 <h2 id="3-verify-it-is-one-network">3. Verify it is one network</h2>
-<div class="codebox"><pre><code>node scripts/verify-network.js http://ip0:9650 http://ip1:9650 http://ip2:9650 http://ip3:9650</code></pre></div>
+<div class="codebox"><pre><code>node scripts/verify-network.js &lt;the four validator servers&gt;</code></pre></div>
 <p>Passes only if all nodes share the genesis hash and agree on a block hash and state root at a common height, finality certificates exist, and no node lags.</p>
 <h2 id="4-public-rpc-wallet-and-explorer-over-https">4. Public RPC, wallet and explorer over HTTPS</h2>
 <p>Put <code>deploy/Caddyfile</code> in front of one or two nodes (not the validators if you can avoid it: run separate full nodes with <code>--website</code> that peer with them). The node serves the landing page, <code>/wallet.html</code> and <code>/explorer.html</code> itself, and the browser pages automatically use the origin they were loaded from as the RPC URL, so there is nothing else to configure.</p>
 <div class="codebox"><pre><code>node bin/auren-node.js init --network testnet --home /var/lib/auren --full-node
-node bin/auren-node.js start --home /var/lib/auren --rpc-host 127.0.0.1 --website --peers http://ip0:9650,...</code></pre></div>
+node bin/auren-node.js start --home /var/lib/auren --website --peers &lt;the other validators&gt;</code></pre></div>
 <p>Block <code>/p2p/*</code> at the proxy (the Caddyfile does).</p>
 <h2 id="5-faucet">5. Faucet</h2>
-<div class="codebox"><pre><code>node bin/auren-faucet.js --rpc http://127.0.0.1:9650 \
+<div class="codebox"><pre><code>node bin/auren-faucet.js --rpc &lt;the node on this server&gt; \
   --key-file networks/testnet/_private/faucet.json --port 9690 --amount 100 --cooldown-sec 86400</code></pre></div>
 <p>Put the faucet's URL into <code>networks/networks.json</code> (<code>testnet.faucet</code>, <code>testnet.rpc</code>, <code>testnet.seeds</code>) and into the wallet's faucet setting if it is not on the same host name (browser storage key <code>auren.faucet</code>). The faucet refuses to run on a network whose genesis says <code>mainnet</code>.</p>
 <h2 id="6-invite-outside-validators">6. Invite outside validators</h2>

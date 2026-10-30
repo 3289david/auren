@@ -8,14 +8,14 @@ Code: `src/evm/` (interpreter `vm.js`, journaled state `state.js`, chain glue `h
 
 | | devnet | testnet | mainnet |
 |---|---|---|---|
-| RPC URL | `http://127.0.0.1:9650` | your node | not launched |
+| RPC URL | `https://devnet.auren.im` | `https://testnet.auren.im` | `https://mainnet.auren.im` |
 | Chain ID | **77001** | 77002 | 77000 |
 | Currency | AUR, **18 decimals** | AUR | AUR |
 
 (Check chainlist.org for conflicts before any public launch; these numbers are placeholders.)
 
 ```js
-const provider = new ethers.JsonRpcProvider('http://127.0.0.1:9650', { chainId: 77001, name: 'auren-devnet' });
+const provider = new ethers.JsonRpcProvider('https://devnet.auren.im', { chainId: 77001, name: 'auren-devnet' });
 const wallet = new ethers.Wallet(privateKey, provider);
 await (await wallet.sendTransaction({ data: initcode })).wait();   // deploy
 ```

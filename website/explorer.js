@@ -261,7 +261,7 @@
     } catch (e) {
       if (route) { $('view').innerHTML = `${back}<div class="msg err">Not found: ${esc(e.message)}</div>`; return; }
       $('conn').className = 'tag no'; $('conn').textContent = 'disconnected';
-      $('stats').innerHTML = `<div class="msg err">Can't connect to the network. Check your internet connection, then pick a network above and press Connect.</div>`;
+      $('stats').innerHTML = `<div class="msg err">Can't connect to the network. Check your internet connection, then pick a network above.</div>`;
     }
     if (status) { $('conn').className = 'tag live'; $('conn').textContent = `${status.network} · connected`; }
   }
@@ -303,7 +303,7 @@
     const m = $('fmsg'); m.className = 'msg'; m.textContent = 'Requesting…';
     try {
       const u = new URL(rpc.url);
-      const r = await fetch(`${u.protocol}//${u.hostname}:9690/drip`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ address: $('faddr').value.trim() }) });
+      const r = await fetch(`${Aur.NETWORKS[status.network].faucet}/drip`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ address: $('faddr').value.trim() }) });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error);
       m.innerHTML = `Sent ${esc(j.amount)} · ${link('tx=' + j.hash, j.hash)}`;

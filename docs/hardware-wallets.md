@@ -13,8 +13,8 @@ How it works on-chain (`src/crypto.js verifyWebAuthn`, `src/tx.js`):
 ## Things to know
 
 - **Not exportable, so use guardians.** A hardware key cannot be backed up. Losing the device loses the key; set guardians (Security tab) so the account can be recovered to a new key.
-- **Bound to the site name.** WebAuthn credentials are scoped to the host name (relying-party ID) of the page that created them (`localhost`, `wallet.example.org`). They cannot be used from another host name, which is also what stops a phishing site from asking your key to sign.
-- **HTTPS or localhost only.** Browsers expose WebAuthn only in secure contexts.
+- **Bound to the site name.** WebAuthn credentials are scoped to the host name (relying-party ID) of the page that created them (for example `app.auren.im`). They cannot be used from another host name, which is also what stops a phishing site from asking your key to sign.
+- **Secure pages only.** Browsers expose WebAuthn only on secure (HTTPS) pages. The AUREN apps and website are secure.
 - **Signature size:** about 200-300 bytes more than Ed25519 per transaction (authenticator data + client data). Fine at current block limits; this is a measured trade-off, not free.
 - **Approval prompt shows less than the review screen.** The device usually shows only "sign in to <site>". The wallet's review dialog (with the node's dry-run) is the place where you check amounts and recipients, then the touch confirms.
 
@@ -28,7 +28,7 @@ How it works on-chain (`src/crypto.js verifyWebAuthn`, `src/tx.js`):
 
 **Not covered by automated tests:** a physical security key or biometric prompt (a test runner cannot touch a YubiKey), and browser-specific differences. Manual checklist before relying on it:
 
-1. Open the wallet on `http://localhost:<port>` or HTTPS in current Chrome/Edge/Safari/Firefox.
+1. Open the wallet (website or app) in current Chrome, Edge, Safari or Firefox.
 2. "Hardware key / passkey" → create; the device prompts; the wallet shows an address.
 3. Fund it from the faucet; send a transaction; the device prompts; the transaction confirms.
 4. Set a guardian, and complete a recovery to another key.

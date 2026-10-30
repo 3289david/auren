@@ -5,7 +5,7 @@ Every node serves HTTP on its RPC port (default `9650`). CORS is open (`*`) for 
 ## JSON-RPC 2.0: `POST /rpc`
 
 ```bash
-curl -s localhost:9650/rpc -H 'content-type: application/json' \
+curl -s https://testnet.auren.im/rpc -H 'content-type: application/json' \
   -d '{"jsonrpc":"2.0","id":1,"method":"aur_status","params":[]}'
 ```
 
@@ -43,7 +43,7 @@ Execution failure codes (in the receipt, `status: 0`): `INSUFFICIENT_BALANCE`, `
 const { RpcClient, Wallet } = require('./src/client');
 const { Keypair } = require('./src/crypto');
 
-const rpc = new RpcClient('http://127.0.0.1:9650');
+const rpc = new RpcClient('https://testnet.auren.im');
 const st = await rpc.status();
 const wallet = new Wallet(Keypair.fromSeedHex(process.env.SEED), st.addressPrefix);
 const res = await wallet.send(rpc, 'transfer', { to: 'daur1…', amount: '1500000000' });   // waits for inclusion

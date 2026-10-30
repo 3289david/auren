@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.0
+
+- **Official addresses only.** Each network has one public address plus a mirror: devnet `devnet.auren.im` / `devnet.krl.kr`, testnet `testnet.auren.im` / `testnet.krl.kr`, mainnet `mainnet.auren.im` / `mainnet.krl.kr`. Wallets, the explorer, the Names page, the CLI, the SDK examples and both apps connect only to these. The "custom node" option, the node address box, `--rpc`, and every localhost address in the interface and docs are gone.
+- Android apps no longer start a local web server: the wallet pages are served inside the app. The Windows wallet opens in its own app window.
+- Faucets are reached at `/faucet` on the network address. `deploy/Caddyfile` serves all six names.
+- Docs: Networks page explains that node runners join the one network and do not get new addresses.
+
 ## 0.7.0
 
 - **SDKs and API for integrators:** `sdk/js` (Node) and `sdk/python/auren.py`, both dependency-free, with identical signatures (a test checks it); OpenAPI spec at `website/api/openapi.json`; `docs/integrate.md` and `docs/developer-quickstart.md`.

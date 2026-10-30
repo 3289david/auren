@@ -21,7 +21,7 @@ Rules:
 - A TLD is 3 to 24 characters: `a-z` and `0-9`, starting with a letter.
 - One level only: `a.b.c` is not valid.
 - `alice.aur` and `alice.david` are different names with different owners. They never collide.
-- Real-world TLDs and country codes (`com`, `org`, `eth`, `btc`, `uk`, `io`, `google`, `localhost`, ...) cannot be created, so nobody can pretend to be a name from another system.
+- Real-world TLDs and country codes (`com`, `org`, `eth`, `btc`, `uk`, `io`, `google`, ...) cannot be created, so nobody can pretend to be a name from another system.
 
 ## Register a domain
 

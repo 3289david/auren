@@ -30,9 +30,17 @@ const runScript = (script, args) => {
   process.argv = [process.execPath, script, ...args];
   Module.createRequire(script)(script);
 };
+// Open the wallet in its own app window (no address bar) when Edge or Chrome is installed, else in the default browser.
 const openUrl = (u) => {
-  if (process.platform === 'win32') spawn('cmd', ['/c', 'start', '', u], { stdio: 'ignore', detached: true }).unref();
-  else spawn(process.platform === 'darwin' ? 'open' : 'xdg-open', [u], { stdio: 'ignore', detached: true }).unref();
+  if (process.platform === 'win32') {
+    const roots = [process.env['ProgramFiles(x86)'], process.env.ProgramFiles, process.env.LOCALAPPDATA].filter(Boolean);
+    const rel = ['Microsoft\Edge\Application\msedge.exe', 'Google\Chrome\Application\chrome.exe'];
+    for (const r of roots) for (const f of rel) {
+      const exe = path.join(r, f);
+      if (fs.existsSync(exe)) { spawn(exe, ['--app=' + u, '--window-size=480,820'], { stdio: 'ignore', detached: true }).unref(); return; }
+    }
+    spawn('cmd', ['/c', 'start', '', u], { stdio: 'ignore', detached: true }).unref();
+  } else spawn(process.platform === 'darwin' ? 'open' : 'xdg-open', [u], { stdio: 'ignore', detached: true }).unref();
 };
 const ask = (q) => new Promise((res) => {
   const rl = require('node:readline').createInterface({ input: process.stdin, output: process.stdout });
@@ -57,23 +65,33 @@ function wallet() {
   server.on('error', (e) => { if (e.code === 'EADDRINUSE') listen(0); else throw e; });
   server.on('listening', () => {
     const url = `http://127.0.0.1:${server.address().port}/wallet.html`;
-    console.log(`AUREN Wallet is open at ${url}\nYour keys stay in your browser on this computer. Close this window to quit.`);
+    console.log('AUREN Wallet is open. Your keys stay on this computer. Close this window to quit.');
     openUrl(url);
   });
   listen(8787);
 }
 
+const C = process.stdout.isTTY ? { b: '[1m', d: '[2m', g: '[33m', r: '[0m' } : { b: '', d: '', g: '', r: '' };
+
 async function node(args) {
   const auren = path.join(appDir, 'bin', 'auren.js');
   if (args.length) return runScript(auren, args);
-  console.log('AUREN node\n\n  1) Join the testnet\n  2) Join the testnet and earn AUR\n  3) Join the devnet (local development network)\n  q) Quit\n');
-  const c = await ask('Choose: ');
-  if (c === '1') return runScript(auren, ['join', 'testnet']);
-  if (c === '2') {
-    const a = await ask('Address to receive rewards (Enter = the node address): ');
+  console.log(`
+  ${C.g}${C.b}AUREN${C.r}  ${C.b}Node${C.r}
+  ${C.d}Help run the network and earn AUR while it runs.${C.r}
+`);
+  console.log(`  ${C.b}1${C.r}  Join the testnet and earn AUR  ${C.d}(recommended)${C.r}`);
+  console.log(`  ${C.b}2${C.r}  Join the testnet without earning`);
+  console.log(`  ${C.b}3${C.r}  Join the devnet`);
+  console.log(`  ${C.b}q${C.r}  Quit
+`);
+  const c = await ask('  Choose: ');
+  if (c === '1' || c === '') {
+    const a = await ask(`  Address for rewards ${C.d}(press Enter to use the node's own)${C.r}: `);
     return runScript(auren, ['join', 'testnet', '--earn', ...(a ? [a] : [])]);
   }
-  if (c === '3') return runScript(auren, ['join', 'devnet']);
+  if (c === '2') return runScript(auren, ['join', 'testnet']);
+  if (c === '3') return runScript(auren, ['join', 'devnet', '--earn']);
 }
 
 (async () => {
