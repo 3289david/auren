@@ -1,0 +1,23 @@
+# /etc/systemd/system/auren-node.service
+# Run as an unprivileged user. Keep exactly ONE instance per validator key: two instances double-sign and are slashed.
+[Unit]
+Description=AUREN node
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=auren
+WorkingDirectory=/opt/auren
+ExecStart=/usr/bin/node bin/auren-node.js start --home /var/lib/auren --rpc-host 127.0.0.1
+Restart=on-failure
+RestartSec=3
+LimitNOFILE=65536
+# hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/auren
+PrivateTmp=true
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+node_modules/
+.devnet/
+networks/testnet/_private/
+networks/*/_private/
+*.log
+.env
+keystore/
+dist/
+website/downloads/
+.claude/
+*.keystore

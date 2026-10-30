@@ -1,0 +1,8 @@
+[
+  { "label": "EXAMPLE ONLY: replace every address with a real aur1… address before any ceremony", "address": "REPLACE_aur1_validator_operator_1", "amount": "1000000" },
+  { "label": "validator operator 2 (must cover its gentx self-stake)", "address": "REPLACE_aur1_validator_operator_2", "amount": "1000000" },
+  { "label": "validator operator 3", "address": "REPLACE_aur1_validator_operator_3", "amount": "1000000" },
+  { "label": "validator operator 4", "address": "REPLACE_aur1_validator_operator_4", "amount": "1000000" },
+  { "label": "foundation treasury (proposal: 20%, vests over 4 years)", "address": "REPLACE_aur1_treasury", "amount": "200000000", "vesting": { "cliffYears": 0, "years": 4 } },
+  { "label": "core contributors (proposal: 15%, 1-year cliff, 4 years)", "address": "REPLACE_aur1_contributors", "amount": "150000000", "vesting": { "cliffYears": 1, "years": 4 } }
+]

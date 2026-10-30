@@ -1,0 +1,29 @@
+{
+  "chainId": "auren-testnet-1",
+  "network": "testnet",
+  "addressPrefix": "taur",
+  "genesisHash": "7e7f816951ff109f14db7cb1e74eae2b7d0992ff2b3a44717433d320e32ef29c",
+  "genesisTime": 1793180507446,
+  "validators": [
+    {
+      "operator": "taur1qp5nwzxhqqenksm7t6zqglpgvdhnusemm5rgec65",
+      "moniker": "testnet-validator-0",
+      "consPub": "7a9bd5011abd7ade2bc4b70eaa469b24ed07d545010aa2c53e1c2f9dad05e41a"
+    },
+    {
+      "operator": "taur1qp78vzlefj9fnl9mss5cpvhtgazmhlqrssf9espj",
+      "moniker": "testnet-validator-1",
+      "consPub": "e45a75a55eb3a522a42b455009b88afc7173783432a9d861dfa0dcc931444274"
+    },
+    {
+      "operator": "taur1qrn0cl07chlc3kjumkm3ntv8pdwsdx5rp5pd6zdn",
+      "moniker": "testnet-validator-2",
+      "consPub": "99b37f934a9f9d632c366d1687fe7efe928d9f8f9f763223d2b56dfd49f22b9a"
+    },
+    {
+      "operator": "taur1qzfq38tqjudhpzp0ma7c6xeeze43cpw7cqhpzxsy",
+      "moniker": "testnet-validator-3",
+      "consPub": "87babef57324a05f4af19e2255b784ab5d4650d1dc8c21fad509f3b3b22ed758"
+    }
+  ]
+}

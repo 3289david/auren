@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 5s
+scrape_configs:
+  - job_name: auren
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["devnet:9650", "devnet:9651", "devnet:9652", "devnet:9653"]

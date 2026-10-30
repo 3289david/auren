@@ -1,0 +1,95 @@
+{
+  "chainId": "auren-testnet-1",
+  "network": "testnet",
+  "genesisTime": 1793180507446,
+  "params": {
+    "addressPrefix": "taur",
+    "minSelfStake": "10000000000000",
+    "blockTimeMs": 2000,
+    "roundTimeoutMs": 4000,
+    "maxValidators": 100,
+    "maxVotingPowerBps": 10000,
+    "unbondingBlocks": 43200,
+    "jailBlocks": 1800,
+    "slashing": {
+      "doubleSignBps": 500,
+      "downtimeBps": 10,
+      "downtimeWindow": 1000,
+      "maxMissedBps": 5000
+    },
+    "security": {
+      "minDelayBlocks": 1800,
+      "limitWindowBlocks": 43200,
+      "maxGuardians": 9
+    },
+    "evmChainId": 77002,
+    "governance": {
+      "votingBlocks": 43200,
+      "timelockBlocks": 7200,
+      "deposit": "1000000000000",
+      "quorumBps": 3340,
+      "thresholdBps": 5000,
+      "vetoBps": 3340
+    },
+    "tld": {
+      "price": "1000000000000",
+      "maxOwnerShareBps": 9000
+    }
+  },
+  "accounts": [
+    {
+      "address": "taur1qp5nwzxhqqenksm7t6zqglpgvdhnusemm5rgec65",
+      "balance": "100000000000000"
+    },
+    {
+      "address": "taur1qp78vzlefj9fnl9mss5cpvhtgazmhlqrssf9espj",
+      "balance": "100000000000000"
+    },
+    {
+      "address": "taur1qp90j509jscyf7jq8qrazcfhhtk76348sswaqr4m",
+      "balance": "100000000000000000"
+    },
+    {
+      "address": "taur1qqpfpdcpt9p2al44y4y5zmjpyjvd5eydmuvdzrde",
+      "balance": "200000000000000000"
+    },
+    {
+      "address": "taur1qrn0cl07chlc3kjumkm3ntv8pdwsdx5rp5pd6zdn",
+      "balance": "100000000000000"
+    },
+    {
+      "address": "taur1qzfq38tqjudhpzp0ma7c6xeeze43cpw7cqhpzxsy",
+      "balance": "100000000000000"
+    }
+  ],
+  "validators": [
+    {
+      "operator": "taur1qp5nwzxhqqenksm7t6zqglpgvdhnusemm5rgec65",
+      "consPub": "7a9bd5011abd7ade2bc4b70eaa469b24ed07d545010aa2c53e1c2f9dad05e41a",
+      "moniker": "testnet-validator-0",
+      "commissionBps": 500,
+      "selfStake": "1000000000000000"
+    },
+    {
+      "operator": "taur1qp78vzlefj9fnl9mss5cpvhtgazmhlqrssf9espj",
+      "consPub": "e45a75a55eb3a522a42b455009b88afc7173783432a9d861dfa0dcc931444274",
+      "moniker": "testnet-validator-1",
+      "commissionBps": 500,
+      "selfStake": "1000000000000000"
+    },
+    {
+      "operator": "taur1qrn0cl07chlc3kjumkm3ntv8pdwsdx5rp5pd6zdn",
+      "consPub": "99b37f934a9f9d632c366d1687fe7efe928d9f8f9f763223d2b56dfd49f22b9a",
+      "moniker": "testnet-validator-2",
+      "commissionBps": 500,
+      "selfStake": "1000000000000000"
+    },
+    {
+      "operator": "taur1qzfq38tqjudhpzp0ma7c6xeeze43cpw7cqhpzxsy",
+      "consPub": "87babef57324a05f4af19e2255b784ab5d4650d1dc8c21fad509f3b3b22ed758",
+      "moniker": "testnet-validator-3",
+      "commissionBps": 500,
+      "selfStake": "1000000000000000"
+    }
+  ]
+}

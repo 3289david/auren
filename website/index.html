@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AUREN: money and apps on a network anyone can check</title>
+<meta name="description" content="AUREN is a public network with its own coin, AUR. Send it in seconds, earn rewards by staking, and use apps, all checked by independent validators instead of one company.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="AUREN home">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>
+      AUREN
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#what">What you can do</a>
+      <a href="#start">Get started</a>
+      <a href="#faq">FAQ</a>
+      <a href="run-a-node.html">Run a node</a>
+      <a href="explorer.html">Explore</a>
+      <a class="btn small primary" href="wallet.html">Open wallet</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+<div class="wrap hero">
+  <div class="hero-grid">
+    <div>
+      <div class="eyebrow">AUR · a public network</div>
+      <h1>Money and apps on a network <em>anyone can check</em>.</h1>
+      <p class="lead">AUREN is a public network with its own coin, <b>AUR</b>. Send it in seconds, earn rewards by staking it, and use apps, all confirmed by independent validators around the world instead of a single company.</p>
+      <div class="cta">
+        <a class="btn primary" href="wallet.html">Open wallet</a>
+        <a class="btn" href="explorer.html">Explore the network</a>
+      </div>
+      <div class="status-banner"><b>This is a test network.</b> Coins here are free to get and have no monetary value, so you can try everything without risk.</div>
+    </div>
+
+    <aside class="live" aria-live="polite" aria-label="Live network status">
+      <div class="live-head"><span><span id="dot" class="dot"></span><span id="net">network</span></span><span>live</span></div>
+      <div class="eyebrow">Blocks confirmed</div>
+      <div class="big" id="height">&ndash;</div>
+      <div class="kv">
+        <div><small>Cost to send</small><span id="fee">&ndash;</span></div>
+        <div><small>Validators</small><span id="vals">&ndash;</span></div>
+        <div><small>AUR in circulation</small><span id="supply">&ndash;</span></div>
+        <div><small>AUR staked</small><span id="staked">&ndash;</span></div>
+      </div>
+      <div class="chain-strip" id="strip"></div>
+      <div class="offline" id="offline" style="display:none">Connecting to the network…</div>
+    </aside>
+  </div>
+</div>
+
+<section id="what">
+  <div class="wrap">
+    <div class="eyebrow">What you can do</div>
+    <h2>Everyday things, done on your own terms</h2>
+    <p class="sub">You hold your own keys. Nobody can freeze your account or change the rules behind your back.</p>
+    <div class="grid g4">
+      <article class="card"><div class="icon">↗</div><h3>Send and receive</h3><p>Pay anyone, anywhere, in seconds. You see the exact fee before you confirm, and it stays small and predictable.</p></article>
+      <article class="card"><div class="icon">%</div><h3>Earn by staking</h3><p>Put your AUR to work backing the network and earn rewards. You can take it back out at any time.</p></article>
+      <article class="card"><div class="icon">@</div><h3>Easy names</h3><p>Share <code>alice.aur</code> instead of a long string of letters and numbers. Names are checked so you can't be tricked into paying the wrong person.</p></article>
+      <article class="card"><div class="icon">{ }</div><h3>Use apps</h3><p>Run smart-contract apps on AUREN. It works with the wallets and tools many people already use.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="trust">
+  <div class="wrap">
+    <div class="eyebrow">Why you can trust it</div>
+    <h2>You don't have to take our word for it</h2>
+    <div class="grid g3" style="margin-top:28px">
+      <article class="card"><h3 style="margin-top:0">Confirmed for good in seconds</h3><p>Once a payment is confirmed by two thirds of the validators, it is final. No waiting around, and no taking it back.</p></article>
+      <article class="card"><h3 style="margin-top:0">Run by many, not one</h3><p>Independent validators confirm every block. The <a href="explorer.html?validators=1">validators page</a> shows who they are and how power is spread.</p></article>
+      <article class="card"><h3 style="margin-top:0">Built-in safety net</h3><p>Set a daily spending limit, pick trusted friends who can help you recover your account, and preview any payment before you sign it.</p></article>
+    </div>
+  </div>
+</section>
+
+<section id="start">
+  <div class="wrap">
+    <div class="eyebrow">Get started</div>
+    <h2>Up and running in three steps</h2>
+    <div class="steps" style="grid-template-columns:repeat(3,1fr);margin-top:34px">
+      <div class="step"><h3>Open the wallet</h3><p>Create a wallet in your browser. Your keys stay on your device. You can even use a security key or your phone's passkey.</p></div>
+      <div class="step"><h3>Get free test coins</h3><p>Press <b>Get test AUR</b> in the wallet. They arrive in a few seconds so you can try everything.</p></div>
+      <div class="step"><h3>Send, stake, explore</h3><p>Send some to a friend, stake it, or look up any payment on the <a href="explorer.html">network explorer</a>.</p></div>
+    </div>
+    <div class="cta" style="margin-top:34px"><a class="btn primary" href="wallet.html">Open wallet</a><a class="btn" href="explorer.html">Explore the network</a></div>
+  </div>
+</section>
+
+<section id="node">
+  <div class="wrap" style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between">
+    <div style="max-width:60ch"><div class="eyebrow">Help run the network</div><h2 style="margin-bottom:8px">Run a node on your own computer</h2><p class="sub" style="margin:0">Free, takes about five minutes, and works on Windows, Mac, Linux and Android. Every node makes the network harder to control.</p></div>
+    <a class="btn primary" href="run-a-node.html">Run a node</a>
+  </div>
+</section>
+
+<section class="alt" id="faq">
+  <div class="wrap">
+    <div class="eyebrow">Questions</div>
+    <h2>Good to know</h2>
+    <div class="grid g2" style="margin-top:28px">
+      <article class="card"><h3 style="margin-top:0">Is AUR real money?</h3><p>Not yet. This is a test network, so the coins are free and have no value. That's what makes it safe to try.</p></article>
+      <article class="card"><h3 style="margin-top:0">What if I lose my password?</h3><p>Nobody, including us, can reset it for you. Write down your recovery phrase and keep it offline. You can also add trusted people who can help you recover your account.</p></article>
+      <article class="card"><h3 style="margin-top:0">How much does it cost to use?</h3><p>Every action shows its fee before you confirm. Most of it is permanently removed from supply rather than paid to a company.</p></article>
+      <article class="card"><h3 style="margin-top:0">Who runs AUREN?</h3><p>A set of independent validators confirm every block. Anyone can look at what they did on the <a href="explorer.html">explorer</a>.</p></article>
+      <article class="card"><h3 style="margin-top:0">Is it safe?</h3><p>It is new software that is still being tested. Until it has been independently reviewed, only use test coins and never anything you can't afford to lose.</p></article>
+      <article class="card"><h3 style="margin-top:0">Can I check it myself?</h3><p>Yes. Every block, payment, account and validator is public on the <a href="explorer.html">explorer</a>.</p></article>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="cols">
+      <div><h4>AUREN</h4><a href="wallet.html">Wallet</a><a href="explorer.html">Explorer</a><a href="explorer.html?validators=1">Validators</a></div>
+      <div><h4>Explore</h4><a href="explorer.html?blocks=1">Latest blocks</a><a href="explorer.html?txs=1">Latest payments</a><a href="explorer.html?rich=1">Top accounts</a><a href="explorer.html?proposals=1">Community votes</a></div>
+    </div>
+    <p class="legal">AUREN is a test network. Test coins have no monetary value. Nothing here is financial, legal or tax advice.</p>
+  </div>
+</footer>
+
+<script src="aurlib.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

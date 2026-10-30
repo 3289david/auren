@@ -1,0 +1,29 @@
+{
+  "chainId": "auren-devnet-1",
+  "network": "devnet",
+  "addressPrefix": "daur",
+  "genesisHash": "535c33b35ab045ea94870178d2b10d3113447750cef039613a54f854bab1462e",
+  "genesisTime": 1767225600000,
+  "validators": [
+    {
+      "operator": "daur1qq5sl9fk2mfd8seknrs738wcypfz56vhh5ulva9p",
+      "moniker": "devnet-validator-0",
+      "consPub": "2ec1094ce40d2515855cea6f1d7c37a11dbd22900e4fb887eac5629b6758295a"
+    },
+    {
+      "operator": "daur1qzay55z85wxf7z8my5ucujumv43vxjsfhglm39fd",
+      "moniker": "devnet-validator-1",
+      "consPub": "51f1f0e74d6a352bf169dcd6a2ad95fe64387ea1ea1873ebad8c125445d4decd"
+    },
+    {
+      "operator": "daur1qqdnksuns6lnumy54wa6a5v0fuj62sahdv074y26",
+      "moniker": "devnet-validator-2",
+      "consPub": "6fa86c6ca688b51e47e69eb6ec1ee90b59e110fdf8d819c46b6df12dece979ff"
+    },
+    {
+      "operator": "daur1qz8n93n3lwvq8anxtgwvnlkc8fhk3dmddgtulmra",
+      "moniker": "devnet-validator-3",
+      "consPub": "40f8d373d9f009d63c99ba1fb3247f82857bd85878dac32f095fe133899e68d9"
+    }
+  ]
+}

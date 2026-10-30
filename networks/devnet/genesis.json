@@ -1,0 +1,111 @@
+{
+  "chainId": "auren-devnet-1",
+  "network": "devnet",
+  "genesisTime": 1767225600000,
+  "params": {
+    "addressPrefix": "daur",
+    "minSelfStake": "1000000000000",
+    "blockTimeMs": 1000,
+    "roundTimeoutMs": 3000,
+    "blocksPerYear": 31536000,
+    "maxValidators": 21,
+    "maxVotingPowerBps": 10000,
+    "unbondingBlocks": 60,
+    "jailBlocks": 30,
+    "slashing": {
+      "doubleSignBps": 500,
+      "downtimeBps": 10,
+      "downtimeWindow": 100,
+      "maxMissedBps": 5000
+    },
+    "evmChainId": 77001,
+    "security": {
+      "minDelayBlocks": 30,
+      "limitWindowBlocks": 60,
+      "maxGuardians": 9
+    },
+    "governance": {
+      "votingBlocks": 60,
+      "timelockBlocks": 20,
+      "deposit": "100000000000",
+      "quorumBps": 3340,
+      "thresholdBps": 5000,
+      "vetoBps": 3340
+    },
+    "domain": {
+      "maxYears": 10
+    },
+    "tld": {
+      "price": "100000000000",
+      "maxOwnerShareBps": 9000
+    }
+  },
+  "accounts": [
+    {
+      "address": "daur1qpfy4jpz079w9yzkf6s5d9kzxljg290jwgsyzxu0",
+      "balance": "1000000000000000"
+    },
+    {
+      "address": "daur1qpqrq34zcdkxzyeusaf6gs39yw2pw6aegupdy2ec",
+      "balance": "100000000000000000"
+    },
+    {
+      "address": "daur1qq32pl678mdaw2wq8addmmejtxlkctl5j5qf7fqg",
+      "balance": "1000000000000000"
+    },
+    {
+      "address": "daur1qq5sl9fk2mfd8seknrs738wcypfz56vhh5ulva9p",
+      "balance": "100000000000000"
+    },
+    {
+      "address": "daur1qqdnksuns6lnumy54wa6a5v0fuj62sahdv074y26",
+      "balance": "100000000000000"
+    },
+    {
+      "address": "daur1qrqlse9j6w60tcclqjxr5yvjj0eklxup458976j9",
+      "balance": "1000000000000000"
+    },
+    {
+      "address": "daur1qz8n93n3lwvq8anxtgwvnlkc8fhk3dmddgtulmra",
+      "balance": "100000000000000"
+    },
+    {
+      "address": "daur1qzay55z85wxf7z8my5ucujumv43vxjsfhglm39fd",
+      "balance": "100000000000000"
+    },
+    {
+      "address": "daur1qzwux7krrayzemfe2trqn4kny6xynzdnwvsxhq09",
+      "balance": "1000000000000000"
+    }
+  ],
+  "validators": [
+    {
+      "operator": "daur1qq5sl9fk2mfd8seknrs738wcypfz56vhh5ulva9p",
+      "consPub": "2ec1094ce40d2515855cea6f1d7c37a11dbd22900e4fb887eac5629b6758295a",
+      "moniker": "devnet-validator-0",
+      "commissionBps": 500,
+      "selfStake": "1000000000000000"
+    },
+    {
+      "operator": "daur1qzay55z85wxf7z8my5ucujumv43vxjsfhglm39fd",
+      "consPub": "51f1f0e74d6a352bf169dcd6a2ad95fe64387ea1ea1873ebad8c125445d4decd",
+      "moniker": "devnet-validator-1",
+      "commissionBps": 500,
+      "selfStake": "1000000000000000"
+    },
+    {
+      "operator": "daur1qqdnksuns6lnumy54wa6a5v0fuj62sahdv074y26",
+      "consPub": "6fa86c6ca688b51e47e69eb6ec1ee90b59e110fdf8d819c46b6df12dece979ff",
+      "moniker": "devnet-validator-2",
+      "commissionBps": 500,
+      "selfStake": "1000000000000000"
+    },
+    {
+      "operator": "daur1qz8n93n3lwvq8anxtgwvnlkc8fhk3dmddgtulmra",
+      "consPub": "40f8d373d9f009d63c99ba1fb3247f82857bd85878dac32f095fe133899e68d9",
+      "moniker": "devnet-validator-3",
+      "commissionBps": 500,
+      "selfStake": "1000000000000000"
+    }
+  ]
+}

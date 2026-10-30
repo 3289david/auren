@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Run an AUREN node</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+    <nav class="nav-links"><a href="index.html">Home</a><a href="explorer.html">Explore</a><a class="btn small primary" href="wallet.html">Open wallet</a></nav>
+  </div>
+</header>
+
+<main class="wrap" style="padding:56px 20px">
+  <div class="eyebrow">Help run the network</div>
+  <h1 style="font-size:clamp(2rem,4.5vw,3rem)">Run an AUREN node on your own computer</h1>
+  <p class="lead">A node keeps its own copy of the network and checks every block. The more people run one, the harder AUREN is to control. It's free, works on a normal computer, and takes about five minutes.</p>
+  <div class="status-banner"><b>You join the one AUREN network</b> (testnet, devnet, and later mainnet). You don't create your own. Test coins have no monetary value.</div>
+
+  <h2 style="margin-top:40px">1. Download</h2>
+  <div class="cta">
+    <a class="btn primary" id="dl-zip" href="downloads/">Download for Windows (.zip)</a>
+    <a class="btn" id="dl-tgz" href="downloads/">Download for Mac / Linux / Android (.tar.gz)</a>
+  </div>
+  <p class="muted" id="dl-note">Small download (under 200 KB). It contains no private keys and nothing is installed system-wide.</p>
+
+  <h2 style="margin-top:40px">2. Run it</h2>
+  <div class="grid g3">
+    <article class="card"><h3 style="margin-top:0">Windows</h3>
+      <ol style="padding-left:18px;color:var(--muted)">
+        <li>Unzip the download.</li>
+        <li>Right-click <b>install\windows\Install-AUREN.ps1</b> → <b>Run with PowerShell</b>. It installs Node.js if needed and adds <b>AUREN Node</b> to your Start Menu.</li>
+        <li>Open <b>AUREN Node</b> and choose <b>Testnet</b>.</li>
+      </ol></article>
+    <article class="card"><h3 style="margin-top:0">Mac and Linux</h3>
+      <ol style="padding-left:18px;color:var(--muted)">
+        <li>Install Node.js 20 or newer from <a href="https://nodejs.org">nodejs.org</a>.</li>
+        <li>Unpack the download and open a terminal inside it.</li>
+        <li>Run <code>./auren join testnet</code></li>
+      </ol></article>
+    <article class="card"><h3 style="margin-top:0">Android</h3>
+      <ol style="padding-left:18px;color:var(--muted)">
+        <li>Install <b>Termux</b> from F-Droid.</li>
+        <li>Copy the download into Termux and unpack it.</li>
+        <li>Run <code>sh install/android/termux-setup.sh</code></li>
+      </ol>
+      <p class="muted" style="margin-bottom:0">This runs a real node through Termux. A standalone Android app isn't available yet.</p></article>
+  </div>
+
+  <h2 style="margin-top:40px">3. Check it's working</h2>
+  <p class="muted">The node window shows new blocks as they arrive. In a second window, run <code>./auren status</code> (Windows: <code>auren.cmd status</code>). You should see <b>running … in sync</b>. Your node also serves this website and the explorer on your own computer.</p>
+
+  <h2 style="margin-top:40px">Good to know</h2>
+  <div class="grid g2">
+    <article class="card"><h3 style="margin-top:0">Is it safe to leave running?</h3><p>Yes. By default your node only talks to the network and answers you; it doesn't open itself to the internet.</p></article>
+    <article class="card"><h3 style="margin-top:0">Will it use a lot of space?</h3><p>On the test network, very little. It only stores the chain's blocks.</p></article>
+    <article class="card"><h3 style="margin-top:0">Do I earn anything?</h3><p>Running a regular node helps the network but doesn't earn rewards. Earning comes from staking AUR with a validator in the wallet.</p></article>
+    <article class="card"><h3 style="margin-top:0">Stopping it</h3><p>Close the window or press Ctrl+C. Run it again any time and it picks up where it left off.</p></article>
+  </div>
+</main>
+
+<footer><div class="wrap"><p class="legal">AUREN is a test network. Test coins have no monetary value.</p></div></footer>
+<script>
+  fetch('downloads/latest.json', { cache: 'no-store' }).then((r) => r.json()).then((j) => {
+    document.getElementById('dl-zip').href = 'downloads/' + j.zip;
+    document.getElementById('dl-tgz').href = 'downloads/' + j.tgz;
+  }).catch(() => { document.getElementById('dl-note').textContent = 'Downloads are not available from this server. Get AUREN from the official site.'; });
+</script>
+</body>
+</html>

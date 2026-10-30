@@ -1,0 +1,20 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm test
+      - run: node scripts/gen-network.js --network devnet --validators 4 --deterministic --out ${{ runner.temp }}/devnet-check
+      - name: devnet genesis is reproducible
+        run: node -e "const a=require('fs').readFileSync('networks/devnet/genesis.json','utf8'),b=require('fs').readFileSync(process.argv[1]+'/genesis.json','utf8');if(a!==b){console.error('devnet genesis drifted');process.exit(1)}" "${{ runner.temp }}/devnet-check"

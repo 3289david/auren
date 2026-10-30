@@ -1,0 +1,20 @@
+{
+  "name": "auren",
+  "version": "0.1.0",
+  "description": "AUREN: an independent Layer 1 with BFT proof-of-stake, an adaptive execution fee market, and native account security.",
+  "license": "MIT",
+  "private": true,
+  "engines": { "node": ">=20" },
+  "bin": {
+    "auren-node": "bin/auren-node.js",
+    "aurenctl": "bin/aurenctl.js"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "devnet": "node scripts/devnet.js",
+    "gen:devnet": "node scripts/gen-network.js --network devnet --validators 4 --deterministic",
+    "gen:testnet": "node scripts/gen-network.js --network testnet --validators 4",
+    "bench": "node scripts/bench.js",
+    "website": "node scripts/serve-website.js"
+  }
+}

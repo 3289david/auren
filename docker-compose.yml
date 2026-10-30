@@ -1,0 +1,19 @@
+# Local devnet in one container: 4 validators, faucet and the website/explorer.
+#   docker compose up --build
+# Then open http://localhost:8080 . Keys on this network are public; never reuse them.
+services:
+  devnet:
+    build: .
+    ports:
+      - "9650-9653:9650-9653"
+      - "9690:9690"
+      - "8080:8080"
+    restart: unless-stopped
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on: [devnet]
+    profiles: ["monitoring"]

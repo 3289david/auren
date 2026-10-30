@@ -1,0 +1,30 @@
+{
+  "devnet": {
+    "chainId": "auren-devnet-1",
+    "addressPrefix": "daur",
+    "rpc": [
+      "http://127.0.0.1:9650"
+    ],
+    "faucet": "http://127.0.0.1:9690",
+    "seeds": [],
+    "description": "Local development network. Fully deterministic, publicly known keys. Never hold value here.",
+    "genesisHash": "535c33b35ab045ea94870178d2b10d3113447750cef039613a54f854bab1462e"
+  },
+  "testnet": {
+    "chainId": "auren-testnet-1",
+    "addressPrefix": "taur",
+    "rpc": [],
+    "faucet": null,
+    "seeds": [],
+    "description": "Public test network. Generate genesis + keys with `npm run gen:testnet`, then publish the seed/RPC URLs here.",
+    "genesisHash": "7e7f816951ff109f14db7cb1e74eae2b7d0992ff2b3a44717433d320e32ef29c"
+  },
+  "mainnet": {
+    "chainId": "auren-mainnet-1",
+    "addressPrefix": "aur",
+    "rpc": [],
+    "faucet": null,
+    "seeds": [],
+    "description": "NOT LAUNCHED. See networks/mainnet/README.md for the launch checklist and genesis ceremony."
+  }
+}
