@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.1
+
+- **Fees 10x lower:** floor `{compute 1, state 50}` sparks per unit (a transfer costs 0.000026 AUR at the floor, 0.000104 at the start). Fix: the base fee now always steps down by at least one unit, so a small fee can reach the floor instead of stalling above it.
+- **Docs on the website:** every page in `docs/` is rendered to `website/docs/` (`node scripts/build-docs.js`), linked from the site header.
+- Node-rewards docs explain what the 10% pool share means.
+
 ## 0.6.0
 
 - **Apps:** single-file Windows apps (`AUREN-Node.exe`, `AUREN-Wallet.exe`) and Android apps (`AUREN Node` with a bundled Node.js runtime, `AUREN Wallet`). Build scripts: `scripts/build-exe.js`, `android/build.js`. See `docs/BUILD-APPS.md`.

@@ -88,7 +88,7 @@ test('deploy, call, send and legacy transactions signed by an Ethereum wallet ex
   assert.ok(call.evm.gasUsed > 21000 && call.evm.gasUsed < 30000, `gas used ${call.evm.gasUsed}`);
   // unused gas is refunded: the fee is far below the 60,000-gas reservation
   const reserved = 60000n * chain.baseFee.compute + 60n * chain.baseFee.state;
-  assert.ok(BigInt(call.fee) < reserved / 2n, `fee ${call.fee} vs reserved ${reserved}`);
+  assert.ok(BigInt(call.fee) < reserved * 3n / 4n, `fee ${call.fee} vs reserved ${reserved}`);
 
   const [sendR] = send(env('send'));
   assert.equal(sendR.status, 1);

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build the apps yourself · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="BUILD-APPS.html" class="on">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="domains.html">Names, domains and your own TLD</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="validators.html">Running a validator</a><h4>Build on AUREN</h4><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="build-the-apps-yourself">Build the apps yourself</h1>
+<p>Downloads are on the <a href="https://github.com/3289david/auren/releases/latest">releases page</a>. To build them from source:</p>
+<div class="codebox"><pre><code>node scripts/package.js        # auren-&lt;version&gt;.zip and .tar.gz (needs only Node.js to run)
+node scripts/build-exe.js      # AUREN-Node-&lt;version&gt;.exe and AUREN-Wallet-&lt;version&gt;.exe (build on the target OS)
+node android/build.js          # AUREN-Node-&lt;version&gt;.apk and AUREN-Wallet-&lt;version&gt;.apk</code></pre></div>
+<p>Outputs go to <code>dist/</code>. Nothing from npm ends up inside the apps.</p>
+<h2 id="windows-and-mac-linux-single-file-apps">Windows (and Mac, Linux) single-file apps</h2>
+<p><code>build-exe.js</code> uses Node's single executable support: it copies the <code>node</code> binary on your machine and injects the AUREN program into it.</p>
+<ul><li><b>AUREN-Node</b>: double-click for a menu (join the testnet, earn AUR), or run it with arguments like the <code>auren</code> command: <code>AUREN-Node.exe join testnet --earn</code>.</li><li><b>AUREN-Wallet</b>: starts the wallet on <code>http://127.0.0.1:8787</code> and opens your browser. Keys are stored in the browser on your computer.</li></ul>
+<p>The first run unpacks the program into <code>%LOCALAPPDATA%\AUREN</code>. The files are not code-signed, so Windows SmartScreen may warn. Choose More info, then Run anyway. Needs network access once at build time to fetch the <code>postject</code> injector.</p>
+<h2 id="android-apps">Android apps</h2>
+<p><code>android/build.js</code> uses only the Android SDK command-line tools (aapt2, javac, d8, zipalign, apksigner): no Gradle. It needs the JDK, the Android SDK (platform 34 and build-tools) and Python 3.</p>
+<ul><li><b>AUREN Wallet</b>: a WebView around the bundled wallet and explorer, served from <code>http://127.0.0.1:38787</code> inside the app. Keys stay in the app's storage.</li><li><b>AUREN Node</b>: bundles the Node.js runtime for Android (the Termux build, arm64 and x86_64) and runs <code>auren join</code> as a foreground service. Choose the network, turn on Earn, tap Start. It also opens the wallet and explorer served by the node. It needs a 64-bit phone.</li></ul>
+<p>The node app targets Android API 28 so that the bundled runtime may start from the app's private folder, as Termux does. APKs are signed with a key generated on your machine (<code>dist/android/auren-release.jks</code>, never committed). Android asks you to allow installs from the source.</p>
+<p>Android phones cannot reach <code>127.0.0.1</code> on your PC. To join a devnet running on your computer, enter its LAN address (for example <code>http://192.168.1.20:9650</code>) as the peer.</p>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/BUILD-APPS.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#windows-and-mac-linux-single-file-apps">Windows (and Mac, Linux) single-file apps</a><a href="#android-apps">Android apps</a></aside>
+</div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security architecture · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="domains.html">Names, domains and your own TLD</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="validators.html">Running a validator</a><h4>Build on AUREN</h4><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html" class="on">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="security-architecture">Security architecture</h1>
+<p>Layered, because no single feature is &quot;the&quot; security.</p>
+<div class="table-wrap"><table><thead><tr><th>Layer</th><th>Mechanism</th><th>Where</th></tr></thead><tbody><tr><td>Consensus</td><td>one-vote-per-height rule, double-sign evidence, slashing, jailing, power cap</td><td><code>consensus.js</code>, <code>chain.js</code></td></tr><tr><td>Transactions</td><td>chain ID in signed bytes, sequential nonces, Ed25519 signatures, fee pre-checks</td><td><code>tx.js</code></td></tr><tr><td>Execution</td><td>fixed deterministic costs, block resource limits, failure isolation (fork per tx)</td><td><code>tx.js</code>, <code>chain.js</code></td></tr><tr><td>Accounts</td><td>daily limits, timelocks, guardians, recovery</td><td><code>tx.js</code></td></tr><tr><td>Keys</td><td>scrypt + AES-256-GCM keystore, separate operator and consensus keys</td><td><code>crypto.js</code>, <code>client.js</code></td></tr><tr><td>Network</td><td>rate-limited RPC, body-size caps, peer genesis check</td><td><code>node.js</code></td></tr><tr><td>Upgrades</td><td>published proposals + timelock (Phase 2)</td><td>n/a yet</td></tr></tbody></table></div>
+<h2 id="account-protection">Account protection</h2>
+<h3 id="daily-limit">Daily limit</h3>
+<p><code>setSecurity.dailyLimit</code> caps the sum of <code>transfer</code> amounts per window (<code>limitWindowBlocks</code>, 1 day on mainnet). Staking, claiming and name fees are not &quot;withdrawals&quot; and do not count.</p>
+<h3 id="timelocked-loosening">Timelocked loosening</h3>
+<p>A <code>setSecurity</code> call that is <i>at least as strict</i> as the current configuration (same guardians, threshold and delay not lower, limit not higher) applies immediately. Anything looser is queued for <code>delayBlocks</code>. Any guardian, or the account itself, can cancel the queued change (<code>securityCancel</code>).</p>
+<h3 id="guardian-recovery">Guardian recovery</h3>
+<ol><li>Owner sets 1-9 guardians and a threshold with <code>setSecurity</code> (delay ≥ protocol minimum).</li><li>If the key is lost, each guardian submits <code>recoveryApprove{account, newPub}</code>. A guardian proposing a <i>different</i> new key resets the approvals.</li><li>At threshold the recovery becomes ready after <code>delayBlocks</code>. The owner can <code>recoveryCancel</code> within that window.</li><li>When ready, the account's <code>authPub</code> becomes <code>newPub</code>: the old key stops working, and the account's address, balance and nonce stay the same.</li></ol>
+<p><b>Limit of the design:</b> recovery is for <i>lost</i> keys. If a thief holds the key, they can cancel a recovery. What bounds that case is the daily limit and the guardian veto on loosening.</p>
+<h3 id="simulation">Simulation</h3>
+<p><code>aur_simulate</code> (or <code>aurenctl … --simulate</code>) runs the transaction against a fork of current state and returns <code>ok</code>, error code, fee, burn, and the exact before/after of every touched account, so a wallet can show &quot;you will send X and pay Y&quot; before signing. It is as accurate as the next block; fees can change by ≤ 12.5% per block.</p>
+<h2 id="keys">Keys</h2>
+<ul><li><b>Operator key</b> (holds funds, creates the validator, claims rewards): keep offline / hardware-backed when hardware-wallet support lands. Encrypted keystore at <code>~/.auren/keystore</code> (override with <code>AUREN_KEYSTORE</code>).</li><li><b>Consensus key</b> (<code>priv_validator_key.json</code>, signs votes only): lives on the validator host, mode 0600. It can <b>never</b> move funds. Losing it costs availability; <i>duplicating</i> it costs 5% of stake. Never run two nodes with one consensus key.</li><li>The faucet and <code>devnet</code> keys are public by design.</li></ul>
+<h2 id="post-quantum-readiness">Post-quantum readiness</h2>
+<p>Addresses embed a scheme byte; transactions will carry a scheme-tagged signature. Scheme 1 is reserved for ML-DSA (FIPS 204). We will not force large signatures on all transactions: the plan is to (1) benchmark signature size, verification time and bandwidth on a testnet, (2) let accounts opt in, (3) revisit defaults as the threat becomes concrete. Until then, Ed25519 is the only implemented scheme.</p>
+<h2 id="what-we-do-not-claim">What we do not claim</h2>
+<ul><li>No formal verification, no audit. The conservation invariant, lane-independence property and commit-quorum rules are tested, not proven.</li><li>P2P is plain HTTP (see <code>consensus.md#known-limitations</code>).</li><li>The node trusts its own disk: a corrupted block log is detected by replay verification, but there is no snapshot signature scheme.</li></ul>
+<h2 id="operational-checklist-validators">Operational checklist (validators)</h2>
+<ol><li>Run exactly one instance per consensus key; no hot standby sharing the key.</li><li>Firewall the RPC (<code>--rpc-host 127.0.0.1</code> + reverse proxy with TLS and rate limits for public RPC).</li><li>Monitor <code>/metrics</code>: <code>auren_block_height</code>, <code>auren_catching_up</code>, <code>auren_peers</code>.</li><li>Back up <code>priv_validator_key.json</code> offline and <code>data/priv_validator_state.json</code> with the node.</li><li>Keep operator keys off the validator host.</li></ol>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/security.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#account-protection">Account protection</a><a href="#keys">Keys</a><a href="#post-quantum-readiness">Post-quantum readiness</a><a href="#what-we-do-not-claim">What we do not claim</a><a href="#operational-checklist-validators">Operational checklist (validators)</a></aside>
+</div>
+</body>
+</html>

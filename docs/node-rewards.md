@@ -25,6 +25,8 @@ On the devnet and testnet the node asks the faucet for test coins to cover the b
 | Epoch | 120 blocks | 1,800 blocks | 14,400 blocks (default) |
 | Pool share | 10% of issuance | 10% | 10% |
 
+**What 10% means:** it is 10% of the *newly issued* AUR, not of anyone's balance. With issuance at 3% a year, that is 0.3% of supply a year, shared between the nodes. Nobody pays it: it replaces part of what validators would have received. Fees are separate and tiny (about 0.000026 AUR for a transfer at the floor), and they are burned.
+
 The pool share comes out of the normal issuance. Validator rewards are issuance minus the pool share, so total issuance does not change.
 
 ## Rules

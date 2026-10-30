@@ -23,8 +23,8 @@ const DEFAULTS = {
 
   // execution resources (Adaptive Execution Market): two independently priced dimensions
   limits: { compute: 30000000, state: 200000 },
-  initialBaseFee: { compute: '40', state: '2000' }, // sparks per resource unit
-  minBaseFee: { compute: '10', state: '500' },
+  initialBaseFee: { compute: '4', state: '200' }, // sparks per resource unit
+  minBaseFee: { compute: '1', state: '50' },
   baseFeeChangeDenominator: 8, // max 12.5% change per block per dimension
 
   // monetary policy (see docs/tokenomics.md)

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting started with AUREN · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="GETTING-STARTED.html" class="on">Getting started with AUREN</a><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="domains.html">Names, domains and your own TLD</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="validators.html">Running a validator</a><h4>Build on AUREN</h4><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="getting-started-with-auren">Getting started with AUREN</h1>
+<p>AUREN is a public network with its own coin, <b>AUR</b>. This page is for people who want to <i>use</i> it. Running a node is in <code>RUN-A-NODE.md</code>.</p>
+<h2 id="the-three-networks-there-is-only-one-of-each">The three networks (there is only one of each)</h2>
+<div class="table-wrap"><table><thead><tr><th>Network</th><th>What it is</th><th>Coins</th></tr></thead><tbody><tr><td><b>Mainnet</b></td><td>the real network</td><td><b>not launched yet</b></td></tr><tr><td><b>Testnet</b></td><td>the official place to try everything</td><td>free, no value</td></tr><tr><td><b>Devnet</b></td><td>early features, may be reset</td><td>free, no value</td></tr></tbody></table></div>
+<p>You never start your own network to use AUREN. You open the wallet and pick one of these.</p>
+<h2 id="use-the-wallet-nothing-to-install">Use the wallet (nothing to install)</h2>
+<ol><li>Open the AUREN website and choose <b>Open wallet</b>.</li><li><b>Create a new wallet.</b> Write down the recovery phrase it shows and keep it offline: it is the only way to get your funds back. Choose a password (it protects the wallet on this device). Or choose <b>Hardware key / passkey</b> to use a security key, Touch ID, Windows Hello or a phone passkey. (Needs a secure <code>https://</code> page.)</li><li>On the testnet press <b>Get test AUR</b>. Free coins arrive in a few seconds.</li><li><b>Send:</b> enter an address or a name like <code>alice.aur</code>, an amount, and press <b>Review</b>. The wallet asks the network to preview the payment and shows the exact fee and your balance change <i>before</i> you sign.</li><li><b>Stake:</b> the <i>Stake</i> tab lets you back a validator and earn rewards. Unstaking takes a waiting period.</li><li><b>Protect yourself:</b> the <i>Security</i> tab sets a daily spending limit and trusted friends (guardians) who can help you recover your account.</li></ol>
+<p>Every payment, account and validator is public in the <b>Explorer</b>.</p>
+<h2 id="names">Names</h2>
+<p><code>alice.aur</code> is an easy name for your address. Register one in the wallet's <i>Names</i> tab. The wallet checks names cryptographically and refuses to pay if a name is ambiguous, so you cannot be tricked into paying the wrong person.</p>
+<h2 id="staying-safe">Staying safe</h2>
+<ul><li>AUREN is new software that is still being tested and has not been independently reviewed. Use test coins only.</li><li>Never share your recovery phrase. Nobody from AUREN will ever ask for it.</li><li>Check the address and amount on the <i>Review</i> screen every time.</li></ul>
+<h2 id="command-line-optional">Command line (optional)</h2>
+<p><code>./auren ctl keys new me</code> · <code>./auren ctl balance me --network testnet</code> · <code>./auren ctl send alice.aur 5 --from me --network testnet</code>. Full list: <code>./auren ctl help</code>.</p>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/GETTING-STARTED.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#the-three-networks-there-is-only-one-of-each">The three networks (there is only one of each)</a><a href="#use-the-wallet-nothing-to-install">Use the wallet (nothing to install)</a><a href="#names">Names</a><a href="#staying-safe">Staying safe</a><a href="#command-line-optional">Command line (optional)</a></aside>
+</div>
+</body>
+</html>

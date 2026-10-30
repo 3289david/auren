@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AUREN Whitepaper (v0.1, draft) · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="domains.html">Names, domains and your own TLD</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="validators.html">Running a validator</a><h4>Build on AUREN</h4><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html" class="on">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="auren-whitepaper-v0-1-draft">AUREN Whitepaper (v0.1, draft)</h1>
+<p><b>An independent Layer 1 built around verifiable security, predictable cost and protocol-level account protection.</b></p>
+<blockquote>Draft for discussion. Parameters marked <i>(proposed)</i> are starting assumptions, not commitments. AUREN/AUR are working names.</blockquote>
+<h2 id="1-motivation">1. Motivation</h2>
+<p>Most new chains compete on headline throughput and low fees. Those numbers are easy to claim and hard to compare, and they say little about what users actually experience: fees that spike unpredictably, validator sets that quietly centralize, and accounts whose safety depends entirely on a wallet app.</p>
+<p>AUREN pursues four goals and tries to <i>measure</i> each one:</p>
+<ol><li><b>Verifiable security</b>: finality, slashing evidence and upgrade history are checkable from the chain itself.</li><li><b>Predictable performance</b>: bounded blocks, fixed per-operation resource costs, fees that cannot move more than 12.5% per block.</li><li><b>Validator accessibility</b>: requirements a normal operator can meet, with decentralization measured (Nakamoto coefficient) rather than asserted.</li><li><b>Predictable monetary policy</b>: a published issuance schedule and a burned base fee, with no discretionary inflation.</li></ol>
+<p>None of these ideas is new in isolation (BFT PoS, EIP-1559-style pricing, delegated staking, guardian recovery all exist elsewhere). The contribution is the specific combination, the rules written down precisely, and a reference implementation with tests that anyone can run. We make no &quot;world first&quot; claim.</p>
+<h2 id="2-architecture">2. Architecture</h2>
+<div class="codebox"><pre><code>Wallets · explorers · exchanges            aurenctl · website/explorer · JSON-RPC
+RPC &amp; P2P                                  HTTP JSON-RPC + REST, gossip, sync
+Consensus      stake-weighted BFT          proposer draw · votes · commit certificate · slashing
+Execution      resource-metered            fixed costs · access sets · parallel lanes
+State          namespaced KV + merkle root accounts · validators · delegations · names · security</code></pre></div>
+<p>Modules: consensus, execution, fee engine, staking, state store, and optional name service. The name module is separate by construction: if it fails, transfers and consensus are unaffected.</p>
+<h2 id="3-consensus-summary-full-spec-in-consensus-md">3. Consensus (summary; full spec in <code>consensus.md</code>)</h2>
+<ul><li>Validators are the top <i>N</i> (default 150) by bonded stake, with a per-validator <b>voting-power cap</b> (default 10% of total bonded stake; effective once the set is large enough).</li><li>For each <code>(height, round)</code> a proposer is drawn deterministically in proportion to voting power. It builds a block, executes it, and commits to the post-state root.</li><li>Each validator re-executes the block, and signs <b>at most one block per height</b>, persisting the vote before sending it.</li><li>A block with votes from <b>more than ⅔ of voting power</b> is final. The certificate is embedded in the next block.</li><li>Safety: two conflicting finalized blocks require ≥ ⅓ of power to have signed twice at one height, which is provable and slashed (5%, permanent ejection).</li><li>Liveness: if ⅔ cannot be reached, the chain stops finalizing instead of guessing.</li></ul>
+<p>The current implementation is single-phase; the roadmap replaces it with a two-round protocol with proof-of-lock (see limitations).</p>
+<h2 id="4-adaptive-execution-market-summary-fee-market-md">4. Adaptive Execution Market (summary; <code>fee-market.md</code>)</h2>
+<p>Resources are split into <b>compute</b> and <b>state</b>. Every transaction type has a fixed cost in each. A transaction pays <code>cost_compute × baseFee_compute + cost_state × baseFee_state</code>, which is <b>burned</b>, plus an optional <b>tip</b> to the proposer. Each base fee updates per block toward 50% utilization:</p>
+<div class="codebox"><pre><code>if used &gt; target: base += max(1, base × (used − target) / target / 8)
+if used &lt; target: base −= base × (target − used) / target / 8        (never below the floor)</code></pre></div>
+<p>Transactions declare the state keys they touch. A lane scheduler groups them with union-find: independent transactions land in different lanes, conflicting ones share a lane in block order. Fees, burns and tips are settled at end of block, so lanes never contend for shared accounts. Lane order provably does not change the final state root (randomized test).</p>
+<p>This combines known ideas (multi-dimensional fee markets, declared access sets, EIP-1559). Whether it beats alternatives is an empirical question the benchmarks in <code>scripts/</code> are meant to answer.</p>
+<h2 id="5-monetary-policy-summary-tokenomics-md">5. Monetary policy (summary; <code>tokenomics.md</code>)</h2>
+<ul><li>Native coin <b>AUR</b>, 9 decimals. Initial supply stated in genesis (mainnet <i>(proposed)</i>: 1,000,000,000 AUR).</li><li><b>Issuance:</b> 3.0% annually, decaying 15% per year to a 0.5% floor <i>(proposed)</i>. Minted per block, only for validators that signed the previous block, split with delegators.</li><li><b>Burn:</b> all base fees, slashed stake, and name-registration fees.</li><li><b>Net supply change</b> = issuance − burn. Burning does not by itself create value; demand, circulation and rewards matter.</li><li>No hard cap: a tail emission funds security as block rewards shrink. Parameter changes require a public on-chain proposal, a long timelock and an explicit activation height.</li></ul>
+<h2 id="6-native-account-security-security-md">6. Native account security (<code>security.md</code>)</h2>
+<ul><li><b>Daily limit</b> enforced in the state machine. Tightening is instant; loosening is queued behind a timelock and any guardian can veto it.</li><li><b>Guardian recovery:</b> up to 9 guardians and a threshold. Approvals start a delay; the owner can cancel. After the delay the account's authorizing key changes.</li><li><b>Simulation:</b> any signed transaction can be dry-run, returning exact state effects and fee.</li><li><b>Crypto agility:</b> addresses embed a signature-scheme byte. Scheme 0 is Ed25519; scheme 1 is reserved for ML-DSA (NIST FIPS 204). Adoption follows benchmarking of signature size, verification speed and bandwidth.</li></ul>
+<p>What this does <b>not</b> do: recovery handles <i>lost</i> keys. Against an attacker holding the key, the daily limit and guardian veto bound the loss; they do not eliminate it.</p>
+<h2 id="7-interoperability-design-only">7. Interoperability (design only)</h2>
+<p>Every block carries its parent's &gt;⅔ certificate, so a light client can follow the chain by verifying signatures against a known validator set. A bridge must specify: how it verifies the other chain, what happens when the verifier or relayer fails, and when and how assets can be recovered. We will not ship a bridge without those three written down and reviewed.</p>
+<h2 id="8-governance">8. Governance</h2>
+<p>Phase 2. Proposals, voting weighted by stake, long timelock, activation heights, and an emergency path limited to halting block production (never to changing balances).</p>
+<h2 id="9-threat-model-and-known-gaps">9. Threat model and known gaps</h2>
+<p>See <code>consensus.md#known-limitations</code> and <code>security.md</code>. In short: the current reference node has an unauthenticated plain-HTTP P2P layer, single-phase voting, a grindable proposer draw, no smart contracts, no state sync, and no audit. Mainnet is gated on fixing or accepting each, in public.</p>
+<h2 id="10-references">10. References</h2>
+<ul><li>Ethereum EIP-1559 (fee market with base-fee burn).</li><li>Tendermint / CometBFT consensus papers (BFT PoS with immediate finality).</li><li>NIST FIPS 204 (ML-DSA) and FIPS 205 (SLH-DSA) post-quantum signature standards.</li><li>BIP-173 (Bech32) address encoding.</li></ul>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/whitepaper.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#1-motivation">1. Motivation</a><a href="#2-architecture">2. Architecture</a><a href="#3-consensus-summary-full-spec-in-consensus-md">3. Consensus (summary; full spec in consensus.md)</a><a href="#4-adaptive-execution-market-summary-fee-market-md">4. Adaptive Execution Market (summary; fee-market.md)</a><a href="#5-monetary-policy-summary-tokenomics-md">5. Monetary policy (summary; tokenomics.md)</a><a href="#6-native-account-security-security-md">6. Native account security (security.md)</a><a href="#7-interoperability-design-only">7. Interoperability (design only)</a><a href="#8-governance">8. Governance</a><a href="#9-threat-model-and-known-gaps">9. Threat model and known gaps</a><a href="#10-references">10. References</a></aside>
+</div>
+</body>
+</html>

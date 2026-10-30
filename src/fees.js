@@ -18,7 +18,8 @@ function nextBaseFee(prev, used, params) {
       const delta = (p * (u - target)) / target / D;
       n = p + (delta > 0n ? delta : 1n);
     } else if (u < target) {
-      n = p - (p * (target - u)) / target / D;
+      const delta = (p * (target - u)) / target / D;
+      n = p - (delta > 0n ? delta : 1n); // always step, so a small fee can still reach the floor
     }
     if (n < params.minBaseFee[dim]) n = params.minBaseFee[dim];
     out[dim] = n;

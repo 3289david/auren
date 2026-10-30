@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Names, domains and your own TLD · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="domains.html" class="on">Names, domains and your own TLD</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="validators.html">Running a validator</a><h4>Build on AUREN</h4><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="names-domains-and-your-own-tld">Names, domains and your own TLD</h1>
+<p>AUREN has a built-in naming system. You can:</p>
+<ul><li><b>Register a domain</b> under <code>.aur</code> (<code>alice.aur</code>), or under any TLD someone created (<code>alice.david</code>).</li><li><b>Create your own TLD</b> (<code>.david</code>, <code>.mycoin</code>, <code>.shop</code>) and decide who can register under it and what it costs.</li></ul>
+<p>Names are optional. The chain works without them. They simply give an address a name people can read.</p>
+<h2 id="how-names-look">How names look</h2>
+<div class="table-wrap"><table><thead><tr><th>Form</th><th>Meaning</th></tr></thead><tbody><tr><td><code>alice</code></td><td>Same as <code>alice.aur</code>.</td></tr><tr><td><code>alice.aur</code></td><td>A name in the built-in <code>.aur</code> namespace.</td></tr><tr><td><code>alice.david</code></td><td>A name under the user-created <code>.david</code> TLD.</td></tr></tbody></table></div>
+<p>Rules:</p>
+<ul><li>A label is 3 to 63 characters: <code>a-z</code>, <code>0-9</code> and hyphens, not starting or ending with a hyphen.</li><li>A TLD is 3 to 24 characters: <code>a-z</code> and <code>0-9</code>, starting with a letter.</li><li>One level only: <code>a.b.c</code> is not valid.</li><li><code>alice.aur</code> and <code>alice.david</code> are different names with different owners. They never collide.</li><li>Real-world TLDs and country codes (<code>com</code>, <code>org</code>, <code>eth</code>, <code>btc</code>, <code>uk</code>, <code>io</code>, <code>google</code>, <code>localhost</code>, ...) cannot be created, so nobody can pretend to be a name from another system.</li></ul>
+<h2 id="register-a-domain">Register a domain</h2>
+<p><b>Wallet:</b> open <b>Wallet → Names</b>, type <code>alice</code> or <code>alice.david</code>, check the price shown, and confirm.</p>
+<p><b>CLI:</b></p>
+<div class="codebox"><pre><code>node bin/aurenctl.js domain register alice --years 2
+node bin/aurenctl.js domain register alice.david --years 1</code></pre></div>
+<p>What you pay:</p>
+<ul><li>Under <code>.aur</code>: the price depends on the name length (shorter costs more). The whole fee is <b>burned</b>.</li><li>Under a user-created TLD: the TLD owner's yearly price times the number of years. The owner receives their configured share and the rest is <b>burned</b>.</li><li>The TLD owner registers names under their own TLD for free (only the normal network fee applies).</li></ul>
+<h2 id="create-your-own-tld">Create your own TLD</h2>
+<p><b>Wallet:</b> open <b>Wallet → Names → Create your own TLD</b>. Choose:</p>
+<div class="table-wrap"><table><thead><tr><th>Setting</th><th>Meaning</th></tr></thead><tbody><tr><td>TLD</td><td>The name, for example <code>david</code> for <code>.david</code>.</td></tr><tr><td>Open</td><td>If on, anyone can register names under it. If off, only you can.</td></tr><tr><td>Price</td><td>Yearly price per name, in AUR. <code>0</code> means free.</td></tr><tr><td>Your share</td><td>The percentage of each registration paid to you (up to 90%). The rest is burned.</td></tr></tbody></table></div>
+<p><b>CLI:</b></p>
+<div class="codebox"><pre><code>node bin/aurenctl.js tld register david --price 5 --share 80
+node bin/aurenctl.js tld register brand --closed           # only you can register names
+node bin/aurenctl.js tld policy david --price 2 --share 70 # change the rules later
+node bin/aurenctl.js tld transfer david &lt;address&gt;          # hand the TLD to someone else
+node bin/aurenctl.js tld list
+node bin/aurenctl.js tld show david</code></pre></div>
+<p>Creating a TLD costs the network parameter <code>tld.price</code> (burned). It is set per network and can change by governance.</p>
+<p>You can change the price, the share and whether it is open at any time. Names that are already registered keep working.</p>
+<h2 id="manage-a-name">Manage a name</h2>
+<p>Every name has an owner, a target address, and optional records.</p>
+<div class="codebox"><pre><code>node bin/aurenctl.js domain target alice.david &lt;address&gt;    # where the name points
+node bin/aurenctl.js domain transfer alice.david &lt;address&gt;  # give the name away
+node bin/aurenctl.js domain record alice.david text:url https://example.com
+node bin/aurenctl.js domain primary alice.david             # make it your reverse name</code></pre></div>
+<p>Transferring a name resets its target and records, so a buyer never inherits the old owner's settings.</p>
+<h2 id="resolve-and-verify">Resolve and verify</h2>
+<p>Anyone can look up a name without trusting a server. The node returns a Merkle proof, and the light client in <code>website/anr.js</code> checks it against the validator set pinned at genesis. A proof for <code>bob.david</code> cannot be passed off as <code>bob.aur</code>.</p>
+<div class="codebox"><pre><code>curl http://&lt;node&gt;/domain/alice.david
+curl http://&lt;node&gt;/tlds
+curl http://&lt;node&gt;/tld/david</code></pre></div>
+<p>JSON-RPC: <code>aur_resolve</code>, <code>aur_resolveDomain</code>, <code>aur_getTlds</code>, <code>aur_getTld</code>. See <a href="rpc-api.html">rpc-api.md</a>. The explorer lists all TLDs under <b>Names</b>.</p>
+<h2 id="transactions">Transactions</h2>
+<div class="table-wrap"><table><thead><tr><th>Type</th><th>Body</th></tr></thead><tbody><tr><td><code>registerTld</code></td><td><code>tld</code>, <code>open</code>, <code>price</code>, <code>ownerShareBps</code></td></tr><tr><td><code>setTldPolicy</code></td><td><code>tld</code>, <code>open</code>, <code>price</code>, <code>ownerShareBps</code> (owner only)</td></tr><tr><td><code>transferTld</code></td><td><code>tld</code>, <code>newOwner</code> (owner only)</td></tr><tr><td><code>registerDomain</code></td><td><code>name</code> (<code>label</code> or <code>label.tld</code>), <code>years</code></td></tr></tbody></table></div>
+<p>Registrations under a user-created TLD pay the TLD owner, so they use a block-wide lane (they run one after another). <code>.aur</code> registrations still run in parallel.</p>
+<p>See also <a href="name-resolution.html">name-resolution.md</a> for the proof format and the cross-system resolver.</p>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/domains.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#how-names-look">How names look</a><a href="#register-a-domain">Register a domain</a><a href="#create-your-own-tld">Create your own TLD</a><a href="#manage-a-name">Manage a name</a><a href="#resolve-and-verify">Resolve and verify</a><a href="#transactions">Transactions</a></aside>
+</div>
+</body>
+</html>

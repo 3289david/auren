@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Node rewards: earn AUR by running a node · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="domains.html">Names, domains and your own TLD</a><a href="node-rewards.html" class="on">Node rewards: earn AUR by running a node</a><a href="validators.html">Running a validator</a><h4>Build on AUREN</h4><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="node-rewards-earn-aur-by-running-a-node">Node rewards: earn AUR by running a node</h1>
+<p>Anyone who runs a full node can earn AUR. You do not need to be a validator.</p>
+<h2 id="how-you-earn">How you earn</h2>
+<ol><li><b>Bond.</b> Your node locks a bond (a deposit) once. You get it back when you stop (after the unbonding period).</li><li><b>Prove.</b> Once per epoch the network picks one old block at random. Your node proves it still has that block's data. Only a node that really stores the chain can do this, and the proof is tied to your node's address, so it cannot be copied from another node.</li><li><b>Get paid.</b> Each block, a share of newly issued AUR goes into a <b>node reward pool</b>. At the end of every epoch the pool is split equally between all nodes that proved they store the chain, and paid to each node's payout address. If nobody proves, the pool rolls over to the next epoch.</li></ol>
+<p>All of this is done by the node software for you.</p>
+<h2 id="run-an-earning-node">Run an earning node</h2>
+<div class="codebox"><pre><code>auren join testnet --earn                 # rewards go to the node's own address
+auren join testnet --earn &lt;your-address&gt;  # rewards go to your wallet</code></pre></div>
+<p>On the devnet and testnet the node asks the faucet for test coins to cover the bond. Otherwise, send the bond (plus a little for fees) to the address the node prints when it starts. The node then registers itself and proves storage every epoch. Leave it running.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th>devnet</th><th>testnet</th><th>mainnet</th></tr></thead><tbody><tr><td>Bond</td><td>100 AUR</td><td>500 AUR</td><td>10,000 AUR (default)</td></tr><tr><td>Epoch</td><td>120 blocks</td><td>1,800 blocks</td><td>14,400 blocks (default)</td></tr><tr><td>Pool share</td><td>10% of issuance</td><td>10%</td><td>10%</td></tr></tbody></table></div>
+<p><b>What 10% means:</b> it is 10% of the <i>newly issued</i> AUR, not of anyone's balance. With issuance at 3% a year, that is 0.3% of supply a year, shared between the nodes. Nobody pays it: it replaces part of what validators would have received. Fees are separate and tiny (about 0.000026 AUR for a transfer at the floor), and they are burned.</p>
+<p>The pool share comes out of the normal issuance. Validator rewards are issuance minus the pool share, so total issuance does not change.</p>
+<h2 id="rules">Rules</h2>
+<ul><li>You must be bonded <b>before</b> an epoch starts to earn in it. A new node starts earning from the next epoch.</li><li>Epoch 0 has no history to challenge, so earning starts in epoch 1.</li><li>One proof per node per epoch.</li><li>A node that is offline or does not store the chain earns nothing that epoch. It loses nothing else.</li><li>Running many identities does not help: each one needs its own bond and gets one equal share, the same return as one honest node per bond.</li></ul>
+<h2 id="check-on-it">Check on it</h2>
+<div class="codebox"><pre><code>curl http://127.0.0.1:9650/nodes</code></pre></div>
+<p>Returns the pool, current epoch, the challenged block, and every registered node with whether it has proved this epoch. The explorer shows the same under <b>Nodes</b>. JSON-RPC: <code>aur_getNodes</code>.</p>
+<h2 id="manual-control-cli">Manual control (CLI)</h2>
+<div class="codebox"><pre><code>aurenctl node register --payout &lt;address&gt;   # bond (needs the bond amount in the account)
+aurenctl node unregister                    # return the bond after the unbonding period</code></pre></div>
+<h2 id="transactions">Transactions</h2>
+<div class="table-wrap"><table><thead><tr><th>Type</th><th>Body</th></tr></thead><tbody><tr><td><code>registerNode</code></td><td><code>payout</code></td></tr><tr><td><code>unregisterNode</code></td><td></td></tr><tr><td><code>nodeProof</code></td><td><code>epoch</code>, <code>digest</code> = sha256(<code>address</code> + <code>|</code> + canonical JSON of the challenged block's header and txs)</td></tr></tbody></table></div>
+<p>Parameters: <code>node.bond</code>, <code>node.epochBlocks</code>, <code>node.poolBps</code>. See <code>src/noderew.js</code>.</p>
+<h2 id="what-this-is-not">What this is not</h2>
+<p>Rewards go to nodes that store the chain, not to nodes that merely exist. Serving data to others and uptime beyond one proof per epoch are not measured. Validators still earn the largest share, for proposing and signing blocks.</p>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/node-rewards.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#how-you-earn">How you earn</a><a href="#run-an-earning-node">Run an earning node</a><a href="#rules">Rules</a><a href="#check-on-it">Check on it</a><a href="#manual-control-cli">Manual control (CLI)</a><a href="#transactions">Transactions</a><a href="#what-this-is-not">What this is not</a></aside>
+</div>
+</body>
+</html>

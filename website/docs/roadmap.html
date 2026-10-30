@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roadmap · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="domains.html">Names, domains and your own TLD</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="validators.html">Running a validator</a><h4>Build on AUREN</h4><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html" class="on">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="roadmap">Roadmap</h1>
+<p>No dates: each phase ships when its exit criteria are met and published.</p>
+<h2 id="phase-0-reference-chain-done-in-this-repository">Phase 0: reference chain (done in this repository)</h2>
+<ul><li>BFT PoS, commit certificates, slashing, jailing, voting-power cap</li><li>Two-dimensional fee market, burn, tips, conflict-aware lanes</li><li>Staking, rewards, unbonding; <code>.aur</code> names; guardian recovery; daily limits; simulation</li><li>Node, JSON-RPC/REST, CLI wallet, faucet, explorer, website</li><li>Devnet; testnet generator; mainnet ceremony tooling</li><li>Tests: unit + 4-node HTTP integration (fault tolerance, halt without quorum, restart, late sync)</li></ul>
+<p><b>Exit:</b> <code>npm test</code> green on Node 20/22/24, Linux and Windows.</p>
+<h2 id="done-since-phase-0-v0-3-0-4">Done since Phase 0 (v0.3-0.4)</h2>
+<ul><li>On-chain governance: proposals, stake-weighted voting, quorum, veto, deposit, timelock, live parameter changes</li><li>Two-phase BFT (propose/prevote/precommit) with proof-of-lock, fault-injection tested</li><li>WebAuthn hardware-key signatures (scheme 2) and wallet support</li><li>ANR-1 universal name resolution: records, verified reverse names, light-client proofs, DNS + ENS adapters</li></ul>
+<h2 id="phase-1-public-testnet">Phase 1: public testnet</h2>
+<ul><li>Independent review of the BFT implementation; formal model of the lock rules</li><li>Ledger app (needs device firmware work and a physical device to verify)</li><li>Sequential header sync for the light client (removes the trusting-period limit) and non-membership proofs for names</li><li>Authenticated, encrypted P2P (QUIC/Noise), peer scoring, DoS limits</li><li>State sync, snapshots, pruning; fsync'd validator state</li><li>Proposer randomness beacon (VRF) instead of parent-hash draw</li><li>Deterministic vote-inclusion rule</li><li>Hardware-wallet signing (Ledger/Trezor) for the operator and user keys</li><li>Incentivized fault-injection and spam campaign; bug bounty</li></ul>
+<p><b>Exit:</b> ≥ 3 months stable, ≥ 20 independent validators, published fault-injection and performance reports.</p>
+<h2 id="phase-2-programmability-governance">Phase 2: programmability &amp; governance</h2>
+<ul><li>EVM-compatible execution engine metered through the compute/state dimensions</li><li>Standard interfaces: wallet JSON-RPC (<code>eth_*</code> subset), name-resolution interface for contracts</li><li>Governance: proposals, stake-weighted votes, timelocks, activation heights</li><li>Light client; relayer-free verification of commits</li><li>Hotspot pricing research for contracts everyone touches</li></ul>
+<h2 id="phase-3-interoperability-mainnet-candidate">Phase 3: interoperability &amp; mainnet candidate</h2>
+<ul><li>Bridge design with explicit verification method, failure handling and asset-recovery rules, reviewed before any code ships</li><li>Post-quantum signature scheme (ML-DSA) opt-in, after benchmarks</li><li>Two independent audits; all reports public</li><li>Genesis ceremony and launch per <code>networks/mainnet/README.md</code></li></ul>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/roadmap.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#phase-0-reference-chain-done-in-this-repository">Phase 0: reference chain (done in this repository)</a><a href="#done-since-phase-0-v0-3-0-4">Done since Phase 0 (v0.3-0.4)</a><a href="#phase-1-public-testnet">Phase 1: public testnet</a><a href="#phase-2-programmability-governance">Phase 2: programmability &amp; governance</a><a href="#phase-3-interoperability-mainnet-candidate">Phase 3: interoperability &amp; mainnet candidate</a></aside>
+</div>
+</body>
+</html>

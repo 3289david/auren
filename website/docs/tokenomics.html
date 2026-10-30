@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tokenomics · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="domains.html">Names, domains and your own TLD</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="validators.html">Running a validator</a><h4>Build on AUREN</h4><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html" class="on">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="tokenomics">Tokenomics</h1>
+<blockquote>Everything marked <i>(proposed)</i> is a starting assumption for public discussion before mainnet. The code implements the mechanisms; the numbers live in genesis and can change before launch.</blockquote>
+<h2 id="asset">Asset</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td>Name / symbol</td><td>AUREN / <b>AUR</b> (working names)</td></tr><tr><td>Decimals</td><td>9 (1 AUR = 1,000,000,000 sparks)</td></tr><tr><td>Roles</td><td>pays fees, staked for security, weights governance (Phase 2)</td></tr><tr><td>Cap</td><td>none; issuance is rule-based and tapers</td></tr></tbody></table></div>
+<h2 id="supply-mechanics">Supply mechanics</h2>
+<div class="codebox"><pre><code>net supply change per block = issuance − burn
+issuance_per_block = supply × rate(year) / blocksPerYear
+rate(year) = max(0.5%, 3.0% × 0.85^(year−1))        (year counted from genesis)</code></pre></div>
+<ul><li><b>Who receives issuance:</b> validators that signed the previous block, pro rata to voting power; each validator splits it between commission and delegators via the reward index.</li><li><b>Burned:</b> base fees, slashed stake, <code>.aur</code> registration fees.</li><li><b>Not burned:</b> tips (to the proposer) and unclaimed rewards (they accrue to delegators).</li></ul>
+<div class="table-wrap"><table><thead><tr><th>Year</th><th>Issuance rate</th></tr></thead><tbody><tr><td>1</td><td>3.00%</td></tr><tr><td>2</td><td>2.55%</td></tr><tr><td>3</td><td>2.17%</td></tr><tr><td>5</td><td>1.57%</td></tr><tr><td>10</td><td>0.69%</td></tr><tr><td>13+</td><td>0.50% floor</td></tr></tbody></table></div>
+<p>Example: with 1,000,000,000 AUR, year-1 issuance is ≈ 30,000,000 AUR. If fees burn 10,000,000 AUR that year, net growth is 20,000,000 AUR (2.0%). Burning does not guarantee a falling supply or a rising price; it only offsets issuance when usage is high enough.</p>
+<h2 id="why-a-tail-emission-instead-of-a-hard-cap">Why a tail emission instead of a hard cap</h2>
+<p>A fixed cap means validator income eventually depends only on fees. If fee revenue is thin, security spend falls with it, which weakens the chain precisely when it is young. A small perpetual floor (0.5%) keeps a predictable security budget while the decaying schedule removes most dilution over time. The trade-off is explicit: AUR is <b>not</b> fixed-supply. If the community prefers a cap, this is the parameter to debate before genesis.</p>
+<h2 id="initial-distribution-proposed-for-discussion">Initial distribution (proposed, for discussion)</h2>
+<div class="table-wrap"><table><thead><tr><th>Bucket</th><th>Share</th><th>Terms</th></tr></thead><tbody><tr><td>Community, ecosystem &amp; grants</td><td>35%</td><td>released by public programs</td></tr><tr><td>Validator &amp; staking bootstrap</td><td>15%</td><td>seeds genesis validator stake and early delegations</td></tr><tr><td>Foundation treasury</td><td>20%</td><td>vested over 4 years</td></tr><tr><td>Core contributors</td><td>15%</td><td>1-year cliff, 4-year vesting</td></tr><tr><td>Early supporters</td><td>10%</td><td>vesting, disclosed terms</td></tr><tr><td>Security, audits &amp; bug bounty</td><td>5%</td><td></td></tr></tbody></table></div>
+<p>The protocol already supports vesting accounts (<code>vesting: {total, start, cliff, end}</code> in genesis): locked balance is excluded from <code>spendable</code> and cannot pay fees or be staked until it unlocks. No token sale is part of this repository.</p>
+<h2 id="fee-flows">Fee flows</h2>
+<div class="codebox"><pre><code>user ── baseCost ──▶ burned
+     ── tip ───────▶ block proposer
+     ── name fees ─▶ burned
+issuance ──▶ signing validators ──▶ commission to operator, rest to delegators (claimable)
+slashing ──▶ burned</code></pre></div>
+<h2 id="staking-parameters-mainnet-defaults">Staking parameters (mainnet defaults)</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td>Max validators</td><td>150</td></tr><tr><td>Min self-stake</td><td>10,000 AUR</td></tr><tr><td>Voting-power cap</td><td>10% of bonded stake per validator</td></tr><tr><td>Max commission</td><td>20%</td></tr><tr><td>Unbonding</td><td>28 days</td></tr><tr><td>Double-sign</td><td>5% slashed, tombstoned</td></tr><tr><td>Downtime</td><td>jailed 1 day, 0.1% slashed if absent from &gt; 50% of a window</td></tr></tbody></table></div>
+<h2 id="conservation-invariant">Conservation invariant</h2>
+<p>The test-suite asserts after every scenario: <code>supply = Σ balances + Σ bonded + Σ unbonding + Σ accrued rewards</code>. Any change that mints or burns must keep this exact.</p>
+<h2 id="governance-of-economics">Governance of economics</h2>
+<p>Issuance, fee, and slashing parameters may change only through an on-chain proposal with a long timelock and an explicit activation height (Phase 2). Until the governance module exists, parameters are fixed by genesis and change only through a coordinated, publicly announced upgrade.</p>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/tokenomics.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#asset">Asset</a><a href="#supply-mechanics">Supply mechanics</a><a href="#why-a-tail-emission-instead-of-a-hard-cap">Why a tail emission instead of a hard cap</a><a href="#initial-distribution-proposed-for-discussion">Initial distribution (proposed, for discussion)</a><a href="#fee-flows">Fee flows</a><a href="#staking-parameters-mainnet-defaults">Staking parameters (mainnet defaults)</a><a href="#conservation-invariant">Conservation invariant</a><a href="#governance-of-economics">Governance of economics</a></aside>
+</div>
+</body>
+</html>

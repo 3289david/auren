@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>On-chain governance · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="domains.html">Names, domains and your own TLD</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="validators.html">Running a validator</a><h4>Build on AUREN</h4><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html" class="on">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="on-chain-governance">On-chain governance</h1>
+<p>Implementation: <code>src/gov.js</code> (rules), <code>src/tx.js</code> (<code>submitProposal</code>, <code>vote</code>), <code>src/chain.js</code> (settlement, live parameters). Tests: <code>test/gov.test.js</code>.</p>
+<h2 id="what-governance-can-change">What governance can change</h2>
+<p>Only the whitelisted parameters below, each with a hard range enforced both when a proposal is submitted and again when it executes. Everything else (block time, address prefix, token decimals, signature schemes, the governance rules themselves) needs a new network or a coordinated software upgrade.</p>
+<div class="table-wrap"><table><thead><tr><th>Parameter</th><th>Range</th></tr></thead><tbody><tr><td><code>limits.compute</code>, <code>limits.state</code></td><td>1e6..1e9, 1e4..1e7 (block resource limits)</td></tr><tr><td><code>baseFeeChangeDenominator</code></td><td>2..64</td></tr><tr><td><code>minBaseFee.compute</code>, <code>minBaseFee.state</code></td><td>1..1,000,000 sparks</td></tr><tr><td><code>maxValidators</code></td><td>4..300</td></tr><tr><td><code>maxVotingPowerBps</code></td><td>100..10000</td></tr><tr><td><code>maxCommissionBps</code></td><td>0..5000</td></tr><tr><td><code>issuance.decayBps</code>, <code>issuance.floorPpm</code></td><td>0..5000, 0..50000 (the floor can never exceed 5%/yr)</td></tr><tr><td><code>slashing.doubleSignBps</code>, <code>slashing.downtimeBps</code></td><td>0..5000, 0..1000</td></tr><tr><td><code>domain.price3/4/5</code></td><td>0..10^15 sparks</td></tr></tbody></table></div>
+<p>The <i>initial</i> issuance rate, the unbonding period and the governance parameters are deliberately not changeable.</p>
+<h2 id="lifecycle">Lifecycle</h2>
+<ol><li><b>Submit</b> (<code>submitProposal {title, description, changes}</code>): 1-5 parameter changes. A <b>deposit</b> (mainnet default 1,000 AUR) is escrowed and counted in the supply invariant.</li><li><b>Vote</b> for <code>votingBlocks</code> (mainnet 201,600 ≈ 7 days): <code>yes</code>, <code>no</code>, <code>abstain</code>, <code>veto</code>. Weight is the voter's <b>bonded stake</b> (sum of all their delegations, evaluated at tally time). Validators do <b>not</b> vote on behalf of their delegators. Re-voting replaces the earlier vote. Accounts without stake can vote but carry no weight.</li><li><b>Tally</b> at the end of the period:</li><li>no <b>quorum</b> (voted stake &lt; 33.4% of all bonded stake) → rejected, <b>deposit burned</b></li><li><b>veto</b> ≥ 33.4% of voted stake → rejected, <b>deposit burned</b></li><li>otherwise <code>yes / (yes + no + veto) &gt; 50%</code> passes; the deposit is <b>refunded</b> whether it passes or fails the threshold.</li><li><code>abstain</code> counts toward quorum only.</li><li><b>Timelock</b> (<code>timelockBlocks</code>, mainnet 86,400 ≈ 2 days): a passed proposal waits before it takes effect, so users can exit, validators can prepare, and the community can react.</li><li><b>Execute</b> at the end of block <i>E</i>: the changes are re-validated and stored as overrides in state; the new parameters apply from block <i>E+1</i> on every node, deterministically (replay-tested).</li></ol>
+<h2 id="properties">Properties</h2>
+<ul><li><b>Deterministic and replayable:</b> overrides live in state (<code>meta/params</code>), so a node replaying the log reaches identical parameters and an identical state root.</li><li><b>Live proof:</b> on a real 4-validator devnet, a proposal raised <code>limits.compute</code> from 30,000,000 to 45,000,000 after a 3/4 stake vote and a timelock (voting 60 blocks, timelock 20 blocks on devnet).</li><li><b>Conservation:</b> deposits are escrowed supply; burn/refund paths are tested against the invariant.</li><li><b>Parallel-safe:</b> <code>submitProposal</code> and <code>vote</code> share the <code>global:gov</code> access key, so a vote never races the creation of its proposal under lane scheduling.</li></ul>
+<h2 id="using-it">Using it</h2>
+<div class="codebox"><pre><code>aurenctl gov list --network devnet
+aurenctl gov propose --from alice --network devnet --title &quot;Raise compute limit&quot; \
+    --description &quot;Allow bigger blocks&quot; --set limits.compute=45000000
+aurenctl gov vote 1 yes --from &lt;staker&gt; --network devnet</code></pre></div>
+<p>The web wallet has a <b>Govern</b> tab (proposals, live tally bars, vote buttons, submit form). REST: <code>GET /proposals</code>; JSON-RPC: <code>aur_getProposals</code>.</p>
+<h2 id="limitations-honest">Limitations (honest)</h2>
+<ul><li><b>Plutocratic by design.</b> Weight is stake. There is no delegation of votes, quadratic weighting or identity layer. Large holders dominate; the veto and quorum rules and the timelock are the checks.</li><li><b>No &quot;validators vote for delegators who abstain&quot; inheritance</b> (as in some chains). Delegators must vote themselves, which lowers turnout but avoids validator overreach.</li><li><b>Not an upgrade mechanism.</b> It changes parameters only. Changing consensus rules or transaction formats still needs a coordinated software release, with a height agreed in advance.</li><li><b>No emergency path</b> and no protection against a hostile supermajority beyond the timelock; a malicious majority could, for example, set <code>issuance.floorPpm</code> to 5% (the cap) or raise name prices to the range maximum. The ranges above are what bound that.</li><li>Parameter-range choices are initial and should be reviewed before mainnet.</li></ul>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/governance.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#what-governance-can-change">What governance can change</a><a href="#lifecycle">Lifecycle</a><a href="#properties">Properties</a><a href="#using-it">Using it</a><a href="#limitations-honest">Limitations (honest)</a></aside>
+</div>
+</body>
+</html>

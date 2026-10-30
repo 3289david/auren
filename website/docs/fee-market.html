@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adaptive Execution Market · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="domains.html">Names, domains and your own TLD</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="validators.html">Running a validator</a><h4>Build on AUREN</h4><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html" class="on">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="adaptive-execution-market">Adaptive Execution Market</h1>
+<h2 id="what-it-is">What it is</h2>
+<p>A fee mechanism that (1) prices two resources separately, (2) gives each transaction type a fixed, quotable cost, and (3) schedules transactions with disjoint state access into independent lanes.</p>
+<p>It combines established ideas: EIP-1559 base-fee dynamics, multi-dimensional resource pricing, and declared-access-set scheduling. It is not claimed to be novel as a whole; it is claimed to be specified precisely and tested.</p>
+<h2 id="resources">Resources</h2>
+<div class="table-wrap"><table><thead><tr><th>dimension</th><th>meaning</th><th>default block limit</th><th>target (50%)</th></tr></thead><tbody><tr><td><code>compute</code></td><td>execution work in abstract units</td><td>30,000,000</td><td>15,000,000</td></tr><tr><td><code>state</code></td><td>bytes of state written (approximate)</td><td>200,000</td><td>100,000</td></tr></tbody></table></div>
+<p>At default limits a block can hold ≈ 1,428 plain transfers by compute (the binding dimension), i.e. a protocol cap of roughly <b>700 transfers/s</b> at 2 s blocks. Limits are parameters and should be set from testnet measurements, not marketing.</p>
+<h2 id="base-fee-update">Base fee update</h2>
+<p>Per dimension, from the parent block's usage:</p>
+<div class="codebox"><pre><code>target = limit / 2
+used &gt; target:  base' = base + max(1, floor(base × (used − target) / target / 8))
+used &lt; target:  base' = base − floor(base × (target − used) / target / 8)
+base' = max(base', minBase)</code></pre></div>
+<p>So a full block raises each base fee by 12.5% (e.g. 40 → 45), an empty block lowers it by 12.5%, and a block exactly at target leaves it unchanged.</p>
+<p>Default start <code>{compute: 4, state: 200}</code> sparks/unit; floor <code>{1, 50}</code>. A transfer therefore costs <code>21,000×4 + 100×200 = 104,000 sparks ≈ 0.000104 AUR</code> at the start and <code>21,000×1 + 100×50 = 26,000 sparks = 0.000026 AUR</code> at the floor. That is cents-or-less at any plausible price, and the fee is burned, not paid to anyone.</p>
+<h2 id="paying">Paying</h2>
+<p><code>baseCost = cost.compute × base.compute + cost.state × base.state</code> is <b>burned</b>. The sender signs <code>maxFee</code> and <code>tip</code>. Wallets quote <code>aur_feeQuote</code>, set <code>maxFee = baseCost × 2 + tip</code> to absorb two blocks of worst-case increases (1.125² ≈ 1.27), and are refunded implicitly: only <code>baseCost + min(tip, maxFee − baseCost)</code> is charged.</p>
+<p>Because costs are fixed per type, there is no gas estimation and no out-of-gas failure. The trade-off: no user-deployed code yet. When an EVM layer arrives (Phase 2) it will meter compute and state through these same two dimensions.</p>
+<h2 id="lanes-parallel-execution">Lanes (parallel execution)</h2>
+<p>Every transaction type declares an <b>access set</b>, the keys it may read or write, e.g. a transfer touches <code>acct:&lt;from&gt;</code> and <code>acct:&lt;to&gt;</code>. <code>scheduleLanes</code> runs union-find over the keys:</p>
+<ul><li>Transactions sharing any key end up in the same lane, in block order.</li><li>Others are in different lanes and may execute in any order, or on separate threads.</li></ul>
+<p>Shared hotspots would defeat this, so they are removed by construction: fees, burns and tips accumulate during the block and are applied once at the end; the proposer's balance is not touched mid-block.</p>
+<p><b>Guarantee (tested):</b> for a random mix of 60 transfers, delegations and name registrations, executing lanes in forward, reverse and shuffled order yields identical state roots. If you add a transaction type whose handler touches a key not in its access set, this guarantee silently breaks. Add it to <code>access</code> and extend the test.</p>
+<p>The reference node executes lanes sequentially on one thread (about 9,400 transfers/s validating, see <code>npm run bench</code>). The scheduler is the foundation for threaded or multi-process execution; it is not yet exploited for speed.</p>
+<h2 id="spam-resistance">Spam resistance</h2>
+<ul><li>Every transaction pays at least the floor base fee, so spam has a price.</li><li>Sustained congestion drives the base fee up exponentially (+12.5%/block ≈ ×3.2 in 10 blocks), which is what throttles it.</li><li>Per-sender nonce gaps are limited (256) and mempool size is capped (20,000); replacing a pending transaction requires ≥ 10% higher tip.</li><li>State-heavy abuse is priced on its own <code>state</code> dimension rather than hiding in compute.</li></ul>
+<h2 id="known-gaps">Known gaps</h2>
+<ul><li>Cost constants are initial estimates, not benchmark-derived. They must be recalibrated on a distributed testnet.</li><li>Tips are a simple first-price auction for the proposer; priority ordering is not yet MEV-resistant.</li><li>No per-account or per-contract hotspot pricing yet (a contract everyone touches serializes execution); this is a research item for Phase 2.</li></ul>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/fee-market.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#what-it-is">What it is</a><a href="#resources">Resources</a><a href="#base-fee-update">Base fee update</a><a href="#paying">Paying</a><a href="#lanes-parallel-execution">Lanes (parallel execution)</a><a href="#spam-resistance">Spam resistance</a><a href="#known-gaps">Known gaps</a></aside>
+</div>
+</body>
+</html>

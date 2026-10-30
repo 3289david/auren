@@ -28,7 +28,7 @@ base' = max(base', minBase)
 
 So a full block raises each base fee by 12.5% (e.g. 40 → 45), an empty block lowers it by 12.5%, and a block exactly at target leaves it unchanged.
 
-Default start `{compute: 40, state: 2000}` sparks/unit; floor `{10, 500}`. A transfer therefore costs `21,000×40 + 100×2,000 = 1,040,000 sparks ≈ 0.00104 AUR` at the start and `0.00026 AUR` at the floor.
+Default start `{compute: 4, state: 200}` sparks/unit; floor `{1, 50}`. A transfer therefore costs `21,000×4 + 100×200 = 104,000 sparks ≈ 0.000104 AUR` at the start and `21,000×1 + 100×50 = 26,000 sparks = 0.000026 AUR` at the floor. That is cents-or-less at any plausible price, and the fee is burned, not paid to anyone.
 
 ## Paying
 

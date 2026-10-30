@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Run an AUREN node · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="RUN-A-NODE.html" class="on">Run an AUREN node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="domains.html">Names, domains and your own TLD</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="validators.html">Running a validator</a><h4>Build on AUREN</h4><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="run-an-auren-node">Run an AUREN node</h1>
+<p>A node keeps its own copy of the network and checks every block. You need <b>only Node.js 20+</b>. No npm, no git, no build step, no admin rights.</p>
+<p>There is <b>one mainnet, one testnet and one devnet.</b> You <i>join</i> them; you never create them. (The tools the core team uses to create a network are in <code>docs/LAUNCH.md</code> and are not needed here.)</p>
+<div class="table-wrap"><table><thead><tr><th>Network</th><th>Use it for</th><th>Status</th></tr></thead><tbody><tr><td><b>testnet</b></td><td>trying everything with free coins (recommended)</td><td>official genesis in this package; join with <code>auren join testnet</code></td></tr><tr><td><b>devnet</b></td><td>early features, may be reset</td><td>same command with <code>devnet</code></td></tr><tr><td><b>mainnet</b></td><td>real value</td><td><b>not launched.</b> It will only launch after independent audits and a long public test. <code>auren join mainnet</code> will say so.</td></tr></tbody></table></div>
+<h2 id="1-get-auren">1. Get AUREN</h2>
+<p>Download the package from the official site's <b>Run a node</b> page (<code>/run-a-node.html</code>) and unpack it. It is under 200 KB and contains no keys. Every node started with <code>--website</code> serves it at <code>/downloads/</code>.</p>
+<h2 id="2-join">2. Join</h2>
+<p><b>Windows</b> (easiest): unzip, right-click <code>install\windows\Install-AUREN.ps1</code> → <i>Run with PowerShell</i> (installs Node.js if missing, adds <b>AUREN Node</b> to the Start Menu, can start it at sign-in), then open <b>AUREN Node</b>. Or in a terminal: <code>auren.cmd join testnet</code>.</p>
+<p><b>macOS / Linux:</b> install Node.js 20+ from nodejs.org, then in the unpacked folder:</p>
+<div class="codebox"><pre><code>./auren join testnet</code></pre></div>
+<p><b>Android:</b> install <b>Termux</b> (F-Droid), copy the package in, then <code>sh install/android/termux-setup.sh</code>. This runs a real node inside Termux. There is no standalone Android app yet: an APK needs the Android SDK and a signing key, which this project does not ship.</p>
+<p>The first run creates <code>~/.auren/testnet</code> (Windows: <code>C:\Users\&lt;you&gt;\.auren\testnet</code>) and syncs from the network's seed nodes. Leave the window open.</p>
+<h2 id="3-check-it">3. Check it</h2>
+<div class="codebox"><pre><code>./auren status --network testnet        # running · auren-testnet-1 · block 1234 · 4 peers · in sync</code></pre></div>
+<p>Your node also serves the website, wallet and explorer: open the address printed in the node window (default port 9650).</p>
+<h2 id="options">Options</h2>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Meaning</th></tr></thead><tbody><tr><td><code>--peers http://host:port,…</code></td><td>nodes to connect to (default: the published seed nodes; if none are published yet, you must give at least one)</td></tr><tr><td><code>--port 9650</code></td><td>port for your node</td></tr><tr><td><code>--home &lt;dir&gt;</code></td><td>where data lives (never share one folder between two networks)</td></tr><tr><td><code>--public</code></td><td>accept connections from other machines (default: only this computer)</td></tr><tr><td><code>--tls-cert f --tls-key f [--tls-port 443]</code></td><td>also serve <b>HTTPS</b></td></tr></tbody></table></div>
+<h2 id="use-the-wallet-from-another-computer-or-phone-https">Use the wallet from another computer or phone: HTTPS</h2>
+<p>Browsers only enable wallet cryptography on <b>secure pages</b>: <code>https://…</code> (or <code>localhost</code>). If other devices open your node's address over plain <code>http://</code>, the wallet cannot create or sign anything (the browser disables it). Two ways to fix that:</p>
+<ul><li><b>A real domain</b> (best): put the node behind Caddy (<code>deploy/Caddyfile</code>), which gets a trusted certificate automatically. Visitors need nothing.</li><li><b>Your own certificate</b> for a private network: create one, start with <code>--tls-cert/--tls-key</code>, and install that certificate as trusted on each device. A self-signed certificate is refused by browsers until you do; AUREN cannot and will not bypass that. ``<code>bash openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 365 -subj &quot;/CN=192.168.1.20&quot; -addext &quot;subjectAltName=IP:192.168.1.20&quot; ./auren join testnet --public --tls-cert cert.pem --tls-key key.pem --tls-port 9660 </code>``</li></ul>
+<p>(Verified: the HTTPS listener serves the API, wallet page and RPC. A browser accepting the certificate is on your side.)</p>
+<h2 id="keep-it-running">Keep it running</h2>
+<ul><li><b>Windows:</b> <code>Install-AUREN.ps1</code> can create a sign-in task. Remove it with <code>schtasks /Delete /TN &quot;AUREN Node (testnet)&quot; /F</code>.</li><li><b>Linux:</b> <code>deploy/auren-node.service</code> (systemd). Use <code>ExecStart=/usr/bin/node bin/auren.js join testnet</code>.</li><li><b>Android:</b> Termux keeps running with a wake lock (<code>termux-wake-lock</code>); disable battery optimization for Termux.</li></ul>
+<h2 id="update">Update</h2>
+<p>Download the newest package and unpack it over (or beside) the old one. Your data in <code>~/.auren</code> is separate and is kept. Never mix data between networks.</p>
+<h2 id="becoming-a-validator-advanced">Becoming a validator (advanced)</h2>
+<p>A regular node checks the network, and with <code>--earn</code> it also earns AUR (see <a href="node-rewards.html">node-rewards.md</a>). Validators also propose and sign blocks and earn rewards, and putting their stake at risk. Read <code>docs/validators.md</code> first: you will create a separate consensus key, stake AUR, and must never run two nodes with the same key (that is slashed).</p>
+<h2 id="back-up">Back up</h2>
+<p>Your wallet seed phrase is the only copy of your funds. Node data (<code>~/.auren/&lt;network&gt;</code>) can always be re-downloaded from the network; do back up <code>priv_validator_key.json</code> if you run a validator.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<div class="table-wrap"><table><thead><tr><th>Symptom</th><th>Fix</th></tr></thead><tbody><tr><td>&quot;no public seed nodes are published&quot;</td><td>pass <code>--peers http://host:port</code> of any node you know</td></tr><tr><td>&quot;has not been launched yet&quot;</td><td>the network you named has no genesis in this package (mainnet)</td></tr><tr><td>&quot;genesis … does not match the official one&quot;</td><td>this copy was modified or is outdated: download a fresh package</td></tr><tr><td><code>auren status</code> says not running</td><td>start it first, or use <code>--port</code> if you changed the port</td></tr><tr><td>wallet buttons do nothing on another device</td><td>you are on plain <code>http://</code>: use HTTPS (above)</td></tr></tbody></table></div>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/RUN-A-NODE.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#1-get-auren">1. Get AUREN</a><a href="#2-join">2. Join</a><a href="#3-check-it">3. Check it</a><a href="#options">Options</a><a href="#use-the-wallet-from-another-computer-or-phone-https">Use the wallet from another computer or phone: HTTPS</a><a href="#keep-it-running">Keep it running</a><a href="#update">Update</a><a href="#becoming-a-validator-advanced">Becoming a validator (advanced)</a><a href="#back-up">Back up</a><a href="#troubleshooting">Troubleshooting</a></aside>
+</div>
+</body>
+</html>

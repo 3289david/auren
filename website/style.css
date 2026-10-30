@@ -206,3 +206,25 @@ dialog h2 { margin-top: 0; font-size: 1.15rem; }
 .msg { padding: 16px; color: var(--muted); }
 .err { color: var(--bad); }
 button.linklike { background: none; border: 0; color: var(--text); text-decoration: underline; text-decoration-color: var(--line); cursor: pointer; font: inherit; padding: 0; }
+
+/* docs */
+.docs { display: grid; grid-template-columns: 210px minmax(0, 1fr) 190px; gap: 40px; padding-top: 32px; padding-bottom: 64px; max-width: 1180px; }
+@media (max-width: 1000px) { .docs { grid-template-columns: 1fr; gap: 12px; } .docs-toc { display: none; } }
+.docs-nav, .docs-toc { position: sticky; top: 76px; align-self: start; max-height: calc(100vh - 90px); overflow-y: auto; font-size: .88rem; }
+@media (max-width: 1000px) { .docs-nav, .docs-toc { position: static; max-height: none; } }
+.docs-nav h4, .docs-toc h4 { margin: 18px 0 4px; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+.docs-nav a, .docs-toc a { display: block; padding: 3px 0; color: var(--muted); text-decoration: none; }
+.docs-nav a:hover, .docs-toc a:hover, .docs-nav a.on { color: var(--text); }
+.docs-nav a.on { font-weight: 600; }
+.doc { min-width: 0; max-width: 78ch; }
+.doc h1 { font-size: 2rem; margin: 0 0 12px; }
+.doc h2 { font-size: 1.4rem; margin: 40px 0 8px; padding-top: 8px; scroll-margin-top: 76px; }
+.doc h3 { font-size: 1.1rem; margin: 28px 0 6px; scroll-margin-top: 76px; }
+.doc p, .doc li { color: var(--text); }
+.doc ul, .doc ol { padding-left: 22px; }
+.doc li { margin: 4px 0; }
+.doc .codebox { margin: 14px 0; }
+.doc blockquote { margin: 14px 0; padding: 4px 16px; border-left: 3px solid var(--accent); color: var(--muted); }
+.doc hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
+.doc table { font-size: .86rem; }
+.doc .table-wrap { margin: 14px 0; }

@@ -115,13 +115,13 @@ test('base fee: rises on full blocks (+12.5% max), falls on empty blocks, respec
 });
 
 test('fee market end to end: congestion raises the quote, idle blocks bring it back', () => {
-  const { chain, validators, accts } = makeTestChain({ params: { ...FAST, limits: { compute: 210000, state: 100000 } } });
+  const { chain, validators, accts } = makeTestChain({ params: { ...FAST, initialBaseFee: { compute: '80', state: '400' }, limits: { compute: 210000, state: 100000 } } });
   const start = chain.baseFee.compute;
   const txs = Array.from({ length: 10 }, (_, i) => mkTx(chain, accts.alice, 'transfer', { to: accts.bob.address, amount: '1' }, { nonce: i }));
   const { block } = produce(chain, validators, { candidates: txs });
   assert.equal(block.txs.length, 10);
   assert.equal(chain.baseFee.compute, start + start / 8n);
-  for (let i = 0; i < 40; i++) produce(chain, validators);
+  for (let i = 0; i < 150; i++) produce(chain, validators);
   assert.equal(chain.baseFee.compute, chain.params.minBaseFee.compute);
 });
 

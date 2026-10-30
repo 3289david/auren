@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deploying the official public network (CORE TEAM ONLY) · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="domains.html">Names, domains and your own TLD</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="validators.html">Running a validator</a><h4>Build on AUREN</h4><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html" class="on">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="deploying-the-official-public-network-core-team-only">Deploying the official public network (CORE TEAM ONLY)</h1>
+<blockquote>For the core team that operates the official seed and validator machines. To simply run a node, see <code>RUN-A-NODE.md</code>. There is only one official testnet and one mainnet; do not create parallel ones.</blockquote>
+<p>Everything in this repository runs for real on a single machine (<code>npm run devnet</code>). A <b>public</b> network additionally needs machines on the internet and a domain, which only you can provide. This guide is the exact path from this repo to a public testnet with a wallet and explorer anyone can open.</p>
+<p>Mainnet is a different decision with its own gates: see <code>networks/mainnet/README.md</code>. Do not skip them.</p>
+<h2 id="what-you-need">What you need</h2>
+<div class="table-wrap"><table><thead><tr><th>Item</th><th>Notes</th></tr></thead><tbody><tr><td>4+ Linux hosts</td><td>one validator each, at least 2 cores / 4 GB / SSD; use <b>different providers and regions</b>, otherwise it is one point of failure with four names</td></tr><tr><td>A domain</td><td>for TLS RPC + wallet + explorer (<code>rpc.testnet.&lt;yours&gt;</code>) and a faucet host</td></tr><tr><td>Node.js 20+ on each host</td><td>no other dependencies</td></tr><tr><td>Time sync</td><td><code>chrony</code>/NTP on every host; consensus rounds use local clocks</td></tr></tbody></table></div>
+<h2 id="1-generate-the-genesis-on-a-trusted-machine">1. Generate the genesis (on a trusted machine)</h2>
+<div class="codebox"><pre><code>npm run gen:testnet            # networks/testnet/genesis.json + networks/testnet/_private/</code></pre></div>
+<p><code>_private/</code> contains, per genesis validator, a home directory with its consensus key and config, plus <code>accounts.json</code> (faucet key, operator keys). <b>Treat it as secret</b>: copy each <code>nodeN/</code> to its own host over SSH, then delete the rest or keep it offline. Commit only <code>genesis.json</code> and <code>network.json</code>.</p>
+<h2 id="2-start-the-validators">2. Start the validators</h2>
+<p>On each host (replace the repo path):</p>
+<div class="codebox"><pre><code>node bin/auren-node.js start --home ~/nodeN --rpc-host 0.0.0.0 --website \
+  --self-url http://&lt;this-host-public-ip&gt;:9650 \
+  --peers http://&lt;ip-of-node0&gt;:9650,http://&lt;ip-of-node1&gt;:9650,http://&lt;ip-of-node2&gt;:9650</code></pre></div>
+<p>Open TCP 9650 between the validators (security group allow-list by IP). Use <code>deploy/auren-node.service</code> to keep it running. <b>One instance per consensus key, ever.</b></p>
+<p>All nodes must be up within a few minutes of <code>genesisTime</code> (printed by <code>gen:testnet</code>).</p>
+<h2 id="3-verify-it-is-one-network">3. Verify it is one network</h2>
+<div class="codebox"><pre><code>node scripts/verify-network.js http://ip0:9650 http://ip1:9650 http://ip2:9650 http://ip3:9650</code></pre></div>
+<p>Passes only if all nodes share the genesis hash and agree on a block hash and state root at a common height, finality certificates exist, and no node lags.</p>
+<h2 id="4-public-rpc-wallet-and-explorer-over-https">4. Public RPC, wallet and explorer over HTTPS</h2>
+<p>Put <code>deploy/Caddyfile</code> in front of one or two nodes (not the validators if you can avoid it: run separate full nodes with <code>--website</code> that peer with them). The node serves the landing page, <code>/wallet.html</code> and <code>/explorer.html</code> itself, and the browser pages automatically use the origin they were loaded from as the RPC URL, so there is nothing else to configure.</p>
+<div class="codebox"><pre><code>node bin/auren-node.js init --network testnet --home /var/lib/auren --full-node
+node bin/auren-node.js start --home /var/lib/auren --rpc-host 127.0.0.1 --website --peers http://ip0:9650,...</code></pre></div>
+<p>Block <code>/p2p/*</code> at the proxy (the Caddyfile does).</p>
+<h2 id="5-faucet">5. Faucet</h2>
+<div class="codebox"><pre><code>node bin/auren-faucet.js --rpc http://127.0.0.1:9650 \
+  --key-file networks/testnet/_private/faucet.json --port 9690 --amount 100 --cooldown-sec 86400</code></pre></div>
+<p>Put the faucet's URL into <code>networks/networks.json</code> (<code>testnet.faucet</code>, <code>testnet.rpc</code>, <code>testnet.seeds</code>) and into the wallet's faucet setting if it is not on the same host name (browser storage key <code>auren.faucet</code>). The faucet refuses to run on a network whose genesis says <code>mainnet</code>.</p>
+<h2 id="6-invite-outside-validators">6. Invite outside validators</h2>
+<p>Follow <code>docs/validators.md</code>. Give them the genesis file, its hash (<code>node bin/auren-node.js genesis-hash --home &lt;dir&gt;</code>), seed URLs, and some testnet AUR (the faucet's 100 AUR is below the 10,000 AUR minimum self-stake, so transfer stake from the treasury key in <code>accounts.json</code>).</p>
+<h2 id="7-operate-it-like-it-matters">7. Operate it like it matters</h2>
+<ul><li>Monitor <code>/metrics</code> (<code>deploy/prometheus.yml</code>) and alert on height stalls and <code>auren_catching_up</code>.</li><li>Run the fault drills from <code>docs/networks.md</code> and publish results.</li><li>Back up each validator's <code>priv_validator_key.json</code> and <code>data/priv_validator_state.json</code>.</li><li>Keep security contact and disclosure policy current (<code>SECURITY.md</code>).</li></ul>
+<h2 id="what-stays-your-decision">What stays your decision</h2>
+<p>Hosting, domain, who runs the genesis validators, token distribution, legal review, and when (or whether) to go beyond testnet. The software does not decide these for you.</p>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/deploy.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#what-you-need">What you need</a><a href="#1-generate-the-genesis-on-a-trusted-machine">1. Generate the genesis (on a trusted machine)</a><a href="#2-start-the-validators">2. Start the validators</a><a href="#3-verify-it-is-one-network">3. Verify it is one network</a><a href="#4-public-rpc-wallet-and-explorer-over-https">4. Public RPC, wallet and explorer over HTTPS</a><a href="#5-faucet">5. Faucet</a><a href="#6-invite-outside-validators">6. Invite outside validators</a><a href="#7-operate-it-like-it-matters">7. Operate it like it matters</a><a href="#what-stays-your-decision">What stays your decision</a></aside>
+</div>
+</body>
+</html>

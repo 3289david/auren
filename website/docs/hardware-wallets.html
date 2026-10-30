@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hardware keys and passkeys · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="domains.html">Names, domains and your own TLD</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="validators.html">Running a validator</a><h4>Build on AUREN</h4><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html" class="on">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="hardware-keys-and-passkeys">Hardware keys and passkeys</h1>
+<h2 id="what-is-supported">What is supported</h2>
+<p><b>Signature scheme 2: WebAuthn / ECDSA P-256.</b> The web wallet can create a key <i>inside</i> a security key (YubiKey and similar FIDO2 keys), a platform authenticator (Touch ID, Windows Hello, Android biometrics) or a phone passkey. The private key never leaves the device and every transaction requires the user's touch or biometric.</p>
+<p>How it works on-chain (<code>src/crypto.js verifyWebAuthn</code>, <code>src/tx.js</code>):</p>
+<ul><li>Address = <code>bech32(scheme byte 2 ‖ sha256(2 ‖ publicKey)[0:20])</code>; the public key is the uncompressed P-256 point (65 bytes). A transaction carries <code>scheme: 2</code>, that <code>pub</code>, and <code>sig = {authData, clientData, signature}</code>.</li><li>The wallet asks the device to sign the challenge <code>sha256(signingBytes(tx))</code>. The chain checks: <code>clientData.type == &quot;webauthn.get&quot;</code>; <code>clientData.challenge == base64url(sha256(signingBytes(tx)))</code> (so a signature is bound to the exact transaction, chain ID and nonce, and cannot be transplanted); the <b>user-present</b> flag is set; and the ECDSA signature over <code>authData ‖ sha256(clientData)</code> verifies under the account's key.</li><li>Recovery can move any account onto a hardware key: guardians approve <code>recoveryApprove {account, newPub, newScheme: 2}</code>.</li></ul>
+<h2 id="things-to-know">Things to know</h2>
+<ul><li><b>Not exportable, so use guardians.</b> A hardware key cannot be backed up. Losing the device loses the key; set guardians (Security tab) so the account can be recovered to a new key.</li><li><b>Bound to the site name.</b> WebAuthn credentials are scoped to the host name (relying-party ID) of the page that created them (<code>localhost</code>, <code>wallet.example.org</code>). They cannot be used from another host name, which is also what stops a phishing site from asking your key to sign.</li><li><b>HTTPS or localhost only.</b> Browsers expose WebAuthn only in secure contexts.</li><li><b>Signature size:</b> about 200-300 bytes more than Ed25519 per transaction (authenticator data + client data). Fine at current block limits; this is a measured trade-off, not free.</li><li><b>Approval prompt shows less than the review screen.</b> The device usually shows only &quot;sign in to &lt;site&gt;&quot;. The wallet's review dialog (with the node's dry-run) is the place where you check amounts and recipients, then the touch confirms.</li></ul>
+<h2 id="ledger-and-trezor">Ledger and Trezor</h2>
+<p><b>Not supported yet, and this is a hard external dependency, not a missing feature flag.</b> A Ledger signs only through an app installed on the device, and no AUREN app exists. Building one means writing and submitting device firmware (C, Ledger SDK) and passing Ledger's review; it cannot be verified without a physical device. WebAuthn gives the same property (key never leaves hardware, user confirmation per transaction) with devices people already own. A Ledger app is on the roadmap for after the transaction format is frozen.</p>
+<h2 id="testing-and-what-is-not-covered">Testing, and what is not covered</h2>
+<p><code>test/webauthn.test.js</code> verifies the chain-side logic with real P-256 cryptography and the exact byte formats a browser returns, via a software authenticator: acceptance and execution, rejection when the amount, nonce or chain ID changes, rejection of a signature transplanted from another transaction, rejection without user presence, parity of address derivation between the browser library and the node, and guardian recovery onto a hardware key (old key stops working).</p>
+<p><b>Not covered by automated tests:</b> a physical security key or biometric prompt (a test runner cannot touch a YubiKey), and browser-specific differences. Manual checklist before relying on it:</p>
+<ol><li>Open the wallet on <code>http://localhost:&lt;port&gt;</code> or HTTPS in current Chrome/Edge/Safari/Firefox.</li><li>&quot;Hardware key / passkey&quot; → create; the device prompts; the wallet shows an address.</li><li>Fund it from the faucet; send a transaction; the device prompts; the transaction confirms.</li><li>Set a guardian, and complete a recovery to another key.</li><li>Repeat with a second authenticator type (platform vs. USB key).</li></ol>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/hardware-wallets.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#what-is-supported">What is supported</a><a href="#things-to-know">Things to know</a><a href="#ledger-and-trezor">Ledger and Trezor</a><a href="#testing-and-what-is-not-covered">Testing, and what is not covered</a></aside>
+</div>
+</body>
+</html>

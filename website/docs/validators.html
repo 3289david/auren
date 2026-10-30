@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Running a validator · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="domains.html">Names, domains and your own TLD</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="validators.html" class="on">Running a validator</a><h4>Build on AUREN</h4><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="running-a-validator">Running a validator</h1>
+<p>Works the same on testnet and (eventually) mainnet; only the network name and the money differ.</p>
+<h2 id="1-requirements">1. Requirements</h2>
+<ul><li>Node.js 20+, a dedicated Linux host (2+ cores, 4 GB RAM, SSD), a stable public IP or port-forward, accurate clock (use <code>chrony</code>/NTP).</li><li>Two keys: an <b>operator key</b> (funds, kept in a keystore) and a <b>consensus key</b> (created by <code>auren-node init</code>, signs votes).</li><li>Stake: at least <code>minSelfStake</code> (mainnet default 10,000 AUR; testnet via the faucet).</li></ul>
+<h2 id="2-initialize">2. Initialize</h2>
+<div class="codebox"><pre><code>node bin/auren-node.js init --network testnet --home /var/lib/auren --moniker my-validator
+# prints your consensus public key and the genesis hash; compare the hash with the one published by the network
+chmod 600 /var/lib/auren/priv_validator_key.json</code></pre></div>
+<p>Edit <code>/var/lib/auren/config.json</code>: add seed <code>peers</code>, and set <code>rpcHost</code> to <code>127.0.0.1</code> (put TLS + rate limiting in front if you serve public RPC). Leave <code>operator</code> as <code>null</code> until step 4.</p>
+<h2 id="3-start-as-a-full-node-and-let-it-sync">3. Start as a full node and let it sync</h2>
+<div class="codebox"><pre><code>node bin/auren-node.js start --home /var/lib/auren
+node bin/aurenctl.js status --rpc http://127.0.0.1:9650    # catchingUp must be false</code></pre></div>
+<p>A systemd unit is in <code>deploy/auren-node.service</code>.</p>
+<h2 id="4-create-the-validator-on-chain">4. Create the validator on-chain</h2>
+<div class="codebox"><pre><code>node bin/aurenctl.js keys new operator
+# testnet only: the faucet's default drip (100 AUR) is below the 10,000 AUR minimum self-stake,
+# so ask the testnet coordinators for stake, or have them run the faucet with --amount 10000
+node bin/aurenctl.js faucet operator --faucet-url &lt;faucet url&gt;
+node bin/aurenctl.js validator create --from operator --network testnet \
+    --cons-pub $(node bin/auren-node.js show-validator --home /var/lib/auren) \
+    --moniker my-validator --commission 5 --amount 10000</code></pre></div>
+<p>Now set <code>&quot;operator&quot;: &quot;&lt;your operator address&gt;&quot;</code> in <code>config.json</code> and restart the node. It starts voting once it is in the active set (next block after your stake lands and exceeds <code>minSelfStake</code>).</p>
+<h2 id="5-operate">5. Operate</h2>
+<div class="table-wrap"><table><thead><tr><th>Task</th><th>Command</th></tr></thead><tbody><tr><td>Am I active?</td><td><code>aurenctl status</code> → <code>validator.active</code>; <code>aurenctl validators</code></td></tr><tr><td>Claim rewards + commission</td><td><code>aurenctl claim &lt;your operator address&gt; --from operator</code></td></tr><tr><td>Add stake</td><td><code>aurenctl delegate &lt;operator address&gt; &lt;amount&gt; --from operator</code></td></tr><tr><td>Leave</td><td><code>aurenctl undelegate &lt;operator address&gt; &lt;amount&gt; --from operator</code>; funds return after unbonding</td></tr><tr><td>Unjail after downtime</td><td><code>aurenctl validator unjail --from operator</code> (after <code>jailBlocks</code>)</td></tr></tbody></table></div>
+<h2 id="6-rules-that-cost-money-if-broken">6. Rules that cost money if broken</h2>
+<ol><li><b>Never run two nodes with the same consensus key.</b> That is double signing: 5% slashed, tombstoned forever. This includes &quot;failover&quot; setups and restoring a backup while the old node is alive.</li><li>Always keep <code>data/priv_validator_state.json</code> with the node. If you migrate hosts, copy it too and stop the old node first.</li><li>Downtime: missing &gt; 50% of a window jails you; you also forgo rewards when you are not signing.</li><li>Keep the operator key off the validator host.</li></ol>
+<h2 id="7-monitoring">7. Monitoring</h2>
+<p><code>GET /metrics</code> (Prometheus): <code>auren_block_height</code>, <code>auren_catching_up</code>, <code>auren_peers</code>, <code>auren_mempool_size</code>, <code>auren_base_fee_*</code>, <code>auren_active_validators</code>, <code>auren_nakamoto_*</code>. Alert on: height not advancing for &gt; 30 s, <code>catching_up == 1</code>, peers == 0.</p>
+<h2 id="8-decentralization-etiquette">8. Decentralization etiquette</h2>
+<p>The chain measures voting-power concentration but cannot see hosting. Please avoid the largest cloud region among current validators, publish your jurisdiction and operator identity if you can, and do not split one entity into many validators to take more power.</p>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/validators.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#1-requirements">1. Requirements</a><a href="#2-initialize">2. Initialize</a><a href="#3-start-as-a-full-node-and-let-it-sync">3. Start as a full node and let it sync</a><a href="#4-create-the-validator-on-chain">4. Create the validator on-chain</a><a href="#5-operate">5. Operate</a><a href="#6-rules-that-cost-money-if-broken">6. Rules that cost money if broken</a><a href="#7-monitoring">7. Monitoring</a><a href="#8-decentralization-etiquette">8. Decentralization etiquette</a></aside>
+</div>
+</body>
+</html>
