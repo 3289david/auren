@@ -190,19 +190,24 @@
     const local = { devnet: 'http://127.0.0.1:9650', testnet: 'http://127.0.0.1:9650', mainnet: 'http://127.0.0.1:9650' };
     const names = Object.keys(nets).length ? Object.keys(nets) : ['devnet', 'testnet', 'mainnet'];
     sel.innerHTML = names.map((n) => '<option value="' + n + '">' + n[0].toUpperCase() + n.slice(1) + (nets[n] && nets[n].chainId ? '' : '') + '</option>').join('') + '<option value="custom">Custom node…</option>';
+    // The node address is hidden: people pick a network. "Custom node…" reveals the address box.
+    input.hidden = true;
+    let custom = false;
     const sync = () => {
-      const cur = input.value.replace(/\/$/, '');
-      const hit = names.find((n) => (nets[n] && (nets[n].rpc || []).includes(cur)));
-      sel.value = hit || 'custom';
+      if (custom) return;
+      const chip = document.getElementById('conn');
+      const net = chip && chip.textContent.split(' ')[0];
+      if (net && names.includes(net)) sel.value = net;
     };
     sel.addEventListener('change', () => {
-      if (sel.value === 'custom') { input.focus(); input.select(); return; }
+      if (sel.value === 'custom') { custom = true; input.hidden = false; input.focus(); input.select(); return; }
+      custom = false; input.hidden = true;
       const n = nets[sel.value] || {};
       input.value = (n.rpc && n.rpc[0]) || local[sel.value];
       form.requestSubmit();
     });
-    input.addEventListener('input', sync);
-    new MutationObserver(sync).observe(input, { attributes: true, attributeFilter: ['value'] });
+    const chip = document.getElementById('conn');
+    if (chip) new MutationObserver(sync).observe(chip, { childList: true, characterData: true, subtree: true });
     setTimeout(sync, 300);
     sel.syncPicker = sync;
   }

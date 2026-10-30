@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.3
+
+- Wallet and explorer: the node address box is hidden (pick Devnet, Testnet or Mainnet; "Custom node…" shows it). Plain-language wording throughout for non-developers: recovery key instead of seed, trusted helpers instead of guardians, "payments" instead of transactions, and no developer commands or file paths in the interface.
+
 ## 0.6.2
 
 - Copy: removed the "test network, no monetary value" wording everywhere. AUR is presented as the mainnet coin; the testnet and devnet are described as faucet networks; mainnet is stated as not yet launched.

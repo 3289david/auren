@@ -45,9 +45,9 @@
       ['Hash', `<span class="mono">${esc(b.hash)}</span>`],
       ['Parent', hd.height > 1 ? link('block=' + (hd.height - 1), hd.prevHash) : 'genesis'],
       ['Time', `${new Date(hd.time).toISOString()} (${age(hd.time)})`],
-      ['Proposer', A(hd.proposer) + ` · round ${hd.round}`],
+      ['Created by', A(hd.proposer) + ` · round ${hd.round}`],
       ['Transactions', fmt(hd.txCount)],
-      ['Base fee', `compute ${esc(hd.baseFee.compute)} · state ${esc(hd.baseFee.state)} sparks/unit`],
+      ['Fee level', `compute ${esc(hd.baseFee.compute)} · state ${esc(hd.baseFee.state)} sparks/unit`],
       ['Resource use', `compute ${fmt(hd.used.compute)} (${pct(hd.used.compute, lim.compute)}) · state ${fmt(hd.used.state)} (${pct(hd.used.state, lim.state)})`],
       ['State root', `<span class="mono">${esc(hd.stateRoot)}</span>`],
       ['Finality certificate', `${(b.commit ? b.commit.votes.length : 0)} signatures: ${signers || 'n/a'}`],
@@ -60,7 +60,7 @@
     const tx = t.tx, r = t.receipt;
     return `${back}<h2>Transaction</h2>` + kv([
       ['Hash', `<span class="mono">${esc(hash)}</span>`],
-      ['Status', t.status === 'pending' ? '<span class="tag soon">pending in mempool</span>' : `${statusTag(r && r.status, r && r.code)} in block ${link('block=' + t.height, String(t.height))}`],
+      ['Status', t.status === 'pending' ? '<span class="tag soon">waiting to be confirmed</span>' : `${statusTag(r && r.status, r && r.code)} in block ${link('block=' + t.height, String(t.height))}`],
       ['Type', esc(tx.type)],
       ['From', A(tx.from)],
       ['Details', fmtBody(tx.body)],
@@ -73,7 +73,7 @@
         ...(r.evm.logs.length ? [['Logs', r.evm.logs.map((l, i) => `#${i} <span class="mono">0x${esc(l.address)}</span><br><span class="muted mono" style="font-size:.78rem">topics: ${l.topics.map((x) => '0x' + esc(x)).join(' ')}<br>data: 0x${esc(l.data)}</span>`).join('<hr style="border:0;border-top:1px solid var(--line)">')]] : []),
       ] : []),
       ...(tx.scheme === 4 ? [['Signed by', 'an Ethereum wallet (secp256k1); the raw transaction is the signature']] : []),
-      ['Nonce', String(tx.nonce)], ['Chain', esc(tx.chainId)],
+      ['Payment number', String(tx.nonce)], ['Chain', esc(tx.chainId)],
       ['Signing key', `<span class="mono">${esc(tx.pub)}</span>`],
       ['Signature', `<span class="mono">${esc(tx.sig)}</span>`],
     ]);
@@ -87,13 +87,13 @@
       ...(a.evm ? [['EVM address', `<span class="mono">${esc(a.evm.address)}</span>`]] : []),
       ...(a.evm && a.evm.isContract ? [['Type', `<span class="tag live">Smart contract</span> · ${fmt(a.evm.codeSize)} bytes of code`]] : []),
       ...(rev.name ? [['Primary name', `${link('name=' + rev.name, rev.name, '')} <span class="tag live">forward-verified</span>`]] : []),
-      ['Balance', `<b>${formatAur(a.balance)} AUR</b>`], ['Spendable', `${formatAur(a.spendable)} AUR`], ['Nonce', String(a.nonce)],
+      ['Balance', `<b>${formatAur(a.balance)} AUR</b>`], ['Spendable', `${formatAur(a.spendable)} AUR`], ['Payments sent', String(a.nonce)],
       ...(a.authPub ? [['Authorized key (after recovery)', `<span class="mono">${esc(a.authPub)}</span>`]] : []),
       ...(a.security ? [['Protection', `${a.security.guardians.length} guardians, threshold ${a.security.threshold}, delay ${fmt(a.security.delayBlocks)} blocks, daily limit ${a.security.dailyLimit === null ? 'none' : formatAur(a.security.dailyLimit) + ' AUR'}`]] : []),
     ]);
     if (val) html += `<h3>Validator</h3>` + kv([
-      ['Moniker', esc(val.moniker)], ['Status', val.tombstoned ? '<span class="tag no">tombstoned</span>' : val.jailed ? '<span class="tag soon">jailed</span>' : val.active ? '<span class="tag live">active</span>' : '<span class="tag soon">inactive</span>'],
-      ['Bonded', `${formatAur(val.tokens)} AUR`], ['Commission', `${(val.commissionBps / 100).toFixed(2)}%`], ['Missed blocks (window)', String(val.missed)], ['Consensus key', `<span class="mono">${esc(val.consPub)}</span>`],
+      ['Name', esc(val.moniker)], ['Status', val.tombstoned ? '<span class="tag no">banned</span>' : val.jailed ? '<span class="tag soon">paused</span>' : val.active ? '<span class="tag live">active</span>' : '<span class="tag soon">inactive</span>'],
+      ['Staked', `${formatAur(val.tokens)} AUR`], ['Commission', `${(val.commissionBps / 100).toFixed(2)}%`], ['Missed blocks (window)', String(val.missed)], ['Consensus key', `<span class="mono">${esc(val.consPub)}</span>`],
     ]);
     if (a.delegations.length) html += `<h3>Delegations</h3><div class="table-wrap"><table><thead><tr><th>Validator</th><th>Staked</th><th>Unclaimed rewards</th></tr></thead><tbody>${a.delegations.map((d) => `<tr><td>${A(d.validator)}</td><td>${formatAur(d.tokens)} AUR</td><td>${formatAur(d.pendingRewards)} AUR</td></tr>`).join('')}</tbody></table></div>`;
     if (a.unbonding.length) html += `<h3>Unbonding</h3><div class="table-wrap"><table><tbody>${a.unbonding.map((u) => `<tr><td>${A(u.validator)}</td><td>${formatAur(u.amount)} AUR</td><td>available at block ${fmt(u.matureAtHeight)}</td></tr>`).join('')}</tbody></table></div>`;
@@ -119,7 +119,7 @@
     const list = await rpc.get(`/blocks?limit=25${before ? `&before=${before}` : ''}`);
     const rows = list.map((b) => `<tr><td>${link('block=' + b.height, '#' + fmt(b.height), '')}</td><td>${age(b.time)}<br><small class="muted">${new Date(b.time).toISOString().replace('T', ' ').slice(0, 19)}</small></td><td>${b.txCount}</td><td>${A(b.proposer)}</td><td>${fmt(b.used.compute)} <small class="muted">(${((Number(b.used.compute) / params.limits.compute) * 100).toFixed(1)}%)</small></td><td class="mono">${esc(b.baseFee.compute)}</td></tr>`).join('');
     const last = list.length ? list[list.length - 1].height : 0;
-    return `${back}<h2>Blocks</h2><div class="table-wrap"><table><thead><tr><th>Block</th><th>Time</th><th>Txs</th><th>Proposer</th><th>Compute used</th><th>Base fee</th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="msg">No blocks</td></tr>'}</tbody></table></div>${pager(last > 1 ? 'blocks=' + last : null, before ? 'blocks=1' : null)}`;
+    return `${back}<h2>Blocks</h2><div class="table-wrap"><table><thead><tr><th>Block</th><th>Time</th><th>Txs</th><th>Created by</th><th>Space used</th><th>Fee</th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="msg">No blocks</td></tr>'}</tbody></table></div>${pager(last > 1 ? 'blocks=' + last : null, before ? 'blocks=1' : null)}`;
   }
 
   async function viewTxs(arg) {
@@ -134,7 +134,7 @@
     const c = vs.concentration;
     const rows = vs.validators.map((v, i) => {
       const share = Number((BigInt(v.power) * 10000n) / total) / 100;
-      const st = v.tombstoned ? '<span class="tag no">tombstoned</span>' : v.jailed ? '<span class="tag soon">jailed</span>' : v.active ? '<span class="tag live">active</span>' : '<span class="tag soon">inactive</span>';
+      const st = v.tombstoned ? '<span class="tag no">banned</span>' : v.jailed ? '<span class="tag soon">paused</span>' : v.active ? '<span class="tag live">active</span>' : '<span class="tag soon">inactive</span>';
       return `<tr><td>${i + 1}</td><td>${link('address=' + v.operator, v.moniker, '')}<br><span class="mono muted" style="font-size:.78rem">${esc(short(v.operator, 12))}</span></td><td><div class="bar"><i style="width:${Math.min(100, share)}%"></i></div><small>${share.toFixed(2)}%</small></td><td>${formatAur(v.tokens, 0)} AUR</td><td>${(v.commissionBps / 100).toFixed(1)}%</td><td>${v.missed}</td><td>${st}</td></tr>`;
     }).join('');
     return `${back}<h2>Validators</h2><div class="stats"><div class="stat"><small>Active validators</small><b>${c.activeValidators}</b></div><div class="stat"><small>Nakamoto coefficient (⅓)</small><b>${c.halt33}</b><em>fewest that can halt finality</em></div><div class="stat"><small>Nakamoto coefficient (⅔)</small><b>${c.control67}</b><em>fewest that can finalize alone</em></div><div class="stat"><small>Staked</small><b>${formatAur(status.bonded, 0)} AUR</b></div></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Validator</th><th>Voting power</th><th>Bonded</th><th>Commission</th><th>Missed (window)</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>`;
@@ -193,12 +193,12 @@
     const c = st.concentration;
     const cells = [
       ['Height', fmt(st.height), st.chainId],
-      ['Transfer fee', formatAur(st.transferFee, 6) + ' AUR', `base fee ${st.baseFee.compute} / ${st.baseFee.state}`],
-      ['Validators', c.activeValidators, `Nakamoto ⅓ ${c.halt33} · ⅔ ${c.control67}`],
+      ['Transfer fee', formatAur(st.transferFee, 6) + ' AUR', 'per payment'],
+      ['Validators', c.activeValidators, 'run the network'],
       ['Supply', formatAur(st.supply, 0) + ' AUR', `issuance ${(Number(st.issuanceRatePpm) / 10000).toFixed(2)}%/yr`],
-      ['Burned', formatAur(st.burned, 4) + ' AUR', 'base fees + slashing + names'],
+      ['Burned', formatAur(st.burned, 4) + ' AUR', 'fees and penalties, gone for good'],
       ['Staked', formatAur(st.bonded, 0) + ' AUR', `${((Number(st.bonded) / Number(st.supply)) * 100).toFixed(1)}% of supply`],
-      ['Mempool', st.mempool, `${st.peers} peers`],
+      ['Waiting payments', st.mempool, `${st.peers} connected nodes`],
     ];
     $('stats').innerHTML = cells.map(([k, v, s]) => `<div class="stat"><small>${esc(k)}</small><b>${esc(v)}</b><em>${esc(s)}</em></div>`).join('');
   }
@@ -216,7 +216,7 @@
     const bars = bs.map((b, i) => `<rect x="${x(i) - bw / 2}" y="${yU(Number(b.used.compute) / params.limits.compute)}" width="${bw}" height="${H - 22 - yU(Number(b.used.compute) / params.limits.compute)}" fill="#6aa8ff" opacity=".35"/>`).join('');
     const line = bs.map((b, i) => `${x(i).toFixed(1)},${yF(fees[i]).toFixed(1)}`).join(' ');
     $('feechart').innerHTML = `<line class="axis" x1="${pad}" x2="${W - 10}" y1="${yU(0.5)}" y2="${yU(0.5)}" stroke-dasharray="4 4"/><text class="tick" x="4" y="${yU(0.5) + 4}">50%</text>${bars}
-      <polyline fill="none" stroke="#e8b84a" stroke-width="2.5" points="${line}"/><text class="tick" x="4" y="14">fee ${fmt(Math.max(...fees))}</text><text class="tick" x="${pad}" y="${H - 4}">gold: compute base fee (sparks/unit) · blue: compute utilization · dashed: 50% target</text>`;
+      <polyline fill="none" stroke="#e8b84a" stroke-width="2.5" points="${line}"/><text class="tick" x="4" y="14">fee ${fmt(Math.max(...fees))}</text><text class="tick" x="${pad}" y="${H - 4}">gold: fee level · blue: how full blocks are · dashed: half full</text>`;
   }
 
   async function home() {
@@ -235,7 +235,7 @@
     const total = vs.validators.reduce((s, v) => s + BigInt(v.power), 0n) || 1n;
     $('vals').innerHTML = vs.validators.map((v) => {
       const share = Number((BigInt(v.power) * 10000n) / total) / 100;
-      const st = v.tombstoned ? '<span class="tag no">tombstoned</span>' : v.jailed ? '<span class="tag soon">jailed</span>' : v.active ? '' : '<span class="tag soon">inactive</span>';
+      const st = v.tombstoned ? '<span class="tag no">banned</span>' : v.jailed ? '<span class="tag soon">paused</span>' : v.active ? '' : '<span class="tag soon">inactive</span>';
       return `<tr><td>${link('address=' + v.operator, v.moniker, '')} ${st}<br><span class="mono muted" style="font-size:.78rem">${esc(short(v.operator, 12))}</span></td><td><div class="bar"><i style="width:${Math.min(100, share)}%"></i></div><small>${share.toFixed(1)}% · ${formatAur(v.tokens, 0)} AUR</small></td><td>${(v.commissionBps / 100).toFixed(1)}%</td></tr>`;
     }).join('') || '<tr><td colspan="3" class="msg">No validators</td></tr>';
   }
@@ -261,7 +261,7 @@
     } catch (e) {
       if (route) { $('view').innerHTML = `${back}<div class="msg err">Not found: ${esc(e.message)}</div>`; return; }
       $('conn').className = 'tag no'; $('conn').textContent = 'disconnected';
-      $('stats').innerHTML = `<div class="msg err">Cannot reach ${esc(rpc.url)}: ${esc(e.message)}. Start a node (<code>npm run devnet</code>) or enter another URL above.</div>`;
+      $('stats').innerHTML = `<div class="msg err">Can't connect to the network. Check your internet connection, then pick a network above and press Connect.</div>`;
     }
     if (status) { $('conn').className = 'tag live'; $('conn').textContent = `${status.network} · connected`; }
   }
@@ -287,7 +287,7 @@
     if (/^proposals?$/i.test(q) || /^gov(ernance)?$/i.test(q)) return go('proposals=1');
     if (/\.aur$/i.test(q)) return go('name=' + encodeURIComponent(q.toLowerCase()));
     if (status && q.toLowerCase().startsWith(status.addressPrefix + '1')) return go('address=' + q.toLowerCase());
-    $('view').innerHTML = `${back}<div class="msg err">Enter a block height, a 64-character transaction hash, an address (${esc(status ? status.addressPrefix : 'aur')}1…) or a name such as alice.aur.</div>`;
+    $('view').innerHTML = `${back}<div class="msg err">Enter a block number, a payment ID, an address (${esc(status ? status.addressPrefix : 'aur')}1…) or a name such as alice.aur.</div>`;
     $('home').hidden = true;
   }
   $('search').addEventListener('submit', (e) => { e.preventDefault(); search($('q').value); });

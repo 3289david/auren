@@ -48,7 +48,7 @@
       if (el) el.innerHTML = [
         ['Spendable', formatAur(account.spendable, 6) + ' AUR'], ['Total balance', formatAur(account.balance, 6) + ' AUR'],
         ['Staked', formatAur(staked, 6) + ' AUR'], ['Unclaimed rewards', formatAur(pending, 6) + ' AUR'], ['Unbonding', formatAur(unb, 6) + ' AUR'],
-        ['Nonce', account.nonce + (account.pendingNonce !== account.nonce ? ` (+${account.pendingNonce - account.nonce} pending)` : '')],
+        ['Payments sent', String(account.nonce) + (account.pendingNonce !== account.nonce ? ` (+${account.pendingNonce - account.nonce} waiting)` : '')],
       ].map(([k, v]) => `<div class="stat"><small>${esc(k)}</small><b>${esc(v)}</b></div>`).join('');
       const h = $('height'); if (h) h.textContent = `block ${fmt(status.height)} · transfer fee ≈ ${formatAur(status.transferFee, 6)} AUR`;
     } catch { /* node unreachable: keep last values */ }
@@ -118,9 +118,9 @@
       $('rvbody').innerHTML = `<table><tbody>
         <tr><th>Network</th><td>${esc(status.chainId)}</td></tr>
         <tr><th>Action</th><td>${esc(type)}</td></tr>${resolutionRows()}
-        <tr><th>Network fee</th><td>${formatAur(sim.fee)} AUR (includes tip)</td></tr>
+        <tr><th>Fee</th><td>${formatAur(sim.fee)} AUR</td></tr>
         <tr><th>Your balance change</th><td>${delta >= 0n ? '+' : ''}${formatAur(delta)} AUR</td></tr>
-        <tr><th>Dry-run result</th><td>${sim.ok ? '<span class="tag live">will succeed</span>' : `<span class="tag no">will fail: ${esc(sim.code)}</span> (the fee is still charged)`}</td></tr></tbody></table>
+        <tr><th>Check</th><td>${sim.ok ? '<span class="tag live">should go through</span>' : `<span class="tag no">will fail: ${esc(sim.code)}</span> (the fee is still charged)`}</td></tr></tbody></table>
         <p class="note">Computed by the node against current state. The final result can differ only if state changes before inclusion.</p>`;
       const dlg = $('review');
       const choice = await new Promise((resolveP) => {
@@ -155,28 +155,28 @@
       <div class="grid g2">
         <form class="card form" id="create">
           <h3 style="margin-top:0">Create a new wallet</h3>
-          <label>Your recovery seed (write it down; it is shown only now)</label>
+          <label>Your recovery key (write it down; you only see it now)</label>
           <pre class="seed" id="seedbox">${seed}</pre>
-          <label class="check"><input type="checkbox" id="saved" required> I have saved this seed somewhere safe and offline</label>
+          <label class="check"><input type="checkbox" id="saved" required> I have saved this recovery key somewhere safe</label>
           <label for="cname">Wallet name</label><input type="text" id="cname" value="My wallet" maxlength="40" required>
-          <label for="cpw">Password (min 10 characters, encrypts the seed in this browser)</label><input type="password" id="cpw" minlength="10" required autocomplete="new-password">
+          <label for="cpw">Password (at least 10 characters; it locks this wallet)</label><input type="password" id="cpw" minlength="10" required autocomplete="new-password">
           <label for="cpw2">Repeat password</label><input type="password" id="cpw2" minlength="10" required autocomplete="new-password">
           <button class="btn primary" type="submit">Create wallet</button>
         </form>
         <form class="card form" id="import">
           <h3 style="margin-top:0">Import an existing wallet</h3>
-          <label for="iseed">Seed (64 hex characters)</label><input type="password" id="iseed" autocomplete="off" required>
+          <label for="iseed">Recovery key</label><input type="password" id="iseed" autocomplete="off" required>
           <label for="iname">Wallet name</label><input type="text" id="iname" value="Imported" maxlength="40" required>
           <label for="ipw">Password (min 10 characters)</label><input type="password" id="ipw" minlength="10" required autocomplete="new-password">
           <button class="btn" type="submit">Import</button>
-          <p class="note">Seeds from <code>aurenctl keys export</code> work here. On devnet, the public dev seeds are in <code>.devnet/accounts.json</code>.</p>
+          <p class="note">Paste the recovery key you saved when you made your wallet.</p>
         </form>
         <form class="card form" id="passkey">
-          <h3 style="margin-top:0">Hardware key / passkey</h3>
-          <p class="note">Use a security key (YubiKey, etc.), Touch ID, Windows Hello or a phone passkey. The private key is created inside the device and <b>never leaves it</b>; each transaction needs your touch or biometric. Needs a secure (HTTPS) connection. If you lose the device you lose this key, so add guardians (Security tab) for recovery.</p>
+          <h3 style="margin-top:0">Security key or phone passkey</h3>
+          <p class="note">Use a security key, fingerprint, Windows Hello or your phone's passkey. The key stays inside your device and every payment needs your touch or face. If you lose the device you lose this wallet, so add trusted helpers in the Security tab first.</p>
           <label for="pname">Wallet name</label><input type="text" id="pname" value="Hardware key" maxlength="40" required>
-          <button class="btn" type="submit" ${Aur.webauthnAvailable() ? '' : 'disabled'}>Create with my device</button>
-          ${Aur.webauthnAvailable() ? '' : '<p class="note">WebAuthn is not available in this browser or context.</p>'}
+          <button class="btn" type="submit" ${Aur.webauthnAvailable() ? '' : 'disabled'}>Use my device</button>
+          ${Aur.webauthnAvailable() ? '' : '<p class="note">This browser cannot use a device key here.</p>'}
         </form>
       </div>`;
     $('passkey').onsubmit = async (e) => {
@@ -188,7 +188,7 @@
         wallets.push({ name, kind: 'webauthn', pub: k.pub, credId: k.credId, rpId: k.rpId, scheme: 2 });
         store.set('auren.wallets', wallets);
         key = k; address = await Aur.pubToAddress(k.pub, status.addressPrefix, 2);
-        note = { cls: 'ok', html: 'Hardware-key wallet created. Add guardians in the Security tab so a lost device is recoverable.' };
+        note = { cls: 'ok', html: 'Device wallet created. Add trusted helpers in the Security tab so you can recover it if you lose the device.' };
         tab = 'send'; touch(); render();
       } catch (err) { notify(esc(err.message), 'err'); }
     };
@@ -271,12 +271,12 @@
     ({ send: tabSend, stake: tabStake, names: tabNames, govern: tabGovern, security: tabSecurity, activity: tabActivity, backup: tabBackup })[tab](body);
   }
 
-  const tipInput = '<label for="tip">Priority tip (AUR, optional; higher = earlier inclusion under congestion)</label><input type="text" id="tip" value="0.000001" inputmode="decimal">';
+  const tipInput = '<label for="tip">Extra tip (AUR, optional): pay a little more to go first when the network is busy</label><input type="text" id="tip" value="0.000001" inputmode="decimal">';
   const readTip = () => { try { return parseAur($('tip').value || '0'); } catch { throw new Error('Invalid tip'); } };
 
   function tabSend(body) {
     body.innerHTML = `<form class="form" id="sendf"><h3 style="margin-top:0">Send AUR</h3>
-      <label for="to">Recipient (address, name.aur, or name.aur@namespace)</label><input type="text" id="to" autocomplete="off" placeholder="${esc(status.addressPrefix)}1… or alice.aur" required>
+      <label for="to">Send to (address or name like alice.aur)</label><input type="text" id="to" autocomplete="off" placeholder="${esc(status.addressPrefix)}1… or alice.aur" required>
       <label for="amt">Amount (AUR)</label><input type="text" id="amt" inputmode="decimal" placeholder="0.0" required>
       ${tipInput}<button class="btn primary" type="submit">Review</button></form>`;
     $('sendf').onsubmit = async (e) => {
@@ -306,10 +306,10 @@
     const unb = account.unbonding.map((u) => `<tr><td class="mono trunc">${esc(short(u.validator, 10))}</td><td>${formatAur(u.amount, 6)}</td><td>block ${fmt(u.matureAtHeight)} (${fmt(Math.max(0, u.matureAtHeight - status.height))} blocks left)</td></tr>`).join('');
     body.innerHTML = `<h3 style="margin-top:0">Stake</h3>
       <p class="note">Staking secures the network and earns issuance. Unstaking takes ${fmt(params.unbondingBlocks)} blocks (≈ ${(params.unbondingBlocks * params.blockTimeMs / 86400000).toFixed(2)} days); during that time funds earn nothing and cannot be moved.</p>
-      <div class="table-wrap"><table><thead><tr><th></th><th>Validator</th><th>Power</th><th>Comm.</th><th>Status</th></tr></thead><tbody>${rows || '<tr><td colspan="5" class="msg">No validators</td></tr>'}</tbody></table></div>
-      <form class="form" id="stakef"><label for="samt">Amount to delegate (AUR)</label><input type="text" id="samt" inputmode="decimal" required>${tipInput}<button class="btn primary" type="submit">Review delegation</button></form>
-      <h3>Your delegations</h3><div class="table-wrap"><table><thead><tr><th>Validator</th><th>Staked (AUR)</th><th>Rewards (AUR)</th><th></th></tr></thead><tbody>${mine || '<tr><td colspan="4" class="msg">Nothing staked yet</td></tr>'}</tbody></table></div>
-      ${unb ? `<h3>Unbonding</h3><div class="table-wrap"><table><thead><tr><th>Validator</th><th>Amount</th><th>Available</th></tr></thead><tbody>${unb}</tbody></table></div>` : ''}`;
+      <div class="table-wrap"><table><thead><tr><th></th><th>Validator</th><th>Share of network</th><th>Fee cut</th><th>Status</th></tr></thead><tbody>${rows || '<tr><td colspan="5" class="msg">No validators</td></tr>'}</tbody></table></div>
+      <form class="form" id="stakef"><label for="samt">Amount to stake (AUR)</label><input type="text" id="samt" inputmode="decimal" required>${tipInput}<button class="btn primary" type="submit">Review delegation</button></form>
+      <h3>Your stake</h3><div class="table-wrap"><table><thead><tr><th>Validator</th><th>Staked (AUR)</th><th>Rewards (AUR)</th><th></th></tr></thead><tbody>${mine || '<tr><td colspan="4" class="msg">Nothing staked yet</td></tr>'}</tbody></table></div>
+      ${unb ? `<h3>Coming back to you</h3><div class="table-wrap"><table><thead><tr><th>Validator</th><th>Amount</th><th>Available at block</th></tr></thead><tbody>${unb}</tbody></table></div>` : ''}`;
     $('stakef').onsubmit = async (e) => {
       e.preventDefault();
       try {
@@ -340,11 +340,11 @@
       <form class="form" id="namef"><label for="nm">Name (3–63 characters: a–z, 0–9, hyphen), e.g. alice or alice.mytld</label><input type="text" id="nm" autocomplete="off" required>
       <label for="yr">Years</label><input type="text" id="yr" value="1" inputmode="numeric">
       <p id="nmstat" class="muted"></p><button class="btn primary" type="submit">Review registration</button></form>
-      <h3>Available TLDs</h3>
+      <h3>Name endings</h3>
       <div class="table-wrap"><table><thead><tr><th>TLD</th><th>Owner</th><th>Registration</th><th>Price</th><th>Names</th></tr></thead><tbody id="tldlist"><tr><td colspan="5" class="msg">Loading…</td></tr></tbody></table></div>
-      <h3>Create your own TLD</h3>
-      <p class="note">Own a whole namespace, like <code>.david</code>. Creating one costs <b>${formatAur(params.tld.price)} AUR</b> (burned). You choose whether anyone can register under it, the yearly price, and what share of each registration you keep (up to ${params.tld.maxOwnerShareBps / 100}%); the rest is burned. Well-known real-world TLDs (like .com or .eth) are reserved.</p>
-      <form class="form" id="tldf"><label for="tn">TLD (3–24 letters or digits, starting with a letter)</label><input type="text" id="tn" autocomplete="off" required placeholder="david">
+      <h3>Create your own name ending</h3>
+      <p class="note">Own a whole ending, like <code>.david</code>, and let others register names under it. Creating one costs <b>${formatAur(params.tld.price)} AUR</b> (burned). You choose whether anyone can register under it, the yearly price, and what share of each registration you keep (up to ${params.tld.maxOwnerShareBps / 100}%); the rest is burned. Well-known endings like .com or .eth are not allowed.</p>
+      <form class="form" id="tldf"><label for="tn">Ending (3–24 letters or digits, starting with a letter)</label><input type="text" id="tn" autocomplete="off" required placeholder="david">
       <label for="tp">Price per year for each name (AUR, 0 = free)</label><input type="text" id="tp" value="1" inputmode="decimal">
       <label for="ts">Your share of each registration (%)</label><input type="text" id="ts" value="80" inputmode="decimal">
       <label class="check"><input type="checkbox" id="to" checked> Open: anyone can register names (uncheck to keep it for yourself)</label>
@@ -364,11 +364,11 @@
       <p id="primarynow" class="muted"></p>
       <form class="form" id="primf"><label for="pn">Name that points to your address</label><input type="text" id="pn" autocomplete="off"><button class="btn" type="submit">Set primary name</button> <button class="btn" type="button" id="clrprim">Clear</button></form>
       <h3>Resolver settings</h3>
-      <p class="note">AUREN names are always verified by the built-in light client. Looking up <code>.eth</code> names or DNS names asks a third party (an Ethereum RPC endpoint or a DNS-over-HTTPS server) and reveals the name you are paying. It is off until you allow it.</p>
+      <p class="note">AUREN names are always checked on your device. Looking up <code>.eth</code> or website names asks an outside service and tells it who you are paying. This is off until you allow it.</p>
       <form class="form" id="resf"><label class="check"><input type="checkbox" id="allowl" ${lookupsAllowed() ? 'checked' : ''}> Allow third-party lookups for .eth and DNS names</label>
-      <label for="ensr">Ethereum RPC URL for ENS (optional)</label><input type="text" id="ensr" value="${esc(store.get('auren.ensrpc') || '')}" placeholder="https://ethereum-rpc.publicnode.com">
+      <label for="ensr">Ethereum lookup address (optional)</label><input type="text" id="ensr" value="${esc(store.get('auren.ensrpc') || '')}" placeholder="https://ethereum-rpc.publicnode.com">
       <button class="btn" type="submit">Save</button></form>
-      <p class="note">Qualify a name with its namespace to avoid collisions, e.g. <code>alice.aur@${esc(status.chainId)}</code>. Names that resolve differently in different namespaces are refused as ambiguous.</p>`;
+      <p class="note">If two networks give the same name to different people, the wallet refuses to pay until you pick one, so you never pay the wrong person.</p>`;
     /** Price and rules for "label" (.aur) or "label.tld" (a user-created TLD). */
     const quoteName = async (n, y) => {
       const [label, tld] = n.includes('.') ? n.split('.') : [n, 'aur'];
@@ -459,7 +459,7 @@
       <form class="form" id="propf"><label for="pt">Title</label><input type="text" id="pt" maxlength="80" required>
       <label for="pd">Description (why, and the effect)</label><input type="text" id="pd" maxlength="1000">
       <label for="pp">Parameter</label><select id="pp">${r.govParams.map((k) => `<option>${esc(k)}</option>`).join('')}</select>
-      <label for="pv">New value (integers as plain numbers; amounts of sparks as digits)</label><input type="text" id="pv" required>
+      <label for="pv">New value</label><input type="text" id="pv" required>
       <button class="btn primary" type="submit">Review proposal</button></form>`;
     body.querySelectorAll('[data-vote]').forEach((b) => (b.onclick = async () => { if (await transact('vote', { id: Number(b.dataset.vote), option: b.dataset.opt }, `Vote "${b.dataset.opt}" on proposal #${b.dataset.vote}`)) tabGovern(body); }));
     $('propf').onsubmit = async (e) => {
@@ -474,24 +474,24 @@
     const sec = account && account.security;
     const min = params.security.minDelayBlocks;
     const cur = sec ? `<div class="table-wrap"><table><tbody>
-      <tr><th>Guardians</th><td>${sec.guardians.map((g) => `<div class="mono trunc" title="${esc(g)}">${esc(g)}</div>`).join('') || 'none'}</td></tr>
-      <tr><th>Threshold</th><td>${sec.threshold}</td></tr><tr><th>Delay</th><td>${fmt(sec.delayBlocks)} blocks</td></tr>
+      <tr><th>Trusted helpers</th><td>${sec.guardians.map((g) => `<div class="mono trunc" title="${esc(g)}">${esc(g)}</div>`).join('') || 'none'}</td></tr>
+      <tr><th>Helpers needed to recover</th><td>${sec.threshold}</td></tr><tr><th>Waiting time for changes</th><td>${fmt(sec.delayBlocks)} blocks</td></tr>
       <tr><th>Daily limit</th><td>${sec.dailyLimit === null ? 'none' : formatAur(sec.dailyLimit) + ' AUR'}</td></tr>
-      <tr><th>Queued change</th><td>${sec.pending ? `ready at block ${fmt(sec.pending.readyAt)}` : 'none'}</td></tr>
-      <tr><th>Pending recovery</th><td>${sec.recovery ? `${sec.recovery.approvals.length}/${sec.threshold} approvals${sec.recovery.readyAt ? `, executes at block ${fmt(sec.recovery.readyAt)}` : ''}` : 'none'}</td></tr></tbody></table></div>` : '<p class="msg">No protections configured on this account.</p>';
+      <tr><th>Change waiting</th><td>${sec.pending ? `ready at block ${fmt(sec.pending.readyAt)}` : 'none'}</td></tr>
+      <tr><th>Recovery in progress</th><td>${sec.recovery ? `${sec.recovery.approvals.length}/${sec.threshold} approvals${sec.recovery.readyAt ? `, executes at block ${fmt(sec.recovery.readyAt)}` : ''}` : 'none'}</td></tr></tbody></table></div>` : '<p class="msg">No protections configured on this account.</p>';
     body.innerHTML = `<h3 style="margin-top:0">Account protection</h3>
       <p class="note">Enforced by every validator, regardless of which app signs. Tightening applies immediately; loosening is queued behind your delay, and any guardian can veto it. Recovery handles <b>lost</b> keys; against a thief holding your key, the daily limit and guardian veto cap the damage.</p>
       ${cur}
-      <form class="form" id="secf"><label for="gl">Guardian addresses (comma separated, up to ${params.security.maxGuardians})</label><input type="text" id="gl" value="${esc(sec ? sec.guardians.join(', ') : '')}">
-      <label for="gt">Approvals needed (threshold)</label><input type="text" id="gt" value="${sec ? sec.threshold : 1}" inputmode="numeric">
-      <label for="gd">Delay in blocks (minimum ${fmt(min)})</label><input type="text" id="gd" value="${sec ? sec.delayBlocks : min}" inputmode="numeric">
+      <form class="form" id="secf"><label for="gl">Trusted helper addresses (separate with commas, up to ${params.security.maxGuardians})</label><input type="text" id="gl" value="${esc(sec ? sec.guardians.join(', ') : '')}">
+      <label for="gt">How many helpers must agree to recover</label><input type="text" id="gt" value="${sec ? sec.threshold : 1}" inputmode="numeric">
+      <label for="gd">Waiting time before weaker settings apply, in blocks (at least ${fmt(min)})</label><input type="text" id="gd" value="${sec ? sec.delayBlocks : min}" inputmode="numeric">
       <label for="gx">Daily send limit in AUR (blank = none)</label><input type="text" id="gx" value="${sec && sec.dailyLimit !== null ? formatAur(sec.dailyLimit).replace(/,/g, '') : ''}" inputmode="decimal">
       <button class="btn primary" type="submit">Review</button>
-      ${sec && sec.pending ? '<button class="btn" type="button" id="cpend">Cancel queued change</button>' : ''}
-      ${sec && sec.recovery ? '<button class="btn" type="button" id="crec">Cancel pending recovery</button>' : ''}</form>
-      <h3>Guardian tools</h3><p class="note">If you are a guardian for someone, approve recovery of their account to a new public key.</p>
-      <form class="form" id="recf"><label for="ra">Account to recover</label><input type="text" id="ra" autocomplete="off" required>
-      <label for="rp">New public key (64 hex for a software key, 130 hex starting 04 for a hardware key)</label><input type="text" id="rp" autocomplete="off" required pattern="[0-9a-f]{64}|04[0-9a-f]{128}"><button class="btn" type="submit">Review approval</button></form>`;
+      ${sec && sec.pending ? '<button class="btn" type="button" id="cpend">Cancel the waiting change</button>' : ''}
+      ${sec && sec.recovery ? '<button class="btn" type="button" id="crec">Cancel the recovery</button>' : ''}</form>
+      <h3>Help someone recover</h3><p class="note">If you are a trusted helper for someone, approve moving their account to their new key.</p>
+      <form class="form" id="recf"><label for="ra">Their account address</label><input type="text" id="ra" autocomplete="off" required>
+      <label for="rp">New key for the account being recovered</label><input type="text" id="rp" autocomplete="off" required pattern="[0-9a-f]{64}|04[0-9a-f]{128}"><button class="btn" type="submit">Review approval</button></form>`;
     $('secf').onsubmit = async (e) => {
       e.preventDefault();
       try {
@@ -501,7 +501,7 @@
       } catch (err) { notify(esc(err.message), 'err'); }
     };
     if ($('cpend')) $('cpend').onclick = () => transact('securityCancel', { account: address }, 'Cancel queued security change');
-    if ($('crec')) $('crec').onclick = () => transact('recoveryCancel', {}, 'Cancel pending recovery');
+    if ($('crec')) $('crec').onclick = () => transact('recoveryCancel', {}, 'Cancel the recovery');
     $('recf').onsubmit = async (e) => { e.preventDefault(); try { const np = $('rp').value.trim(); await transact('recoveryApprove', { account: await resolve($('ra').value), newPub: np, ...(np.length === 130 ? { newScheme: 2 } : {}) }, 'Approve account recovery'); } catch (err) { notify(esc(err.message), 'err'); } };
   }
 
@@ -521,18 +521,18 @@
     const w = wallets.find((x) => x.pub === key.pub);
     if (w.kind === 'webauthn') {
       body.innerHTML = `<h3 style="margin-top:0">Hardware key</h3>
-        <p>Signature scheme 2 (ECDSA P-256 via WebAuthn). Public key:</p><p><code class="trunc" style="max-width:100%">${esc(key.pub)}</code></p>
-        <p class="note">There is no seed to back up: the private key exists only inside your authenticator and cannot be exported. If the device is lost, the funds are recoverable only through the guardians you set on the Security tab. This credential is tied to the site name <b>${esc(w.rpId)}</b>; opening the wallet from another host name cannot use it.</p>
+        <p>Your device key (public part):</p><p><code class="trunc" style="max-width:100%">${esc(key.pub)}</code></p>
+        <p class="note">There is no recovery key to save: the key lives only inside your device. If you lose the device, only the trusted helpers you set in the Security tab can recover your coins. This wallet works only at <b>${esc(w.rpId)}</b>.</p>
         <form class="form" id="delf"><label for="dt">Remove this wallet from this browser (type DELETE; funds stay on-chain, only the local record is removed)</label><input type="text" id="dt" autocomplete="off"><button class="btn" type="submit" style="border-color:var(--bad);color:var(--bad)">Remove wallet</button></form>`;
       $('delf').onsubmit = (e) => { e.preventDefault(); if ($('dt').value !== 'DELETE') return notify('Type DELETE exactly to confirm.', 'err'); wallets = wallets.filter((x) => x.pub !== key.pub); store.set('auren.wallets', wallets); key = null; address = null; note = null; render(); };
       return;
     }
     body.innerHTML = `<h3 style="margin-top:0">Backup &amp; keys</h3>
       <p>Public key: <code class="trunc" style="max-width:100%">${esc(key.pub)}</code></p>
-      <form class="form" id="revf"><label for="rpw">Password</label><input type="password" id="rpw" required autocomplete="current-password"><button class="btn" type="submit">Reveal seed</button></form>
+      <form class="form" id="revf"><label for="rpw">Password</label><input type="password" id="rpw" required autocomplete="current-password"><button class="btn" type="submit">Show recovery key</button></form>
       <pre class="seed" id="seedout" hidden></pre>
       <p><button class="btn" id="exp">Download encrypted keystore (JSON)</button></p>
-      <h3>Remove wallet from this browser</h3><p class="note">Without your seed backup, this deletes access to the funds permanently.</p>
+      <h3>Remove wallet from this browser</h3><p class="note">Without your saved recovery key, this removes access to your coins for good.</p>
       <form class="form" id="delf"><label for="dt">Type DELETE to confirm</label><input type="text" id="dt" autocomplete="off"><button class="btn" type="submit" style="border-color:var(--bad);color:var(--bad)">Delete wallet</button></form>`;
     $('revf').onsubmit = async (e) => {
       e.preventDefault();
@@ -552,7 +552,7 @@
 
   // ------------------------------------------------------------ entry
   function render() {
-    if (!status) { $('app').innerHTML = `<div class="card"><p class="msg err">Cannot reach a node at ${esc($('rpc').value)}. Start one with <code>npm run devnet</code>, or enter the URL of any AUREN node above.</p></div>`; return; }
+    if (!status) { $('app').innerHTML = `<div class="card"><p class="msg err">Can't connect to the network. Check your internet connection, then pick a network above and press Connect.</p></div>`; return; }
     if (key) return viewDashboard();
     return wallets.length ? viewUnlock() : viewOnboard();
   }

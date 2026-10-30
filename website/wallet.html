@@ -21,9 +21,9 @@
   <div class="ex-head">
     <h1>Wallet</h1>
     <span id="conn" class="tag no">disconnected</span>
-    <form class="grow" id="rpcform"><select id="net" aria-label="Network" style="width:auto"></select><input type="text" id="rpc" aria-label="Node URL" autocomplete="off"><button class="btn small" type="submit">Connect</button></form>
+    <form class="grow" id="rpcform"><select id="net" aria-label="Network" style="width:auto"></select><input type="text" id="rpc" aria-label="Custom node address" autocomplete="off"><button class="btn small" type="submit">Connect</button></form>
   </div>
-  <p class="note">Keys are generated and used <b>only in this browser</b>. The seed is encrypted with your password (PBKDF2 + AES-GCM) and stored in this browser's local storage; it is never sent anywhere. Transactions are signed here and submitted to the node above. Whoever has your seed controls your funds.</p>
+  <p class="note">Your wallet stays <b>on this device</b>. It is locked with your password and never sent anywhere. Whoever has your recovery key can take your coins, so keep it private.</p>
   <div id="app"></div>
 </main>
 

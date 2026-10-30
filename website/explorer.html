@@ -21,10 +21,10 @@
   <div class="ex-head">
     <h1><a href="explorer.html" style="color:inherit">Explorer</a></h1>
     <span id="conn" class="tag no">disconnected</span>
-    <form class="grow" id="rpcform"><select id="net" aria-label="Network" style="width:auto"></select><input type="text" id="rpc" aria-label="Node URL" autocomplete="off"><button class="btn small" type="submit">Connect</button></form>
+    <form class="grow" id="rpcform"><select id="net" aria-label="Network" style="width:auto"></select><input type="text" id="rpc" aria-label="Custom node address" autocomplete="off"><button class="btn small" type="submit">Connect</button></form>
   </div>
   <form id="search" style="display:flex;gap:8px;margin:6px 0 4px">
-    <input type="search" id="q" aria-label="Search" placeholder="Search by block height, transaction hash, address or a name like alice.aur" autocomplete="off">
+    <input type="search" id="q" aria-label="Search" placeholder="Search a block number, payment ID, address or name like alice.aur" autocomplete="off">
     <button class="btn small primary" type="submit">Search</button>
   </form>
 
@@ -34,12 +34,12 @@
   <div id="home" class="two">
     <div>
       <div class="panel"><h2>Latest blocks <a href="explorer.html?blocks=1" data-route="blocks=1" style="float:right;font-weight:400;font-size:.85rem">View all →</a></h2><div class="body"><table>
-        <thead><tr><th>Height</th><th>Age</th><th>Txs</th><th>Proposer</th><th>Base fee</th></tr></thead>
+        <thead><tr><th>Height</th><th>Age</th><th>Payments</th><th>Created by</th><th>Fee</th></tr></thead>
         <tbody id="blocks"><tr><td colspan="5" class="msg">Connecting…</td></tr></tbody></table></div></div>
       <div class="panel"><h2>Latest transactions <a href="explorer.html?txs=1" data-route="txs=1" style="float:right;font-weight:400;font-size:.85rem">View all →</a></h2><div class="body"><table>
         <thead><tr><th>Tx</th><th>Block</th><th>Type</th><th>From</th><th>Result</th></tr></thead>
         <tbody id="txs"><tr><td colspan="5" class="msg">Connecting…</td></tr></tbody></table></div></div>
-      <div class="panel"><h2>Base fee &amp; block usage (last 60 blocks)</h2><div class="detail"><svg id="feechart" class="chart" viewBox="0 0 560 170" role="img" aria-label="Base fee and utilization, live"></svg></div></div>
+      <div class="panel"><h2>Fees and how full blocks are (last 60 blocks)</h2><div class="detail"><svg id="feechart" class="chart" viewBox="0 0 560 170" role="img" aria-label="Base fee and utilization, live"></svg></div></div>
     </div>
     <div>
       <div class="panel"><h2>Validators <a href="explorer.html?validators=1" data-route="validators=1" style="float:right;font-weight:400;font-size:.85rem">View all →</a></h2><div class="body"><table>
