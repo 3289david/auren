@@ -45,12 +45,16 @@
       const staked = account.delegations.reduce((s, d) => s + BigInt(d.tokens), 0n);
       const unb = account.unbonding.reduce((s, d) => s + BigInt(d.amount), 0n);
       const el = $('balances');
-      if (el) el.innerHTML = [
-        ['Spendable', formatAur(account.spendable, 6) + ' AUR'], ['Total balance', formatAur(account.balance, 6) + ' AUR'],
-        ['Staked', formatAur(staked, 6) + ' AUR'], ['Unclaimed rewards', formatAur(pending, 6) + ' AUR'], ['Unbonding', formatAur(unb, 6) + ' AUR'],
-        ['Payments sent', String(account.nonce) + (account.pendingNonce !== account.nonce ? ` (+${account.pendingNonce - account.nonce} waiting)` : '')],
-      ].map(([k, v]) => `<div class="stat"><small>${esc(k)}</small><b>${esc(v)}</b></div>`).join('');
-      const h = $('height'); if (h) h.textContent = `block ${fmt(status.height)} · transfer fee ≈ ${formatAur(status.transferFee, 6)} AUR`;
+      if (el) {
+        const bits = [];
+        if (staked > 0n) bits.push('Staked ' + formatAur(staked, 4));
+        if (pending > 0n) bits.push('Rewards to claim ' + formatAur(pending, 4));
+        if (unb > 0n) bits.push('Coming back ' + formatAur(unb, 4));
+        const locked = BigInt(account.balance) - BigInt(account.spendable);
+        if (locked > 0n) bits.push('Locked ' + formatAur(locked, 4));
+        el.innerHTML = '<div class="hero-label">Your balance</div><div class="hero-amt">' + formatAur(account.spendable, 4) + ' <span>AUR</span></div><div class="hero-sub">' + (bits.length ? esc(bits.join('  ·  ')) : 'Nothing staked yet') + '</div>';
+      }
+      const h = $('height'); if (h) h.textContent = `Sending costs about ${formatAur(status.transferFee, 6)} AUR`;
     } catch { /* node unreachable: keep last values */ }
   }
   setInterval(refreshAccount, 2500);
@@ -148,37 +152,76 @@
     return null;
   }
 
-  // ------------------------------------------------------------ onboarding
+  // ------------------------------------------------------------ onboarding (one step per page)
+  const wiz = (inner) => { $('app').innerHTML = '<div class="wiz"><div id="note" class="toast" hidden></div>' + inner + '</div>'; };
+
   function viewOnboard() {
+    const canDevice = Aur.webauthnAvailable();
+    wiz('<h2>' + (wallets.length ? 'Add a wallet' : 'Welcome to AUREN') + '</h2>' +
+      '<p class="sub">' + (wallets.length ? 'Pick how you want to add it.' : 'Your wallet holds your AUR. It stays on this device, locked with your password.') + '</p>' +
+      '<button class="choice" id="c-new"><b>Create a new wallet</b><span>New here? Start with this.</span></button>' +
+      '<button class="choice" id="c-old"><b>I already have a wallet</b><span>Add it with your recovery key.</span></button>' +
+      '<button class="choice" id="c-dev" ' + (canDevice ? '' : 'disabled') + '><b>Use my phone or security key</b><span>' + (canDevice ? 'Fingerprint, face, Windows Hello or a key.' : 'Not available in this browser.') + '</span></button>' +
+      (wallets.length ? '<button class="linkback" id="back">← Back to unlock</button>' : ''));
+    $('c-new').onclick = stepKey; $('c-old').onclick = stepImport; $('c-dev').onclick = stepDevice;
+    if ($('back')) $('back').onclick = () => viewUnlock();
+  }
+
+  function stepKey() {
     const seed = Aur.randomSeedHex();
-    $('app').innerHTML = `
-      <div class="grid g2">
-        <form class="card form" id="create">
-          <h3 style="margin-top:0">Create a new wallet</h3>
-          <label>Your recovery key (write it down; you only see it now)</label>
-          <pre class="seed" id="seedbox">${seed}</pre>
-          <label class="check"><input type="checkbox" id="saved" required> I have saved this recovery key somewhere safe</label>
-          <label for="cname">Wallet name</label><input type="text" id="cname" value="My wallet" maxlength="40" required>
-          <label for="cpw">Password (at least 10 characters; it locks this wallet)</label><input type="password" id="cpw" minlength="10" required autocomplete="new-password">
-          <label for="cpw2">Repeat password</label><input type="password" id="cpw2" minlength="10" required autocomplete="new-password">
-          <button class="btn primary" type="submit">Create wallet</button>
-        </form>
-        <form class="card form" id="import">
-          <h3 style="margin-top:0">Import an existing wallet</h3>
-          <label for="iseed">Recovery key</label><input type="password" id="iseed" autocomplete="off" required>
-          <label for="iname">Wallet name</label><input type="text" id="iname" value="Imported" maxlength="40" required>
-          <label for="ipw">Password (min 10 characters)</label><input type="password" id="ipw" minlength="10" required autocomplete="new-password">
-          <button class="btn" type="submit">Import</button>
-          <p class="note">Paste the recovery key you saved when you made your wallet.</p>
-        </form>
-        <form class="card form" id="passkey">
-          <h3 style="margin-top:0">Security key or phone passkey</h3>
-          <p class="note">Use a security key, fingerprint, Windows Hello or your phone's passkey. The key stays inside your device and every payment needs your touch or face. If you lose the device you lose this wallet, so add trusted helpers in the Security tab first.</p>
-          <label for="pname">Wallet name</label><input type="text" id="pname" value="Hardware key" maxlength="40" required>
-          <button class="btn" type="submit" ${Aur.webauthnAvailable() ? '' : 'disabled'}>Use my device</button>
-          ${Aur.webauthnAvailable() ? '' : '<p class="note">This browser cannot use a device key here.</p>'}
-        </form>
-      </div>`;
+    wiz('<button class="linkback" type="button" id="back">← Back</button>' +
+      '<div class="stepno">Step 1 of 2</div><h2>Save your recovery key</h2>' +
+      '<p class="sub">If you forget your password or lose this device, this key is the only way back to your coins. Write it down and keep it private. You will not see it again.</p>' +
+      '<pre class="seed" id="seedbox">' + seed + '</pre>' +
+      '<button class="btn" type="button" id="copykey">Copy</button>' +
+      '<label class="check"><input type="checkbox" id="saved"> I saved my recovery key somewhere safe</label>' +
+      '<button class="btn primary big" id="next" disabled>Continue</button>');
+    $('back').onclick = viewOnboard;
+    $('copykey').onclick = async () => { try { await navigator.clipboard.writeText(seed); $('copykey').textContent = 'Copied'; } catch { /* select by hand */ } };
+    $('saved').onchange = () => { $('next').disabled = !$('saved').checked; };
+    $('next').onclick = () => stepPassword(seed);
+  }
+
+  function stepPassword(seed) {
+    wiz('<button class="linkback" type="button" id="back">← Back</button>' +
+      '<div class="stepno">Step 2 of 2</div><h2>Lock your wallet</h2>' +
+      '<p class="sub">Choose a password. You will type it to open your wallet on this device.</p>' +
+      '<form class="form" id="create">' +
+      '<label for="cname">Wallet name</label><input type="text" id="cname" value="My wallet" maxlength="40" required>' +
+      '<label for="cpw">Password (at least 10 characters)</label><input type="password" id="cpw" minlength="10" required autocomplete="new-password" autofocus>' +
+      '<label for="cpw2">Type it again</label><input type="password" id="cpw2" minlength="10" required autocomplete="new-password">' +
+      '<button class="btn primary big" type="submit">Create my wallet</button></form>');
+    $('back').onclick = () => stepKey();
+    $('create').onsubmit = async (e) => {
+      e.preventDefault();
+      if ($('cpw').value !== $('cpw2').value) return notify('The passwords do not match.', 'err');
+      try { await addWallet($('cname').value.trim(), seed, $('cpw').value); } catch (err) { notify(esc(err.message), 'err'); }
+    };
+  }
+
+  function stepImport() {
+    wiz('<button class="linkback" type="button" id="back">← Back</button>' +
+      '<h2>Add your wallet</h2><p class="sub">Paste the recovery key you saved when you made it.</p>' +
+      '<form class="form" id="import">' +
+      '<label for="iseed">Recovery key</label><input type="password" id="iseed" autocomplete="off" required autofocus>' +
+      '<label for="iname">Wallet name</label><input type="text" id="iname" value="My wallet" maxlength="40" required>' +
+      '<label for="ipw">New password for this device (at least 10 characters)</label><input type="password" id="ipw" minlength="10" required autocomplete="new-password">' +
+      '<button class="btn primary big" type="submit">Add wallet</button></form>');
+    $('back').onclick = viewOnboard;
+    $('import').onsubmit = async (e) => {
+      e.preventDefault();
+      try { await addWallet($('iname').value.trim(), $('iseed').value.trim().toLowerCase(), $('ipw').value); } catch (err) { notify(esc(err.message), 'err'); }
+    };
+  }
+
+  function stepDevice() {
+    wiz('<button class="linkback" type="button" id="back">← Back</button>' +
+      '<h2>Use your phone or security key</h2>' +
+      '<p class="sub">The key stays inside your device and every payment needs your touch or face. If you lose the device you lose this wallet, so add trusted helpers in the Security tab afterwards.</p>' +
+      '<form class="form" id="passkey">' +
+      '<label for="pname">Wallet name</label><input type="text" id="pname" value="My device wallet" maxlength="40" required>' +
+      '<button class="btn primary big" type="submit">Continue</button></form>');
+    $('back').onclick = viewOnboard;
     $('passkey').onsubmit = async (e) => {
       e.preventDefault();
       try {
@@ -191,15 +234,6 @@
         note = { cls: 'ok', html: 'Device wallet created. Add trusted helpers in the Security tab so you can recover it if you lose the device.' };
         tab = 'send'; touch(); render();
       } catch (err) { notify(esc(err.message), 'err'); }
-    };
-    $('create').onsubmit = async (e) => {
-      e.preventDefault();
-      if ($('cpw').value !== $('cpw2').value) return notify('Passwords do not match.', 'err');
-      await addWallet($('cname').value.trim(), seed, $('cpw').value);
-    };
-    $('import').onsubmit = async (e) => {
-      e.preventDefault();
-      try { await addWallet($('iname').value.trim(), $('iseed').value.trim().toLowerCase(), $('ipw').value); } catch (err) { notify(esc(err.message), 'err'); }
     };
   }
 
@@ -214,12 +248,17 @@
   }
 
   function viewUnlock() {
-    $('app').innerHTML = `<form class="card form" id="unlock" style="max-width:520px">
-      <h3 style="margin-top:0">Unlock wallet</h3>
-      <label for="uw">Wallet</label><select id="uw">${wallets.map((w, i) => `<option value="${i}">${esc(w.name)} (${esc(short(w.pub, 6))})</option>`).join('')}</select>
-      <label for="upw">Password (not needed for hardware-key wallets)</label><input type="password" id="upw" autocomplete="current-password" autofocus>
-      <button class="btn primary" type="submit">Unlock</button>
-      <button class="btn" type="button" id="addnew">Add another wallet</button></form>`;
+    const picker = wallets.length > 1
+      ? '<label for="uw">Wallet</label><select id="uw">' + wallets.map((w, i) => '<option value="' + i + '">' + esc(w.name) + '</option>').join('') + '</select>'
+      : '<input type="hidden" id="uw" value="0"><div class="walletname">' + esc(wallets[0].name) + '</div>';
+    wiz('<h2>Welcome back</h2><p class="sub">Enter your password to open your wallet.</p>' +
+      '<form class="form" id="unlock">' + picker +
+      '<label for="upw" id="upwl">Password</label><input type="password" id="upw" autocomplete="current-password" autofocus>' +
+      '<button class="btn primary big" type="submit">Open wallet</button></form>' +
+      '<button class="linkback" type="button" id="addnew">Add another wallet</button>');
+    const syncPw = () => { const w = wallets[Number($('uw').value)]; const dev = !!(w && w.kind === 'webauthn'); $('upw').hidden = dev; $('upwl').hidden = dev; };
+    if ($('uw').tagName === 'SELECT') $('uw').onchange = syncPw;
+    syncPw();
     $('unlock').onsubmit = async (e) => {
       e.preventDefault();
       try {
@@ -228,30 +267,35 @@
         else key = await Aur.keyFromSeed(await Aur.decryptSeed(w.keystore, $('upw').value));
         address = await Aur.pubToAddress(key.pub, status.addressPrefix, key.scheme || 0);
         note = null; tab = 'send'; touch(); render();
-      } catch (err) { notify(esc(err.message), 'err'); }
+      } catch (err) { notify('That password did not work.', 'err'); }
     };
     $('addnew').onclick = () => viewOnboard();
   }
 
   // ------------------------------------------------------------ dashboard
-  const TABS = [['send', 'Send'], ['stake', 'Stake'], ['names', 'Names'], ['govern', 'Govern'], ['security', 'Security'], ['activity', 'Activity'], ['backup', 'Backup']];
+  const TABS = [['send', 'Send'], ['receive', 'Receive'], ['stake', 'Stake'], ['activity', 'Activity'], ['names', 'Names'], ['govern', 'Vote'], ['security', 'Security'], ['backup', 'Backup']];
 
   function viewDashboard() {
-    $('app').innerHTML = `
-      <div id="note" class="toast ${note ? note.cls : ''}" ${note ? '' : 'hidden'}>${note ? note.html : ''}</div>
-      <div class="card" style="margin-bottom:16px">
-        <small class="muted">Your address on ${esc(status.chainId)}</small>
-        <div class="addr"><code id="myaddr">${esc(address)}</code><button class="btn small" id="copyaddr">Copy</button>${status.network !== 'mainnet' ? '<button class="btn small" id="faucet">Get AUR</button>' : ''}</div>
-        <small class="muted" id="height"></small>
-      </div>
-      <div class="stats" id="balances"></div>
-      <div class="tabs" role="tablist">${TABS.map(([id, label]) => `<button role="tab" class="tabbtn ${id === tab ? 'on' : ''}" data-tab="${id}">${label}</button>`).join('')}<button class="tabbtn" id="lock" style="margin-left:auto">Lock</button></div>
-      <div id="tabbody" class="card"></div>`;
-    $('copyaddr').onclick = async () => { try { await navigator.clipboard.writeText(address); notify('Address copied.'); } catch { notify('Select and copy the address manually.', 'err'); } };
+    const w = wallets.find((x) => x.pub === key.pub);
+    const act = (id, icon, label) => '<button class="act ' + (tab === id ? 'on' : '') + '" data-tab="' + id + '"><i>' + icon + '</i>' + label + '</button>';
+    $('app').innerHTML = '<div class="dash">' +
+      '<div class="dash-top"><span class="walletname">' + esc(w ? w.name : 'Wallet') + '</span><button class="linkback" id="lock">Lock</button></div>' +
+      '<div id="note" class="toast ' + (note ? note.cls : '') + '" ' + (note ? '' : 'hidden') + '>' + (note ? note.html : '') + '</div>' +
+      '<div class="hero" id="balances"><div class="hero-label">Your balance</div><div class="hero-amt">… <span>AUR</span></div></div>' +
+      '<div class="actions">' + act('send', '↑', 'Send') + act('receive', '↓', 'Receive') + act('stake', '%', 'Stake') + act('activity', '≡', 'Activity') + '</div>' +
+      '<div class="tabs" role="tablist">' + TABS.slice(4).map(([id, label]) => '<button role="tab" class="tabbtn ' + (id === tab ? 'on' : '') + '" data-tab="' + id + '">' + label + '</button>').join('') + '</div>' +
+      '<div id="tabbody" class="card"></div><small class="muted" id="height"></small></div>';
     $('lock').onclick = () => { key = null; address = null; note = null; render(); };
     document.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => { tab = b.dataset.tab; viewDashboard(); }));
-    if ($('faucet')) $('faucet').onclick = requestFaucet;
     refreshAccount().then(renderTab);
+  }
+
+  function tabReceive(body) {
+    body.innerHTML = '<h3 style="margin-top:0">Receive AUR</h3><p class="note">Share this address to get paid. It is safe to share.</p>' +
+      '<div class="addrbox"><code id="myaddr">' + esc(address) + '</code></div>' +
+      '<div class="rowbtns"><button class="btn primary" id="copyaddr">Copy address</button>' + (status.network !== 'mainnet' ? '<button class="btn" id="faucet">Get AUR from the faucet</button>' : '') + '</div>';
+    $('copyaddr').onclick = async () => { try { await navigator.clipboard.writeText(address); notify('Address copied.'); } catch { notify('Select and copy the address by hand.', 'err'); } };
+    if ($('faucet')) $('faucet').onclick = requestFaucet;
   }
 
   async function requestFaucet() {
@@ -268,7 +312,7 @@
   function renderTab() {
     const body = $('tabbody');
     if (!body) return;
-    ({ send: tabSend, stake: tabStake, names: tabNames, govern: tabGovern, security: tabSecurity, activity: tabActivity, backup: tabBackup })[tab](body);
+    ({ send: tabSend, receive: tabReceive, stake: tabStake, names: tabNames, govern: tabGovern, security: tabSecurity, activity: tabActivity, backup: tabBackup })[tab](body);
   }
 
   const tipInput = '<label for="tip">Extra tip (AUR, optional): pay a little more to go first when the network is busy</label><input type="text" id="tip" value="0.000001" inputmode="decimal">';

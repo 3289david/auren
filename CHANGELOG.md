@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.4
+
+- **New wallet design:** one step per page (welcome, save recovery key, set password, or add an existing wallet, or use a device key), one clean column, a big balance with Send / Receive / Stake / Activity buttons, a Receive page with Copy address and the faucet.
+
 ## 0.6.3
 
 - Wallet and explorer: the node address box is hidden (pick Devnet, Testnet or Mainnet; "Custom node…" shows it). Plain-language wording throughout for non-developers: recovery key instead of seed, trusted helpers instead of guardians, "payments" instead of transactions, and no developer commands or file paths in the interface.
