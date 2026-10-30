@@ -264,3 +264,11 @@ button.linklike { background: none; border: 0; color: var(--text); text-decorati
 .addrbox { background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin: 10px 0 14px; word-break: break-all; text-align: center; }
 .addrbox code { background: none; padding: 0; font-size: .95rem; }
 .rowbtns { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* downloads */
+.dlgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+@media (max-width: 700px) { .dlgrid { grid-template-columns: 1fr; } }
+.dlcard h3 { margin: 0 0 4px; }
+.dlcard p { color: var(--muted); margin: 0 0 14px; font-size: .94rem; }
+.dlbtns { display: flex; flex-wrap: wrap; gap: 10px; }
+.dlsize { opacity: .65; font-weight: 400; margin-left: 4px; }
