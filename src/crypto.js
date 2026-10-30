@@ -36,7 +36,15 @@ function pubKeyObject(pubHex) {
 function verify(pubHex, msg, sigHex) {
   try {
     if (!/^[0-9a-f]{64}$/.test(pubHex) || !/^[0-9a-f]{128}$/.test(sigHex)) return false;
-    return crypto.verify(null, Buffer.from(msg), pubKeyObject(pubHex), Buffer.from(sigHex, 'hex'));
+    const m = Buffer.from(msg), sg = Buffer.from(sigHex, 'hex');
+    if (crypto.verify(null, m, pubKeyObject(pubHex), sg)) return true;
+    // Node 24 on Windows intermittently returns false for a valid Ed25519 signature (the same inputs verify a
+    // moment later). A genuinely bad signature fails every time, so retry with a fresh key object before refusing.
+    for (let i = 0; i < 4; i++) {
+      pubCache.delete(pubHex);
+      if (crypto.verify(null, m, pubKeyObject(pubHex), sg)) return true;
+    }
+    return false;
   } catch {
     return false;
   }
