@@ -43,6 +43,9 @@ const DEFAULTS = {
   // custom top-level domains: one-time registration fee (burned) and the most a TLD owner may keep of each registration
   tld: { price: (10000n * AUR).toString(), maxOwnerShareBps: 9000 },
 
+  // node rewards (src/noderew.js): bonded full nodes that prove they store the chain share `poolBps` of issuance each epoch
+  node: { bond: (10000n * AUR).toString(), epochBlocks: 14400, poolBps: 1000 },
+
   // optional .aur naming module (burned fees, per year)
   domain: { price3: (100n * AUR).toString(), price4: (20n * AUR).toString(), price5: AUR.toString(), maxYears: 10 },
 };
@@ -63,6 +66,7 @@ function resolveParams(overrides = {}) {
   p.domain = { ...p.domain, price3: BigInt(p.domain.price3), price4: BigInt(p.domain.price4), price5: BigInt(p.domain.price5) };
   p.governance = { ...p.governance, deposit: BigInt(p.governance.deposit) };
   p.tld = { ...p.tld, price: BigInt(p.tld.price) };
+  p.node = { ...p.node, bond: BigInt(p.node.bond) };
   return p;
 }
 

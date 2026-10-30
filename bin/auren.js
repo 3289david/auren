@@ -7,7 +7,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
-const { spawn, spawnSync } = require('node:child_process');
+const cp = require('node:child_process');
+const { spawnNode } = require('../src/spawnnode');
 const { canon, sha256hex } = require('../src/util');
 
 const ROOT = path.join(__dirname, '..');
@@ -24,6 +25,7 @@ const USAGE = `AUREN ${VERSION}
 Options for join:
   --home <dir>        where chain data lives (default: ~/.auren/<network>)
   --peers <url,url>   nodes to connect to (default: the public seed nodes for that network)
+  --earn [address]    earn AUR: bond this node and prove it stores the chain each epoch; rewards go to [address] (default: the node's own address)
   --public            accept connections on all network interfaces (default: only this computer)
   --port <n>          port for this node (default 9650)
   --tls-cert <f> --tls-key <f> [--tls-port <n>]   also serve HTTPS (needed for the wallet on a non-local web address)
@@ -47,7 +49,7 @@ async function main() {
   if (cmd === 'version') return console.log(VERSION);
 
   if (cmd === 'ctl') {
-    const r = spawnSync(process.execPath, [path.join(__dirname, 'aurenctl.js'), ...process.argv.slice(3)], { stdio: 'inherit' });
+    const r = spawnNode(cp, 'spawnSync', path.join(__dirname, 'aurenctl.js'), process.argv.slice(3), { stdio: 'inherit' });
     process.exitCode = r.status ?? 1; return;
   }
 
@@ -77,7 +79,7 @@ async function main() {
 
     const home = homeFor(net, flags);
     if (!fs.existsSync(path.join(home, 'genesis.json'))) {
-      const r = spawnSync(process.execPath, [path.join(__dirname, 'auren-node.js'), 'init', '--network', net, '--home', home, '--full-node', '--moniker', flags.moniker || `${os.hostname()}-${net}`], { stdio: 'inherit' });
+      const r = spawnNode(cp, 'spawnSync', path.join(__dirname, 'auren-node.js'), ['init', '--network', net, '--home', home, '--full-node', '--moniker', flags.moniker || `${os.hostname()}-${net}`], { stdio: 'inherit' });
       if (r.status !== 0) { process.exitCode = r.status || 1; return; }
     } else {
       const have = JSON.parse(fs.readFileSync(path.join(home, 'genesis.json'), 'utf8'));
@@ -86,12 +88,13 @@ async function main() {
 
     const peers = flags.peers ? String(flags.peers) : (meta.seeds || []).join(',');
     if (!peers) console.warn(`Note: no public seed nodes are published for the ${net} yet. Pass --peers http://host:port to connect to a node you know.`);
-    const args = [path.join(__dirname, 'auren-node.js'), 'start', '--home', home, '--website', '--rpc-port', String(flags.port || 9650)];
+    const args = ['start', '--home', home, '--website', '--rpc-port', String(flags.port || 9650)];
     if (peers) args.push('--peers', peers);
     if (flags.public) args.push('--rpc-host', '0.0.0.0');
+    if (flags.earn) { args.push('--earn'); if (typeof flags.earn === 'string') args.push(flags.earn); if (meta.faucet && net !== 'mainnet') args.push('--faucet', meta.faucet); }
     for (const k of ['tls-cert', 'tls-key', 'tls-port', 'self-url']) if (flags[k]) args.push(`--${k}`, String(flags[k]));
     console.log(`\nJoining the AUREN ${net} (${meta.chainId}). Your node's data lives in ${home}\nPress Ctrl+C to stop. Check it any time with:  auren status --network ${net}\n`);
-    const child = spawn(process.execPath, args, { stdio: 'inherit' });
+    const child = spawnNode(cp, 'spawn', path.join(__dirname, 'auren-node.js'), args, { stdio: 'inherit' });
     for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => child.kill(sig));
     child.on('exit', (code) => { process.exitCode = code ?? 0; });
     return;

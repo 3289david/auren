@@ -179,10 +179,37 @@
     }
     return cands[0] || '';
   }
+  /**
+   * Network chooser next to the node-URL box: Devnet / Testnet / Mainnet (URLs from networks.json) or a custom node.
+   * Picking a network fills the URL and connects. A network with no published public node falls back to this computer.
+   */
+  async function initNetPicker(sel, input, form) {
+    if (!sel) return;
+    let nets = {};
+    try { nets = await (await fetch('/networks.json', { cache: 'no-store', signal: AbortSignal.timeout(2500) })).json(); } catch { /* none published */ }
+    const local = { devnet: 'http://127.0.0.1:9650', testnet: 'http://127.0.0.1:9650', mainnet: 'http://127.0.0.1:9650' };
+    const names = Object.keys(nets).length ? Object.keys(nets) : ['devnet', 'testnet', 'mainnet'];
+    sel.innerHTML = names.map((n) => '<option value="' + n + '">' + n[0].toUpperCase() + n.slice(1) + (nets[n] && nets[n].chainId ? '' : '') + '</option>').join('') + '<option value="custom">Custom node…</option>';
+    const sync = () => {
+      const cur = input.value.replace(/\/$/, '');
+      const hit = names.find((n) => (nets[n] && (nets[n].rpc || []).includes(cur)));
+      sel.value = hit || 'custom';
+    };
+    sel.addEventListener('change', () => {
+      if (sel.value === 'custom') { input.focus(); input.select(); return; }
+      const n = nets[sel.value] || {};
+      input.value = (n.rpc && n.rpc[0]) || local[sel.value];
+      form.requestSubmit();
+    });
+    input.addEventListener('input', sync);
+    new MutationObserver(sync).observe(input, { attributes: true, attributeFilter: ['value'] });
+    setTimeout(sync, 300);
+    sel.syncPicker = sync;
+  }
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   const Aur = {
-    detectRpc, esc, createPasskey, webauthnAvailable, signingBytesOf: (tx) => signingBytes(tx),
+    detectRpc, initNetPicker, esc, createPasskey, webauthnAvailable, signingBytesOf: (tx) => signingBytes(tx),
     canon, hex, unhex, sha256, AUR, parseAur, formatAur, bech32Encode, isValidAddress, pubToAddress,
     randomSeedHex, keyFromSeed, sign, verify, signTx, signingBytes, txHash, encryptSeed, decryptSeed, Rpc, buildTx,
   };

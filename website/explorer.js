@@ -152,6 +152,12 @@
     return `${back}<h2>Name TLDs</h2><p class="note">Anyone can create a TLD from the wallet and set its rules. Names look like <code>alice.tld</code>.</p><div class="table-wrap"><table><thead><tr><th>TLD</th><th>Owner</th><th>Registration</th><th>Price</th><th>Owner share</th><th>Names</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }
 
+  async function viewNodes() {
+    const n = await rpc.get('/nodes');
+    const rows = n.nodes.map((x) => `<tr><td>${A(x.address)}</td><td>${A(x.payout)}</td><td>${formatAur(x.bond, 0)} AUR</td><td>${x.proven ? '<span class="tag live">proved</span>' : '<span class="tag soon">not yet</span>'}</td><td>${x.lastProvenEpoch < 0 ? 'never' : x.lastProvenEpoch}</td></tr>`).join('') || '<tr><td colspan="5" class="msg">No nodes registered yet. Run <code>auren join &lt;network&gt; --earn</code></td></tr>';
+    return `${back}<h2>Node rewards</h2><p class="note">Nodes that store the chain and prove it each epoch share the pool. Epoch ${n.epoch} ends at block ${fmt(n.epochEndsAtHeight)}. ${n.challengeHeight ? 'Challenged block this epoch: ' + link('block=' + n.challengeHeight, '#' + fmt(n.challengeHeight), '') + '.' : ''}</p>` + kv([['Pool', formatAur(n.pool, 4) + ' AUR'], ['Bond to join', formatAur(n.bond, 0) + ' AUR'], ['Epoch length', fmt(n.epochBlocks) + ' blocks'], ['Share of issuance', (n.poolBps / 100) + '%']]) + `<div class="table-wrap"><table><thead><tr><th>Node</th><th>Pays to</th><th>Bond</th><th>This epoch</th><th>Last proven epoch</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+
   async function viewProposals() {
     const r = await rpc.get('/proposals');
     const g = r.governance;
@@ -237,7 +243,7 @@
   // ---------------------------------------------------------------- routing
   function parseRoute() {
     const q = new URLSearchParams(location.search);
-    for (const k of ['block', 'tx', 'address', 'name', 'proposals', 'blocks', 'txs', 'validators', 'rich', 'tlds']) if (q.get(k)) return { k, v: q.get(k) };
+    for (const k of ['block', 'tx', 'address', 'name', 'proposals', 'blocks', 'txs', 'validators', 'rich', 'tlds', 'nodes']) if (q.get(k)) return { k, v: q.get(k) };
     return null;
   }
 
@@ -249,7 +255,7 @@
       $('home').hidden = !!route;
       if (!route) { $('view').innerHTML = ''; await home(); return; }
       status = await rpc.call('aur_status'); stats(status);
-      const html = await ({ block: viewBlock, tx: viewTx, address: viewAddress, name: viewName, proposals: viewProposals, blocks: viewBlocks, txs: viewTxs, validators: viewValidators, rich: viewRich, tlds: viewTlds })[route.k](route.v);
+      const html = await ({ block: viewBlock, tx: viewTx, address: viewAddress, name: viewName, proposals: viewProposals, blocks: viewBlocks, txs: viewTxs, validators: viewValidators, rich: viewRich, tlds: viewTlds, nodes: viewNodes })[route.k](route.v);
       $('view').innerHTML = html;
       $('conn').textContent = `${status.network} · connected`;
     } catch (e) {
@@ -285,6 +291,7 @@
     $('home').hidden = true;
   }
   $('search').addEventListener('submit', (e) => { e.preventDefault(); search($('q').value); });
+  Aur.initNetPicker($('net'), $('rpc'), $('rpcform'));
   $('rpcform').addEventListener('submit', (e) => {
     e.preventDefault();
     rpc = new Rpc($('rpc').value.trim().replace(/\/$/, ''));
@@ -304,6 +311,6 @@
   });
 
   let saved = null; try { saved = localStorage.getItem('auren.rpc'); } catch { /* ignore */ }
-  Aur.detectRpc(saved).then((u) => { $('rpc').value = u; rpc = new Rpc(u); render(); timer = setInterval(() => { if (!document.hidden && (!route || route.k !== 'tx')) render(); }, 2000); });
+  Aur.detectRpc(saved).then((u) => { $('rpc').value = u; if ($('net').syncPicker) $('net').syncPicker(); rpc = new Rpc(u); render(); timer = setInterval(() => { if (!document.hidden && (!route || route.k !== 'tx')) render(); }, 2000); });
   void timer;
 })();

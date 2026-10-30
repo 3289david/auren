@@ -11,6 +11,7 @@ const { checkTx, applyTx, txHash, costOf, txCost, TYPES, getAcct, putAcct, spend
 const { nextBaseFee, DIMENSIONS } = require('./fees');
 const { scheduleLanes } = require('./scheduler');
 const C = require('./consensus');
+const NR = require('./noderew');
 
 const HEADER_VERSION = 1;
 const emptyHash = sha256hex('');
@@ -100,8 +101,8 @@ function trackLiveness(env, lastCommit, lastValset) {
  * outputs on every node. `laneOrder` exists only so tests can prove lanes are order-independent.
  */
 function executeBlock(state, p) {
-  const { params, chainId, height, proposer, baseFee, txs, evidence, lastCommit, laneOrder, time, blockHashAt } = p;
-  const env = { state, params, height, baseFee, proposer, time, blockHashAt };
+  const { params, chainId, height, proposer, baseFee, txs, evidence, lastCommit, laneOrder, time, blockHashAt, blockAt } = p;
+  const env = { state, params, height, baseFee, proposer, time, blockHashAt, blockAt };
   const activeSet = state.get('meta', 'activeSet');
   const lastValset = state.get('meta', 'lastValset');
   let burned = 0n, tips = 0n;
@@ -154,11 +155,14 @@ function executeBlock(state, p) {
     const signed = new Set(lastCommit.votes.map((x) => x.validator));
     const totalLast = C.totalPower(lastValset);
     const mintTotal = (supply * issuanceRatePpm(params, height)) / (1000000n * BigInt(params.blocksPerYear));
+    const nodeCut = (mintTotal * BigInt(params.node.poolBps)) / 10000n;
+    if (nodeCut > 0n) { state.set('meta', 'nodePool', (state.get('meta', 'nodePool') || 0n) + nodeCut); minted += nodeCut; }
+    const valMint = mintTotal - nodeCut;
     for (const ent of lastValset) {
       if (!signed.has(ent.operator)) continue;
       const v = state.get('val', ent.operator);
       if (!v || v.shares === 0n) continue;
-      const share = (mintTotal * ent.power) / totalLast;
+      const share = (valMint * ent.power) / totalLast;
       const commission = (share * BigInt(v.commissionBps)) / 10000n;
       const rest = share - commission;
       v.commission += commission;
@@ -168,6 +172,7 @@ function executeBlock(state, p) {
       minted += share;
     }
   }
+  NR.settleEpoch(state, params, height, getAcct, putAcct);
   supply = supply + minted - burned;
   state.set('meta', 'supply', supply);
   state.set('meta', 'burned', state.get('meta', 'burned') + burned);
@@ -263,7 +268,7 @@ class Chain {
     const baseFee = this.baseFee;
     const lastCommit = height > 1 ? this.commits.get(this.height) : null;
     const fork = this.state.fork();
-    const res = executeBlock(fork, { params: this.params, chainId: this.chainId, height, proposer: operator, baseFee, txs, evidence, lastCommit, time, blockHashAt: (n) => this.getBlock(n)?.hash });
+    const res = executeBlock(fork, { params: this.params, chainId: this.chainId, height, proposer: operator, baseFee, txs, evidence, lastCommit, time, blockHashAt: (n) => this.getBlock(n)?.hash, blockAt: (n) => this.getBlock(n) });
     const header = {
       v: HEADER_VERSION, chainId: this.chainId, height, round, time, prevHash: this.last.hash, proposer: operator,
       baseFee: strFee(baseFee),
@@ -334,7 +339,7 @@ class Chain {
     let res;
     try {
       for (const tx of txs) checkTx(tx, this.params, this.chainId);
-      res = executeBlock(fork, { params: this.params, chainId: this.chainId, height: h.height, proposer: h.proposer, baseFee: exp, txs, evidence, lastCommit, time: h.time, blockHashAt: (n) => this.getBlock(n)?.hash });
+      res = executeBlock(fork, { params: this.params, chainId: this.chainId, height: h.height, proposer: h.proposer, baseFee: exp, txs, evidence, lastCommit, time: h.time, blockHashAt: (n) => this.getBlock(n)?.hash, blockAt: (n) => this.getBlock(n) });
     } catch (e) {
       if (e instanceof TxInvalid) throw new BlockInvalid(`invalid transaction: ${e.code} ${e.message}`);
       throw e;
@@ -381,6 +386,16 @@ class Chain {
       out.push(jsonify({ validator: val, shares: d.shares, tokens: v.shares ? (d.shares * v.tokens) / v.shares : 0n, pendingRewards: pending }));
     }
     return out;
+  }
+  /** Node-reward status: the pool, the current epoch, this epoch's storage challenge and registered nodes. */
+  getNodeInfo(addr) {
+    const P = this.params, h = this.height + 1, ep = NR.epochOf(h, P);
+    const ch = ep >= 1 ? NR.challengeHeight(ep, P, (n) => this.getBlock(n)?.hash) : null;
+    const nodes = this.state.entries('node').map(([a, n]) => ({ address: a, bond: n.bond, payout: n.payout, since: n.since, proven: n.provenEpoch === ep, lastProvenEpoch: n.provenEpoch }));
+    return jsonify({
+      pool: this.state.get('meta', 'nodePool') || 0n, bond: P.node.bond, epochBlocks: P.node.epochBlocks, poolBps: P.node.poolBps,
+      epoch: ep, epochEndsAtHeight: (ep + 1) * P.node.epochBlocks, challengeHeight: ch, nodes: addr ? nodes.filter((n) => n.address === addr) : nodes,
+    });
   }
   getUnbonding(addr) {
     return this.state.entries('unb').filter(([, u]) => u.delegator === addr)
@@ -448,7 +463,7 @@ class Chain {
   simulate(tx) {
     checkTx(tx, this.params, this.chainId);
     const fork = this.state.fork();
-    const env = { state: fork, params: this.params, height: this.height + 1, baseFee: this.baseFee, time: Date.now(), proposer: this.activeSet[0].operator, blockHashAt: (n) => this.getBlock(n)?.hash };
+    const env = { state: fork, params: this.params, height: this.height + 1, baseFee: this.baseFee, time: Date.now(), proposer: this.activeSet[0].operator, blockHashAt: (n) => this.getBlock(n)?.hash, blockAt: (n) => this.getBlock(n) };
     const r = applyTx(env, tx);
     return jsonify({
       ok: r.status === 1, code: r.code, fee: r.baseCost + r.tip, burned: r.baseCost + r.burned,

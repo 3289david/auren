@@ -7,13 +7,13 @@ const path = require('node:path');
 
 const root = path.join(__dirname, '..', 'website');
 const port = Number(process.env.PORT || process.argv[2] || 8080);
-const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.json': 'application/json', '.png': 'image/png', '.ico': 'image/x-icon' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.json': 'application/json', '.png': 'image/png', '.ico': 'image/x-icon', '.zip': 'application/zip', '.gz': 'application/gzip' };
 
 http.createServer((req, res) => {
   let p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
   if (p.endsWith('/')) p += 'index.html';
-  const file = path.normalize(path.join(root, p));
-  if (!file.startsWith(root)) { res.writeHead(403); return res.end('forbidden'); }
+  const file = p === '/networks.json' ? path.join(root, '..', 'networks', 'networks.json') : path.normalize(path.join(root, p));
+  if (p !== '/networks.json' && !file.startsWith(root)) { res.writeHead(403); return res.end('forbidden'); }
   fs.readFile(file, (err, data) => {
     if (err) { res.writeHead(404); return res.end('not found'); }
     res.writeHead(200, { 'content-type': TYPES[path.extname(file)] || 'application/octet-stream', 'cache-control': 'no-cache' });

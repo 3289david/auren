@@ -15,7 +15,7 @@ const addr = (a) => { const s = String(a || '').toLowerCase().replace(/^0x/, '')
 function ethMethods(node) {
   const chain = () => node.chain;
   const backend = () => new ChainBackend(chain().state, chain().params);
-  const envNow = () => { const c = chain(); return { state: c.state, params: c.params, height: c.height + 1, baseFee: c.baseFee, time: Date.now(), proposer: c.activeSet[0].operator, blockHashAt: (n) => c.getBlock(n)?.hash }; };
+  const envNow = () => { const c = chain(); return { state: c.state, params: c.params, height: c.height + 1, baseFee: c.baseFee, time: Date.now(), proposer: c.activeSet[0].operator, blockHashAt: (n) => c.getBlock(n)?.hash, blockAt: (n) => c.getBlock(n) }; };
   const gasPriceSparks = () => { const f = chain().baseFee; return f.compute + (f.state + 999n) / 1000n + (f.state + 20999n) / 21000n; };
   const blockNo = (tag) => (tag === undefined || tag === 'latest' || tag === 'pending' || tag === 'safe' || tag === 'finalized' ? chain().height : tag === 'earliest' ? 0 : Number(BigInt(tag)));
 

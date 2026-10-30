@@ -2,7 +2,7 @@
   "chainId": "auren-devnet-1",
   "network": "devnet",
   "addressPrefix": "daur",
-  "genesisHash": "535c33b35ab045ea94870178d2b10d3113447750cef039613a54f854bab1462e",
+  "genesisHash": "742ebeb16dae7032e92612ca8b6e8ff232b0e02672637cb6d5e0c2c72cc4a543",
   "genesisTime": 1767225600000,
   "validators": [
     {

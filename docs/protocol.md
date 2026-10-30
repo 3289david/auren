@@ -37,6 +37,9 @@ Human-readable prefix per network: `aur` (mainnet), `taur` (testnet), `daur` (de
 | `createValidator` | 150,000 | 600 | `consPub`, `commissionBps`, `moniker`, `amount` |
 | `unjail` | 40,000 | 100 | |
 | `registerDomain` | 80,000 | 400 | `name` (`label` or `label.tld`), `years` |
+| `registerNode` | 60,000 | 300 | `payout` (see `node-rewards.md`) |
+| `unregisterNode` | 50,000 | 250 | |
+| `nodeProof` | 60,000 | 150 | `epoch`, `digest` |
 | `registerTld` | 100,000 | 500 | `tld`, `open`, `price`, `ownerShareBps` (see `domains.md`) |
 | `setTldPolicy` | 50,000 | 200 | `tld`, `open`, `price`, `ownerShareBps` |
 | `transferTld` | 40,000 | 100 | `tld`, `newOwner` |

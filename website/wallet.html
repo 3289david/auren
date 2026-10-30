@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AUREN Wallet</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,7 +21,7 @@
   <div class="ex-head">
     <h1>Wallet</h1>
     <span id="conn" class="tag no">disconnected</span>
-    <form class="grow" id="rpcform"><input type="text" id="rpc" aria-label="Node URL" autocomplete="off"><button class="btn small" type="submit">Connect</button></form>
+    <form class="grow" id="rpcform"><select id="net" aria-label="Network" style="width:auto"></select><input type="text" id="rpc" aria-label="Node URL" autocomplete="off"><button class="btn small" type="submit">Connect</button></form>
   </div>
   <p class="note">Keys are generated and used <b>only in this browser</b>. The seed is encrypted with your password (PBKDF2 + AES-GCM) and stored in this browser's local storage; it is never sent anywhere. Transactions are signed here and submitted to the node above. Whoever has your seed controls your funds.</p>
   <div id="app"></div>

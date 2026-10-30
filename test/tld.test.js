@@ -17,6 +17,8 @@ function conserved(chain) {
   for (const [, v] of chain.state.entries('val')) sum += v.tokens + v.pendingTotal;
   for (const [, u] of chain.state.entries('unb')) sum += u.amount;
   for (const [, p] of chain.state.entries('prop')) sum += p.deposit;
+  for (const [, n] of chain.state.entries('node')) sum += n.bond;
+  sum += chain.state.get('meta', 'nodePool') || 0n;
   assert.equal(sum, chain.supply, 'token conservation violated');
 }
 function setup() {

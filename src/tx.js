@@ -7,6 +7,7 @@
 const { canon, sha256hex, SCALE, ceilDiv, minB, TxInvalid, TxFail } = require('./util');
 const { verify, verifyWebAuthn } = require('./crypto');
 const gov = require('./gov');
+const NR = require('./noderew');
 const { WEI, runEvm } = require('./evm/host');
 const { envelopeFromRaw } = require('./evm/ethtx');
 const { pubToAddress, isValidAddress } = require('./address');
@@ -257,6 +258,54 @@ const TYPES = {
       if (v.tokens < params.minSelfStake) throw new TxFail('STAKE_BELOW_MINIMUM');
       v.jailed = false; v.missed = 0;
       state.set('val', tx.from, v);
+      return {};
+    },
+  },
+
+  // ----- node rewards (src/noderew.js, docs/node-rewards.md) -----
+  registerNode: {
+    cost: { compute: 60000, state: 300 },
+    check: (b, p) => { if (!isValidAddress(b.payout, p.addressPrefix)) throw new TxInvalid('BAD_BODY', 'invalid payout address'); },
+    access: (tx) => [`acct:${tx.from}`, `node:${tx.from}`],
+    run({ state, height, params }, tx) {
+      if (state.has('node', tx.from)) throw new TxFail('NODE_EXISTS');
+      const a = getAcct(state, tx.from);
+      if (spendable(a, height) < params.node.bond) throw new TxFail('INSUFFICIENT_BOND');
+      a.balance -= params.node.bond;
+      putAcct(state, tx.from, a);
+      state.set('node', tx.from, { bond: params.node.bond, payout: tx.body.payout, since: height, provenEpoch: -1 });
+      return {};
+    },
+  },
+  unregisterNode: {
+    cost: { compute: 50000, state: 250 },
+    check: () => {},
+    access: (tx) => [`acct:${tx.from}`, `node:${tx.from}`],
+    run({ state, height, params }, tx) {
+      const n = state.get('node', tx.from);
+      if (!n) throw new TxFail('NOT_A_NODE');
+      state.del('node', tx.from);
+      state.set('unb', `${String(height + params.unbondingBlocks).padStart(12, '0')}|${tx.from}|${tx.nonce}`,
+        { delegator: tx.from, validator: null, amount: n.bond, created: height });
+      return {};
+    },
+  },
+  nodeProof: {
+    cost: { compute: 60000, state: 150 },
+    check: (b) => { if (!isInt(b.epoch, 1, 1e9) || !isHex64(b.digest)) throw new TxInvalid('BAD_BODY', 'epoch and a 64-hex digest are required'); },
+    access: (tx) => [`acct:${tx.from}`, `node:${tx.from}`],
+    run({ state, height, params, blockHashAt, blockAt }, tx) {
+      const n = state.get('node', tx.from);
+      if (!n) throw new TxFail('NOT_A_NODE');
+      const ep = NR.epochOf(height, params);
+      if (tx.body.epoch !== ep || ep < 1) throw new TxFail('WRONG_EPOCH');
+      if (n.since > ep * params.node.epochBlocks) throw new TxFail('NODE_TOO_NEW'); // must be bonded before the epoch began
+      if (n.provenEpoch === ep) throw new TxFail('ALREADY_PROVEN');
+      const ch = NR.challengeHeight(ep, params, blockHashAt);
+      const blk = ch && blockAt ? blockAt(ch) : null;
+      if (!blk || NR.proofDigest(tx.from, blk) !== tx.body.digest) throw new TxFail('BAD_PROOF');
+      n.provenEpoch = ep;
+      state.set('node', tx.from, n);
       return {};
     },
   },
@@ -645,7 +694,7 @@ function applyTx(env, tx) {
   const child = state.fork();
   let status = 1, code = 'OK', burned = 0n, baseRefund = 0n, tipRefund = 0n, extra;
   try {
-    const res = spec.run({ state: child, params, height, baseFee, proposer: env.proposer, time: env.time, blockHashAt: env.blockHashAt, fee: { baseCost, tip } }, tx) || {};
+    const res = spec.run({ state: child, params, height, baseFee, proposer: env.proposer, time: env.time, blockHashAt: env.blockHashAt, blockAt: env.blockAt, fee: { baseCost, tip } }, tx) || {};
     burned = res.burned || 0n;
     extra = res.extra;
     if (res.discard) { status = 0; code = res.code; } else child.commit();

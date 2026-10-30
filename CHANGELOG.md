@@ -1,6 +1,12 @@
 # Changelog
 
-## Unreleased
+## 0.6.0
+
+- **Apps:** single-file Windows apps (`AUREN-Node.exe`, `AUREN-Wallet.exe`) and Android apps (`AUREN Node` with a bundled Node.js runtime, `AUREN Wallet`). Build scripts: `scripts/build-exe.js`, `android/build.js`. See `docs/BUILD-APPS.md`.
+- Wallet and explorer: a **Network** picker (Devnet, Testnet, Mainnet, custom node) next to the Connect button.
+- New favicon files (`favicon.ico`, apple-touch icon); `/networks.json` is served by the static server; run-a-node page links to release downloads.
+
+- **Node rewards:** full nodes earn AUR. `auren join <network> --earn` bonds the node and proves each epoch that it stores the chain; 10% of issuance goes to a pool split between proven nodes. New txs `registerNode`, `unregisterNode`, `nodeProof`; params `node.bond|epochBlocks|poolBps`; `/nodes`, `aur_getNodes`. See `docs/node-rewards.md`. Changes genesis (devnet/testnet hashes updated).
 
 - **Your own TLDs:** anyone can create a TLD (`registerTld`), set it open or restricted, set the yearly price and their share of each registration, change it later (`setTldPolicy`) and hand it over (`transferTld`). Domains work under any TLD (`alice.david`); real-world TLDs are reserved; fees are split between the TLD owner and the burn. Names resolve with light-client proofs. New param `tld.price`, governable. See `docs/domains.md`.
 - CLI: `aurenctl tld list|show|register|policy|transfer`. API: `/tlds`, `/tld/{tld}`, `aur_getTlds`, `aur_getTld`. Wallet: TLD picker and create-a-TLD form. Explorer: **Names** page.

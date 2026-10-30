@@ -69,7 +69,7 @@ Download the newest package and unpack it over (or beside) the old one. Your dat
 
 ## Becoming a validator (advanced)
 
-A regular node only checks the network. Validators also propose and sign blocks and earn rewards, and putting their stake at risk. Read `docs/validators.md` first: you will create a separate consensus key, stake AUR, and must never run two nodes with the same key (that is slashed).
+A regular node checks the network, and with `--earn` it also earns AUR (see [node-rewards.md](node-rewards.md)). Validators also propose and sign blocks and earn rewards, and putting their stake at risk. Read `docs/validators.md` first: you will create a separate consensus key, stake AUR, and must never run two nodes with the same key (that is slashed).
 
 ## Back up
 

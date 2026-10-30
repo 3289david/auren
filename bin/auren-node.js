@@ -11,7 +11,7 @@ const USAGE = `auren-node ${VERSION}
 
 Usage:
   auren-node init  --network <devnet|testnet|mainnet> --home <dir> [--moniker <name>] [--genesis <file>] [--full-node]
-  auren-node start --home <dir> [--rpc-host 127.0.0.1] [--rpc-port 9650] [--peers url,url] [--self-url url] [--website] [--tls-cert f --tls-key f [--tls-port 443]] [--quiet]
+  auren-node start --home <dir> [--rpc-host 127.0.0.1] [--rpc-port 9650] [--peers url,url] [--self-url url] [--website] [--earn [payout-address]] [--tls-cert f --tls-key f [--tls-port 443]] [--quiet]
   auren-node show-validator --home <dir>      print the consensus public key (for "aurenctl validator create")
   auren-node genesis-hash --home <dir>
 
@@ -90,6 +90,8 @@ async function main() {
     if (flags['self-url']) merged.selfUrl = flags['self-url'];
     if (flags.moniker) merged.moniker = flags.moniker;
     if (flags.quiet) merged.quiet = true;
+    if (flags.faucet) merged.faucet = String(flags.faucet);
+    if (flags.earn) { merged.earn = true; if (typeof flags.earn === 'string') merged.payout = flags.earn; }
     if (flags['tls-cert'] && flags['tls-key']) merged.tls = { cert: path.resolve(flags['tls-cert']), key: path.resolve(flags['tls-key']), port: Number(flags['tls-port'] || 443) };
     if (flags.website) merged.webRoot = path.join(ROOT, 'website'); // serve wallet + explorer from this node
     const asValidator = consensusKey && merged.operator;

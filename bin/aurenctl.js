@@ -23,6 +23,7 @@ Transfers   send <to> <amount>
 Staking     delegate <validator> <amount> | undelegate <validator> <amount> | claim <validator>
 Validators  validator create --cons-pub <hex> --moniker <s> --commission <pct> --amount <AUR> | validator unjail
             gentx --cons-pub <hex> --moniker <s> --commission <pct> --amount <AUR> --chain-id <id>
+Node rewards node info | node register [--payout <addr>] | node unregister   (or just run: auren join <network> --earn)
 TLDs        tld list | tld show <tld> | tld register <tld> [--price AUR/yr] [--share pct] [--closed] | tld policy <tld> ... | tld transfer <tld> <addr>
 Names       domain register <name> [--years N] | resolve <name> | target <name> <addr> | transfer <name> <addr> | record <name> <key> <value> | primary <name>
 Security    security set --guardians a,b --threshold N --delay-blocks N --daily-limit <AUR|none>
@@ -148,6 +149,11 @@ async function main() {
       if (sub === 'create') return tx('createValidator', { consPub: need(flags['cons-pub'], '--cons-pub'), moniker: need(flags.moniker, '--moniker'), commissionBps: Math.round(Number(need(flags.commission, '--commission')) * 100), amount: parseAur(need(flags.amount, '--amount')).toString() });
       if (sub === 'unjail') return tx('unjail', {});
       throw new Error('validator: create | unjail');
+    case 'node':
+      if (sub === 'info' || !sub) return out(await rpc.call('aur_getNodes'));
+      if (sub === 'register') return tx('registerNode', { payout: flags.payout ? await resolveAddr(flags.payout) : (await wallet()).address });
+      if (sub === 'unregister') return tx('unregisterNode', {});
+      throw new Error('node: info | register [--payout <addr>] | unregister');
     case 'tld': {
       const t = (s) => String(need(s, 'TLD')).toLowerCase().replace(/^\./, '');
       const policy = () => ({ open: !flags.closed, price: parseAur(flags.price || '0').toString(), ownerShareBps: Math.round(Number(flags.share ?? 80) * 100) });

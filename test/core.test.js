@@ -19,6 +19,8 @@ function assertConserved(chain) {
   for (const [, a] of chain.state.entries('acct')) sum += a.balance;
   for (const [, v] of chain.state.entries('val')) sum += v.tokens + v.pendingTotal;
   for (const [, u] of chain.state.entries('unb')) sum += u.amount;
+  sum += chain.state.get('meta', 'nodePool') || 0n;
+  for (const [, n] of chain.state.entries('node')) sum += n.bond;
   assert.equal(sum, chain.supply, 'token conservation violated');
 }
 const bal = (chain, who) => (chain.state.get('acct', who.address) || { balance: 0n }).balance;

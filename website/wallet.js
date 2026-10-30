@@ -558,6 +558,7 @@
   }
 
   $('rvcancel').onclick = () => $('review').close('cancel');
+  Aur.initNetPicker($('net'), $('rpc'), $('rpcform'));
   $('rpcform').addEventListener('submit', (e) => { e.preventDefault(); key = null; connect($('rpc').value.trim().replace(/\/$/, '')); });
-  Aur.detectRpc(store.get('auren.rpc')).then((u) => { $('rpc').value = u; connect(u); });
+  Aur.detectRpc(store.get('auren.rpc')).then((u) => { $('rpc').value = u; connect(u); if ($('net').syncPicker) $('net').syncPicker(); });
 })();

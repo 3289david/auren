@@ -22,6 +22,7 @@ const NETWORKS = {
       governance: { votingBlocks: 60, timelockBlocks: 20, deposit: (100n * AUR).toString(), quorumBps: 3340, thresholdBps: 5000, vetoBps: 3340 },
       domain: { maxYears: 10 },
       tld: { price: (100n * AUR).toString(), maxOwnerShareBps: 9000 },
+      node: { bond: (100n * AUR).toString(), epochBlocks: 120, poolBps: 1000 },
     },
   },
   testnet: {
@@ -33,6 +34,7 @@ const NETWORKS = {
       evmChainId: 77002,
       security: { minDelayBlocks: 1800, limitWindowBlocks: 43200, maxGuardians: 9 },
       tld: { price: (1000n * AUR).toString(), maxOwnerShareBps: 9000 },
+      node: { bond: (500n * AUR).toString(), epochBlocks: 1800, poolBps: 1000 },
     },
   },
 };

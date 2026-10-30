@@ -2,7 +2,7 @@
   "chainId": "auren-testnet-1",
   "network": "testnet",
   "addressPrefix": "taur",
-  "genesisHash": "7e7f816951ff109f14db7cb1e74eae2b7d0992ff2b3a44717433d320e32ef29c",
+  "genesisHash": "59e1ba3e7f3346f02039d8c9dda3e679492c44f9694b4b6e2c7615315ac73c87",
   "genesisTime": 1793180507446,
   "validators": [
     {

@@ -34,6 +34,11 @@
     "tld": {
       "price": "1000000000000",
       "maxOwnerShareBps": 9000
+    },
+    "node": {
+      "bond": "500000000000",
+      "epochBlocks": 1800,
+      "poolBps": 1000
     }
   },
   "accounts": [
