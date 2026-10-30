@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Developer quickstart · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="START-HERE.html">Start here</a><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="wallet-guide.html">Wallet guide</a><a href="explorer-guide.html">Explorer guide</a><a href="staking-guide.html">Staking guide</a><a href="domains.html">Names, domains and your own TLD</a><a href="faq.html">FAQ</a><a href="troubleshooting.html">Troubleshooting</a><a href="glossary.html">Glossary</a><h4>Run a node</h4><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="validators.html">Running a validator</a><a href="cli.html">Command-line reference</a><h4>Build on AUREN</h4><a href="developer-quickstart.html" class="on">Developer quickstart</a><a href="integrate.html">Integrate AUREN into your wallet or app</a><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="developer-quickstart">Developer quickstart</h1>
+<p>Send your first payment from code in about ten minutes.</p>
+<h2 id="1-get-a-node">1. Get a node</h2>
+<p>Run a devnet on your computer (needs Node.js 20 or newer, nothing else):</p>
+<div class="codebox"><pre><code>git clone https://github.com/3289david/auren
+cd auren
+node scripts/devnet.js --clean</code></pre></div>
+<p>It starts four validators. The first one answers on <code>http://127.0.0.1:9650</code>, and a faucet runs on port 9690. (To use a public network instead, connect to a node of that network.)</p>
+<p>Check it:</p>
+<div class="codebox"><pre><code>curl http://127.0.0.1:9650/status</code></pre></div>
+<h2 id="2-make-a-wallet-and-get-coins-javascript">2. Make a wallet and get coins (JavaScript)</h2>
+<div class="codebox"><pre><code>const { Client, Wallet } = require('./sdk/js');
+const node = new Client('http://127.0.0.1:9650');
+const wallet = Wallet.generate('daur');
+await fetch('http://127.0.0.1:9690/drip', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ address: wallet.address }) });
+console.log(wallet.address, await node.balance(wallet.address));</code></pre></div>
+<h2 id="3-send-a-payment">3. Send a payment</h2>
+<div class="codebox"><pre><code>const friend = Wallet.generate('daur');
+const tx = await wallet.transfer(node, friend.address, '1.5');
+console.log(tx.receipt.status === 1 ? 'confirmed' : 'failed', await node.balance(friend.address));</code></pre></div>
+<h2 id="4-the-same-in-python">4. The same in Python</h2>
+<div class="codebox"><pre><code>from auren import Client, Wallet
+node = Client(&quot;http://127.0.0.1:9650&quot;)
+wallet = Wallet.generate(&quot;daur&quot;)
+friend = Wallet.generate(&quot;daur&quot;)
+# fund the wallet from the faucet first, then:
+wallet.transfer(node, friend.address, &quot;1.5&quot;)</code></pre></div>
+<h2 id="5-names-and-name-endings">5. Names and name endings</h2>
+<div class="codebox"><pre><code>await wallet.registerName(node, 'alice');                       // alice.aur
+await wallet.createTld(node, 'david', { price: '1' });          // your own ending
+await wallet.registerName(node, 'bob.david');
+console.log(await node.resolve('bob.david'));                   // owner, target, proof</code></pre></div>
+<h2 id="6-read-the-chain">6. Read the chain</h2>
+<div class="codebox"><pre><code>curl http://127.0.0.1:9650/blocks?limit=5
+curl http://127.0.0.1:9650/account/&lt;address&gt;
+curl http://127.0.0.1:9650/tlds</code></pre></div>
+<p>Every call is also available as JSON-RPC at <code>POST /rpc</code>, including the Ethereum <code>eth_*</code> methods.</p>
+<h2 id="7-use-ethereum-tools">7. Use Ethereum tools</h2>
+<div class="codebox"><pre><code>const { ethers } = require('ethers');
+const provider = new ethers.JsonRpcProvider('http://127.0.0.1:9650/rpc', 77001);</code></pre></div>
+<p>Chain IDs: devnet 77001, testnet 77002, mainnet 77000. More in <a href="evm.html">EVM</a>.</p>
+<h2 id="where-next">Where next</h2>
+<div class="table-wrap"><table><thead><tr><th>Topic</th><th>Read</th></tr></thead><tbody><tr><td>All API methods</td><td><a href="integrate.html">Integrate</a>, <a href="rpc-api.html">RPC API</a></td></tr><tr><td>Signing a transaction yourself</td><td><a href="integrate.html">Integrate</a></td></tr><tr><td>Smart contracts</td><td><a href="evm.html">EVM</a></td></tr><tr><td>Command-line tool</td><td><a href="cli.html">CLI reference</a></td></tr><tr><td>Running a local test network</td><td><a href="networks.html">Networks</a></td></tr></tbody></table></div>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/developer-quickstart.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#1-get-a-node">1. Get a node</a><a href="#2-make-a-wallet-and-get-coins-javascript">2. Make a wallet and get coins (JavaScript)</a><a href="#3-send-a-payment">3. Send a payment</a><a href="#4-the-same-in-python">4. The same in Python</a><a href="#5-names-and-name-endings">5. Names and name endings</a><a href="#6-read-the-chain">6. Read the chain</a><a href="#7-use-ethereum-tools">7. Use Ethereum tools</a><a href="#where-next">Where next</a></aside>
+</div>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wallet guide · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="START-HERE.html">Start here</a><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="wallet-guide.html" class="on">Wallet guide</a><a href="explorer-guide.html">Explorer guide</a><a href="staking-guide.html">Staking guide</a><a href="domains.html">Names, domains and your own TLD</a><a href="faq.html">FAQ</a><a href="troubleshooting.html">Troubleshooting</a><a href="glossary.html">Glossary</a><h4>Run a node</h4><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="validators.html">Running a validator</a><a href="cli.html">Command-line reference</a><h4>Build on AUREN</h4><a href="developer-quickstart.html">Developer quickstart</a><a href="integrate.html">Integrate AUREN into your wallet or app</a><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="wallet-guide">Wallet guide</h1>
+<p>A tour of every screen in the AUREN wallet (website, Windows app and Android app).</p>
+<h2 id="connecting">Connecting</h2>
+<p>At the top you pick a network: <b>Devnet</b>, <b>Testnet</b>, <b>Mainnet</b>, or <b>Custom node…</b> (for people who run their own node; it reveals an address box). The tag next to the title shows which network you are on. If a network is not reachable, the wallet says so instead of switching silently.</p>
+<h2 id="making-or-adding-a-wallet">Making or adding a wallet</h2>
+<p>The first screen offers three choices, one step per page:</p>
+<ul><li><b>Create a new wallet.</b> Step 1 shows your recovery key. Step 2 asks you to choose a name and a password.</li><li><b>I already have a wallet.</b> Paste your recovery key and choose a new password for this device.</li><li><b>Use my phone or security key.</b> The key lives inside your device (fingerprint, face, Windows Hello or a hardware key). Every payment needs your touch. If you lose the device you lose the wallet, so add trusted helpers in <b>Security</b> first.</li></ul>
+<p>Your wallet is locked with your password and stays on this device. Nothing secret is ever sent anywhere.</p>
+<h2 id="the-main-screen">The main screen</h2>
+<p>The big number is your <b>spendable balance</b>. Under it you see what is staked, rewards waiting for you, coins coming back from unstaking, and anything locked. Four buttons cover everyday use; more tabs sit below them.</p>
+<h3 id="send">Send</h3>
+<p>Enter an address or a name (<code>alice.aur</code>, <code>alice.david</code>) and an amount. Names are checked on your device. If a name could belong to different people on different networks the wallet refuses to pay until you are sure. <b>Review</b> shows the fee and what will change, and asks the network to preview the payment. You confirm to sign and send.</p>
+<p>The optional <b>Extra tip</b> pays a little more to go first when the network is busy. Leave it as is normally.</p>
+<h3 id="receive">Receive</h3>
+<p>Your address, with <b>Copy address</b>. On the devnet and testnet there is also <b>Get 1,000 AUR</b>.</p>
+<h3 id="stake">Stake</h3>
+<p>Back a validator to earn rewards. Choose one, enter an amount, confirm. <b>Your stake</b> lists what you staked and your rewards (press to claim). Unstaking returns your coins after a waiting period, shown under <b>Coming back to you</b>. See the <a href="staking-guide.html">Staking guide</a>.</p>
+<h3 id="activity">Activity</h3>
+<p>Your recent payments, with their result and fee. Each links to the explorer.</p>
+<h3 id="names">Names</h3>
+<p>Search and register names like <code>alice.aur</code>, point a name at an address, set your <b>primary name</b> (shown when people look up your address), and manage a name you own. You can also <b>create your own name ending</b> such as <code>.david</code> and set its price. See <a href="domains.html">Names, domains and your own TLD</a>.</p>
+<h3 id="vote">Vote</h3>
+<p>Anyone who stakes can vote on proposals that change network settings. Votes count in proportion to stake.</p>
+<h3 id="security">Security</h3>
+<ul><li><b>Trusted helpers:</b> addresses of people or other wallets that can help you recover your account if you lose your key. You choose how many must agree.</li><li><b>Waiting time:</b> a delay before weaker settings apply, so a thief cannot loosen your protection at once. Any helper can cancel it.</li><li><b>Daily limit:</b> the most that can leave your account per day. This limits the damage if someone gets your key.</li><li><b>Help someone recover:</b> if you are a trusted helper for someone, approve moving their account to their new key.</li></ul>
+<h3 id="backup">Backup</h3>
+<p>Show your recovery key again (needs your password), or remove this wallet from this device. Removing it without a saved recovery key loses access to your coins for good.</p>
+<h2 id="safety-checklist">Safety checklist</h2>
+<ol><li>Keep your recovery key offline and private.</li><li>Check the address and amount every time.</li><li>Set a daily limit and trusted helpers.</li><li>The wallet locks itself after 10 minutes of inactivity.</li></ol>
+<p>Problems? See <a href="troubleshooting.html">Troubleshooting</a>.</p>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/wallet-guide.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#connecting">Connecting</a><a href="#making-or-adding-a-wallet">Making or adding a wallet</a><a href="#the-main-screen">The main screen</a><a href="#safety-checklist">Safety checklist</a></aside>
+</div>
+</body>
+</html>

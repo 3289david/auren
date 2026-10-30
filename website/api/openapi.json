@@ -1,0 +1,791 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "AUREN node API",
+    "version": "0.6",
+    "description": "Every AUREN node serves this API on its RPC port (default 9650). Reads are plain REST. Everything, including sending transactions, is also available over JSON-RPC 2.0 at POST /rpc. Ethereum tools can use the same /rpc endpoint (eth_* methods; chain IDs 77000 mainnet, 77001 devnet, 77002 testnet). Amounts are decimal strings in sparks (1 AUR = 1,000,000,000 sparks). See docs/integrate.md.",
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:9650",
+      "description": "A node on this computer"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Read"
+    },
+    {
+      "name": "Write"
+    },
+    {
+      "name": "JSON-RPC"
+    }
+  ],
+  "paths": {
+    "/status": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Network status",
+        "description": "Chain ID, network, height, base fee, supply, burned, bonded, peers.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/params": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Protocol parameters",
+        "description": "Resolved parameters including fees, tld, node rewards, governance.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/fees": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Fee quote",
+        "description": "Fee for each transaction type at the current base fee.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/validators": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Validators",
+        "description": "Active validators with power and commission.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/block/{height}": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Block",
+        "description": "A block with its commit; use \"latest\" for the newest.",
+        "parameters": [
+          {
+            "name": "height",
+            "in": "path",
+            "required": true,
+            "description": "Block height or \"latest\"",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/blocks": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Recent blocks",
+        "description": "Newest first.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "How many (default 20)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "description": "Return blocks below this height",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/txs": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Recent transactions",
+        "description": "Across blocks, newest first.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "How many",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "description": "Return below this height",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/tx/{hash}": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Transaction",
+        "description": "A transaction with its receipt, or its pending state.",
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "description": "Transaction hash (64 hex)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/account/{address}": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Account",
+        "description": "Balance, nonce, pendingNonce, delegations, unbonding, security settings. Also accepts a 0x Ethereum address.",
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "description": "AUREN or 0x address",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/account/{address}/txs": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Account transactions",
+        "description": "Newest first.",
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "description": "Address",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "How many",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/richlist": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Top accounts",
+        "description": "Accounts by balance.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "How many",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/proposals": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Governance proposals",
+        "description": "With tallies and parameters.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/tlds": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Name endings",
+        "description": "All TLDs, the built-in .aur first.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/tld/{tld}": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "One name ending",
+        "description": "Owner, price, open or restricted, owner share, number of names.",
+        "parameters": [
+          {
+            "name": "tld",
+            "in": "path",
+            "required": true,
+            "description": "Ending without the dot",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/domain/{name}": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Name record",
+        "description": "Owner, target, records. Names are label or label.tld.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "description": "alice, alice.aur or alice.david",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/resolve/{name}": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Name with proof",
+        "description": "Address plus a Merkle proof a light client can verify.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "description": "Name",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/reverse/{address}": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Primary name of an address",
+        "description": "Verified in both directions.",
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "description": "Address",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/nodes": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Node rewards",
+        "description": "Pool, epoch, challenged block, registered nodes.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/genesis": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Genesis file",
+        "description": "Pin its hash to know you are on the right chain.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Liveness",
+        "description": "Simple health check.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "tags": [
+          "Read"
+        ],
+        "summary": "Prometheus metrics",
+        "description": "Text format for monitoring.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/tx": {
+      "post": {
+        "tags": [
+          "Write"
+        ],
+        "summary": "Submit a signed transaction",
+        "description": "Body: a signed transaction object (see docs/integrate.md for how to build and sign one). Returns its hash.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tx": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Accepted into the mempool"
+          },
+          "400": {
+            "description": "Rejected"
+          }
+        }
+      }
+    },
+    "/rpc": {
+      "post": {
+        "tags": [
+          "JSON-RPC"
+        ],
+        "summary": "JSON-RPC 2.0 (AUREN aur_* and Ethereum eth_* methods)",
+        "description": "Send {\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"aur_status\",\"params\":[]}. Batches (up to 50) are supported.\n\nAUREN methods:\n- `aur_status`(): Network status: chain ID, height, fees, supply, peers\n- `aur_getParams`(): Protocol parameters\n- `aur_getBlock`(height | \"latest\"): A block by height or \"latest\"\n- `aur_getTx`(hash): A transaction and its receipt by hash\n- `aur_getAccount`(address): Balance, spendable amount, nonce, pendingNonce, stake and unbonding\n- `aur_getAccountTxs`(address, limit?): Recent transactions of an address\n- `aur_getValidators`(): Validators, voting power, commission\n- `aur_getProposals`(): Governance proposals\n- `aur_getTlds`(): All name endings (TLDs) and their rules\n- `aur_getTld`(tld): One name ending\n- `aur_getNodes`(address?): Node-reward pool, epoch, challenge and registered nodes\n- `aur_resolve`(name): Name to address with a Merkle proof\n- `aur_resolveDomain`(name): Name record without proof\n- `aur_reverse`(address): Address to its primary name (verified both ways)\n- `aur_feeQuote`(): Fee for every transaction type at the current base fee\n- `aur_simulate`(signed tx): Dry-run a signed transaction; returns effects and fee\n- `aur_sendTx`(signed tx): Submit a signed transaction\n- `aur_getGenesis`(): The genesis file\n- `aur_getPeers`(): Connected peers\n\nEthereum methods: eth_chainId, eth_blockNumber, eth_getBalance, eth_getTransactionCount, eth_call, eth_estimateGas, eth_gasPrice, eth_feeHistory, eth_sendRawTransaction, eth_getTransactionReceipt, eth_getTransactionByHash, eth_getBlockByNumber, eth_getBlockByHash, eth_getCode, eth_getStorageAt, eth_getLogs and more.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "jsonrpc",
+                  "method"
+                ],
+                "properties": {
+                  "jsonrpc": {
+                    "type": "string",
+                    "example": "2.0"
+                  },
+                  "id": {
+                    "example": 1
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": [
+                      "aur_status",
+                      "aur_getParams",
+                      "aur_getBlock",
+                      "aur_getTx",
+                      "aur_getAccount",
+                      "aur_getAccountTxs",
+                      "aur_getValidators",
+                      "aur_getProposals",
+                      "aur_getTlds",
+                      "aur_getTld",
+                      "aur_getNodes",
+                      "aur_resolve",
+                      "aur_resolveDomain",
+                      "aur_reverse",
+                      "aur_feeQuote",
+                      "aur_simulate",
+                      "aur_sendTx",
+                      "aur_getGenesis",
+                      "aur_getPeers",
+                      "eth_chainId",
+                      "eth_getBalance",
+                      "eth_sendRawTransaction"
+                    ]
+                  },
+                  "params": {
+                    "type": "array"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON-RPC result or error"
+          }
+        }
+      }
+    }
+  }
+}

@@ -187,7 +187,6 @@
     if (!sel) return;
     let nets = {};
     try { nets = await (await fetch('/networks.json', { cache: 'no-store', signal: AbortSignal.timeout(2500) })).json(); } catch { /* none published */ }
-    const local = { devnet: 'http://127.0.0.1:9650', testnet: 'http://127.0.0.1:9650', mainnet: 'http://127.0.0.1:9650' };
     const names = Object.keys(nets).length ? Object.keys(nets) : ['devnet', 'testnet', 'mainnet'];
     sel.innerHTML = names.map((n) => '<option value="' + n + '">' + n[0].toUpperCase() + n.slice(1) + (nets[n] && nets[n].chainId ? '' : '') + '</option>').join('') + '<option value="custom">Custom node…</option>';
     // The node address is hidden: people pick a network. "Custom node…" reveals the address box.
@@ -199,12 +198,22 @@
       const net = chip && chip.textContent.split(' ')[0];
       if (net && names.includes(net)) sel.value = net;
     };
-    sel.addEventListener('change', () => {
+    // Which network does a node answer for? (null if unreachable)
+    const probe = async (url) => { try { const j = await (await fetch(url.replace(/\/$/, '') + '/status', { cache: 'no-store', signal: AbortSignal.timeout(2500) })).json(); return j.network || null; } catch { return null; } };
+    let msg = document.getElementById('netmsg');
+    if (!msg) { msg = document.createElement('p'); msg.id = 'netmsg'; msg.className = 'toast err'; msg.hidden = true; form.parentElement.insertAdjacentElement('afterend', msg); }
+    sel.addEventListener('change', async () => {
+      msg.hidden = true;
       if (sel.value === 'custom') { custom = true; input.hidden = false; input.focus(); input.select(); return; }
       custom = false; input.hidden = true;
-      const n = nets[sel.value] || {};
-      input.value = (n.rpc && n.rpc[0]) || local[sel.value];
-      form.requestSubmit();
+      const want = sel.value, n = nets[want] || {};
+      const candidates = [...(n.rpc || []), 'http://127.0.0.1:9650'];
+      for (const u of candidates) {
+        if (await probe(u) === want) { input.value = u; form.requestSubmit(); return; }
+      }
+      msg.hidden = false;
+      msg.innerHTML = 'The ' + want + ' is not reachable right now: no public ' + want + ' node is published yet' + (want === 'mainnet' ? ' (mainnet has not launched)' : '') + '. You can <a href="run-a-node.html">run a node</a> on this computer, or choose <b>Custom node…</b> and enter the address of one.';
+      sync();
     });
     const chip = document.getElementById('conn');
     if (chip) new MutationObserver(sync).observe(chip, { childList: true, characterData: true, subtree: true });

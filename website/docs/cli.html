@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Command-line reference · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="START-HERE.html">Start here</a><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="wallet-guide.html">Wallet guide</a><a href="explorer-guide.html">Explorer guide</a><a href="staking-guide.html">Staking guide</a><a href="domains.html">Names, domains and your own TLD</a><a href="faq.html">FAQ</a><a href="troubleshooting.html">Troubleshooting</a><a href="glossary.html">Glossary</a><h4>Run a node</h4><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="validators.html">Running a validator</a><a href="cli.html" class="on">Command-line reference</a><h4>Build on AUREN</h4><a href="developer-quickstart.html">Developer quickstart</a><a href="integrate.html">Integrate AUREN into your wallet or app</a><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="command-line-reference">Command-line reference</h1>
+<p><code>aurenctl</code> is the AUREN wallet and chain tool for the terminal. Run it as <code>node bin/aurenctl.js …</code>, or <code>./auren ctl …</code> (the launcher), or <code>AUREN-Node.exe ctl …</code> from the Windows app.</p>
+<h2 id="global-flags">Global flags</h2>
+<div class="table-wrap"><table><thead><tr><th>Flag</th><th>Meaning</th></tr></thead><tbody><tr><td><code>--network devnet|testnet|mainnet</code></td><td>which network (sets the node and address format)</td></tr><tr><td><code>--rpc &lt;url&gt;</code></td><td>use a specific node</td></tr><tr><td><code>--from &lt;key name&gt;</code></td><td>which wallet signs</td></tr><tr><td><code>--simulate</code></td><td>preview only, send nothing</td></tr><tr><td><code>--no-wait</code></td><td>do not wait for the block</td></tr><tr><td><code>--tip &lt;AUR&gt;</code></td><td>pay an extra tip</td></tr></tbody></table></div>
+<p>Amounts are in AUR (up to 9 decimals). Passwords are read from the <code>AUREN_PASSWORD</code> environment variable or prompted.</p>
+<h2 id="wallets">Wallets</h2>
+<div class="codebox"><pre><code>aurenctl keys new me          # create an encrypted wallet named &quot;me&quot;
+aurenctl keys import me --seed &lt;64 hex&gt;
+aurenctl keys list
+aurenctl keys show me         # addresses on every network
+aurenctl keys export me       # prints the recovery key. Keep it private</code></pre></div>
+<h2 id="look-things-up">Look things up</h2>
+<div class="codebox"><pre><code>aurenctl status
+aurenctl balance me --network testnet     # a key name, address or name.aur
+aurenctl account &lt;address&gt;
+aurenctl block 100
+aurenctl tx &lt;hash&gt;
+aurenctl validators
+aurenctl fees
+aurenctl params</code></pre></div>
+<h2 id="send-and-stake">Send and stake</h2>
+<div class="codebox"><pre><code>aurenctl send alice.aur 5 --from me
+aurenctl delegate &lt;validator&gt; 100 --from me
+aurenctl undelegate &lt;validator&gt; 50 --from me
+aurenctl claim &lt;validator&gt; --from me</code></pre></div>
+<h2 id="names-and-name-endings">Names and name endings</h2>
+<div class="codebox"><pre><code>aurenctl domain register alice --years 2 --from me
+aurenctl domain register bob.david --from me
+aurenctl domain resolve bob.david
+aurenctl domain target alice &lt;address&gt; --from me
+aurenctl domain transfer alice &lt;address&gt; --from me
+aurenctl domain record alice text:url https://example.com --from me
+aurenctl domain primary alice --from me
+
+aurenctl tld list
+aurenctl tld show david
+aurenctl tld register david --price 5 --share 80 --from me
+aurenctl tld register brand --closed --from me     # only you can register names
+aurenctl tld policy david --price 2 --share 70 --from me
+aurenctl tld transfer david &lt;address&gt; --from me</code></pre></div>
+<p>See <a href="domains.html">Names, domains and your own TLD</a>.</p>
+<h2 id="node-rewards">Node rewards</h2>
+<div class="codebox"><pre><code>aurenctl node info
+aurenctl node register --payout &lt;address&gt; --from me
+aurenctl node unregister --from me</code></pre></div>
+<p>Normally you just run <code>auren join &lt;network&gt; --earn</code>. See <a href="node-rewards.html">Node rewards</a>.</p>
+<h2 id="account-security">Account security</h2>
+<div class="codebox"><pre><code>aurenctl security set --guardians a,b --threshold 2 --delay-blocks 43200 --daily-limit 100 --from me
+aurenctl security cancel --from me
+aurenctl recovery approve &lt;account&gt; &lt;new public key hex&gt; --from me
+aurenctl recovery cancel --from me</code></pre></div>
+<h2 id="smart-contracts">Smart contracts</h2>
+<div class="codebox"><pre><code>aurenctl evm deploy --data @contract.bin --from me
+aurenctl evm send 0xADDRESS --data 0xCALLDATA --value 1 --from me
+aurenctl evm call 0xADDRESS --data 0xCALLDATA
+aurenctl evm code 0xADDRESS</code></pre></div>
+<h2 id="governance">Governance</h2>
+<div class="codebox"><pre><code>aurenctl gov list
+aurenctl gov vote 3 yes --from me
+aurenctl gov propose --title &quot;Lower the minimum fee&quot; --description &quot;…&quot; --set minBaseFee.compute=1 --from me</code></pre></div>
+<h2 id="validators">Validators</h2>
+<div class="codebox"><pre><code>aurenctl validator create --cons-pub &lt;hex&gt; --moniker mynode --commission 5 --amount 10000 --from me
+aurenctl validator unjail --from me</code></pre></div>
+<p>See <a href="validators.html">Validators</a>.</p>
+<h2 id="faucet-devnet-and-testnet">Faucet (devnet and testnet)</h2>
+<div class="codebox"><pre><code>aurenctl faucet &lt;address&gt;</code></pre></div>
+<h2 id="the-auren-launcher">The <code>auren</code> launcher</h2>
+<div class="codebox"><pre><code>auren join testnet                  # run a node
+auren join testnet --earn           # run a node and earn AUR
+auren join testnet --earn &lt;address&gt; # rewards go to this address
+auren status --network testnet
+auren ctl &lt;any aurenctl command&gt;</code></pre></div>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/cli.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#global-flags">Global flags</a><a href="#wallets">Wallets</a><a href="#look-things-up">Look things up</a><a href="#send-and-stake">Send and stake</a><a href="#names-and-name-endings">Names and name endings</a><a href="#node-rewards">Node rewards</a><a href="#account-security">Account security</a><a href="#smart-contracts">Smart contracts</a><a href="#governance">Governance</a><a href="#validators">Validators</a><a href="#faucet-devnet-and-testnet">Faucet (devnet and testnet)</a><a href="#the-auren-launcher">The auren launcher</a></aside>
+</div>
+</body>
+</html>

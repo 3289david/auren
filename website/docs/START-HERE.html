@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Start here · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="START-HERE.html" class="on">Start here</a><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="wallet-guide.html">Wallet guide</a><a href="explorer-guide.html">Explorer guide</a><a href="staking-guide.html">Staking guide</a><a href="domains.html">Names, domains and your own TLD</a><a href="faq.html">FAQ</a><a href="troubleshooting.html">Troubleshooting</a><a href="glossary.html">Glossary</a><h4>Run a node</h4><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="validators.html">Running a validator</a><a href="cli.html">Command-line reference</a><h4>Build on AUREN</h4><a href="developer-quickstart.html">Developer quickstart</a><a href="integrate.html">Integrate AUREN into your wallet or app</a><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="start-here">Start here</h1>
+<p>Welcome. This page gets you from nothing to using AUREN in about ten minutes. No technical knowledge needed.</p>
+<h2 id="what-auren-is">What AUREN is</h2>
+<p>AUREN is a public network with its own coin, <b>AUR</b>. You can send AUR to anyone in seconds for a tiny fee, earn rewards by staking it, give your wallet an easy name like <code>alice.aur</code>, and use apps built on it. Independent computers (nodes) check every payment, so no single company controls it.</p>
+<h2 id="what-you-need">What you need</h2>
+<p>A web browser. That is all. Or download the <b>AUREN Wallet</b> app for Windows or Android from the <a href="https://github.com/3289david/auren/releases/latest">releases page</a>.</p>
+<h2 id="step-1-open-your-wallet">Step 1: Open your wallet</h2>
+<p>Go to the website and press <b>Open wallet</b> (or open the app). Pick a network at the top: <b>Devnet</b>, <b>Testnet</b> or <b>Mainnet</b>. See <a href="networks.html">Networks</a> for what each one is. Mainnet has not launched yet.</p>
+<h2 id="step-2-create-your-wallet">Step 2: Create your wallet</h2>
+<ol><li>Press <b>Create a new wallet</b>.</li><li><b>Save your recovery key.</b> Write it on paper and keep it somewhere safe. It is the only way to get your coins back if you forget your password or lose your device. Never share it with anyone. Nobody from AUREN will ever ask for it.</li><li>Choose a password. You will type it each time you open the wallet on this device.</li></ol>
+<p>Details for every option: <a href="wallet-guide.html">Wallet guide</a>.</p>
+<h2 id="step-3-get-some-aur">Step 3: Get some AUR</h2>
+<p>On the devnet and testnet, open <b>Receive</b> and press <b>Get 1,000 AUR</b>. Coins arrive in a few seconds. On mainnet you will get AUR by receiving it from someone else.</p>
+<h2 id="step-4-send-a-payment">Step 4: Send a payment</h2>
+<ol><li>Open <b>Send</b>.</li><li>Enter an address or a name like <code>alice.aur</code>, and an amount.</li><li>Press <b>Review</b>. The wallet asks the network to preview the payment and shows the exact fee. A normal payment costs a tiny fraction of a cent.</li><li>Press <b>Sign &amp; send</b>. It confirms in a few seconds.</li></ol>
+<h2 id="step-5-receive-a-payment">Step 5: Receive a payment</h2>
+<p>Open <b>Receive</b> and copy your address. Share it with the person paying you. It is safe to share.</p>
+<h2 id="step-6-earn-by-staking">Step 6: Earn by staking</h2>
+<p>Open <b>Stake</b>, pick a validator, enter an amount and confirm. You earn rewards while it is staked. When you unstake, your coins come back after a waiting period. Read the <a href="staking-guide.html">Staking guide</a> first.</p>
+<h2 id="step-7-get-a-name">Step 7: Get a name</h2>
+<p>Open <b>Names</b>, search a name like <code>alice</code>, and register it. Now people can pay <code>alice.aur</code> instead of a long address. You can even create your own ending, like <code>.david</code>. See <a href="domains.html">Names, domains and your own TLD</a>.</p>
+<h2 id="step-8-help-the-network-and-earn">Step 8: Help the network and earn</h2>
+<p>Run a node on your computer or phone and earn a share of new AUR. Download <b>AUREN Node</b>, choose a network, keep <b>Earn AUR</b> on and press <b>Start</b>. See <a href="RUN-A-NODE.html">Run a node</a> and <a href="node-rewards.html">Node rewards</a>.</p>
+<h2 id="staying-safe">Staying safe</h2>
+<ul><li>AUREN is new software and has not been independently audited yet. Only use what you can afford to lose.</li><li>Keep your recovery key private and offline.</li><li>Check the address and amount on the Review screen every time.</li><li>Set up trusted helpers and a daily limit in <b>Security</b> (<a href="wallet-guide.html">Wallet guide</a>).</li></ul>
+<h2 id="where-next">Where next</h2>
+<div class="table-wrap"><table><thead><tr><th>I want to...</th><th>Read</th></tr></thead><tbody><tr><td>Understand every wallet screen</td><td><a href="wallet-guide.html">Wallet guide</a></td></tr><tr><td>Look things up on the chain</td><td><a href="explorer-guide.html">Explorer guide</a></td></tr><tr><td>Stake safely</td><td><a href="staking-guide.html">Staking guide</a></td></tr><tr><td>Fix a problem</td><td><a href="troubleshooting.html">Troubleshooting</a></td></tr><tr><td>Quick answers</td><td><a href="faq.html">FAQ</a></td></tr><tr><td>Know what a word means</td><td><a href="glossary.html">Glossary</a></td></tr><tr><td>Build something</td><td><a href="developer-quickstart.html">Developer quickstart</a></td></tr></tbody></table></div>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/START-HERE.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#what-auren-is">What AUREN is</a><a href="#what-you-need">What you need</a><a href="#step-1-open-your-wallet">Step 1: Open your wallet</a><a href="#step-2-create-your-wallet">Step 2: Create your wallet</a><a href="#step-3-get-some-aur">Step 3: Get some AUR</a><a href="#step-4-send-a-payment">Step 4: Send a payment</a><a href="#step-5-receive-a-payment">Step 5: Receive a payment</a><a href="#step-6-earn-by-staking">Step 6: Earn by staking</a><a href="#step-7-get-a-name">Step 7: Get a name</a><a href="#step-8-help-the-network-and-earn">Step 8: Help the network and earn</a><a href="#staying-safe">Staying safe</a><a href="#where-next">Where next</a></aside>
+</div>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AUREN Names</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+    <nav class="nav-links"><a href="index.html">Home</a><a href="wallet.html">Wallet</a><a href="explorer.html">Explorer</a><a href="names.html" aria-current="page">Names</a><a href="docs/index.html">Docs</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="ex-head">
+    <h1>Names</h1>
+    <span id="conn" class="tag no">disconnected</span>
+    <form class="grow" id="rpcform"><select id="net" aria-label="Network" style="width:auto"></select><input type="text" id="rpc" aria-label="Custom node address" autocomplete="off"><button class="btn small" type="submit">Connect</button></form>
+  </div>
+
+  <section style="padding:24px 0 8px">
+    <h2 style="margin-top:0">Get your own name</h2>
+    <p class="sub" style="margin-bottom:18px">Give your wallet an easy name like <b>alice.aur</b> so people can pay you without a long address. Or create your own name ending, like <b>.david</b>, and let others register names under it.</p>
+    <form id="find" style="display:flex;gap:8px;max-width:560px">
+      <input type="text" id="q" placeholder="Search a name, like alice or alice.david" autocomplete="off" required>
+      <button class="btn primary" type="submit">Search</button>
+    </form>
+    <div id="result" style="max-width:560px;margin-top:16px"></div>
+  </section>
+
+  <section style="padding:32px 0 8px">
+    <h2 style="margin-top:0">Create your own name ending</h2>
+    <p class="sub" id="tldintro">Own a whole ending like <b>.david</b>. You decide whether anyone can register under it, the yearly price, and how much of each registration you keep.</p>
+    <form id="tldform" class="form" style="max-width:560px">
+      <label for="tn">Ending (3–24 letters or digits, starting with a letter)</label><input type="text" id="tn" placeholder="david" autocomplete="off" required>
+      <label for="tp">Price per name per year (AUR, 0 = free)</label><input type="text" id="tp" value="1" inputmode="decimal">
+      <label for="ts">Your share of each registration (%)</label><input type="text" id="ts" value="80" inputmode="decimal">
+      <label class="check"><input type="checkbox" id="to" checked> Anyone can register names under it</label>
+      <div id="tldstat" class="note"></div>
+      <button class="btn primary" type="submit">Create in my wallet</button>
+    </form>
+  </section>
+
+  <section style="padding:32px 0 64px">
+    <h2 style="margin-top:0">Name endings</h2>
+    <div class="table-wrap"><table><thead><tr><th>Ending</th><th>Owner</th><th>Who can register</th><th>Price per year</th><th>Names</th></tr></thead><tbody id="tlds"><tr><td colspan="5" class="msg">Connecting…</td></tr></tbody></table></div>
+    <p class="note">Developers can register names from their own apps. See the <a href="docs/integrate.html">integration guide</a>.</p>
+  </section>
+</main>
+
+<script src="aurlib.js"></script>
+<script>
+(() => {
+  const { esc, Rpc, formatAur, parseAur } = Aur;
+  const $ = (id) => document.getElementById(id);
+  let rpc = null, params = null;
+  const short = (s) => (s && s.length > 20 ? s.slice(0, 10) + '…' + s.slice(-6) : s || '');
+
+  async function connect(url) {
+    rpc = new Rpc(url);
+    try {
+      const st = await rpc.call('aur_status');
+      params = await rpc.call('aur_getParams');
+      $('conn').className = 'tag live'; $('conn').textContent = st.network + ' · ' + st.chainId;
+      try { localStorage.setItem('auren.rpc', url); } catch { /* storage unavailable */ }
+      list();
+    } catch {
+      params = null; $('conn').className = 'tag no'; $('conn').textContent = 'disconnected';
+      $('tlds').innerHTML = '<tr><td colspan="5" class="msg">Not connected. Pick a network above.</td></tr>';
+    }
+  }
+  async function list() {
+    const t = await rpc.call('aur_getTlds');
+    $('tlds').innerHTML = t.map((x) => '<tr><td><b>.' + esc(x.tld) + '</b></td><td>' + (x.builtIn ? 'built in' : esc(short(x.owner))) + '</td><td>' + (x.open ? 'anyone' : 'owner only') + '</td><td>' + (x.price === null ? 'by name length' : formatAur(x.price) + ' AUR') + '</td><td>' + x.domains + '</td></tr>').join('');
+  }
+  const aurPrice = (label) => { const d = params.domain; return BigInt(label.length === 3 ? d.price3 : label.length === 4 ? d.price4 : d.price5); };
+
+  $('find').onsubmit = async (e) => {
+    e.preventDefault();
+    const out = $('result');
+    if (!params) { out.innerHTML = '<div class="toast err">Not connected. Pick a network above.</div>'; return; }
+    const q = $('q').value.trim().toLowerCase();
+    const [label, tld = 'aur'] = q.split('.');
+    if (!/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/.test(label || '') || q.split('.').length > 2) { out.innerHTML = '<div class="toast err">Names use 3 to 63 letters, numbers or hyphens, like alice or alice.david.</div>'; return; }
+    const full = tld === 'aur' ? label + '.aur' : label + '.' + tld;
+    let price, note = '';
+    if (tld === 'aur') price = aurPrice(label);
+    else {
+      const t = await rpc.call('aur_getTld', [tld]).catch(() => null);
+      if (!t) { out.innerHTML = '<div class="card"><b>.' + esc(tld) + '</b> does not exist yet. You can create it below.</div>'; $('tn').value = tld; return; }
+      price = BigInt(t.price);
+      if (!t.open) note = ' Only the owner of .' + esc(tld) + ' can register names here.';
+    }
+    const taken = await rpc.call('aur_resolveDomain', [full]).catch(() => null);
+    if (taken) { out.innerHTML = '<div class="card"><b>' + esc(full) + '</b> is taken. It belongs to <span class="mono">' + esc(short(taken.owner)) + '</span>.</div>'; return; }
+    out.innerHTML = '<div class="card"><b>' + esc(full) + '</b> is available.<br><span class="muted">' + formatAur(price) + ' AUR per year.' + note + '</span><div class="cta" style="margin-top:14px"><a class="btn primary" href="wallet.html?tab=names&name=' + encodeURIComponent(full) + '">Register in my wallet</a></div></div>';
+  };
+
+  $('tldform').onsubmit = (e) => {
+    e.preventDefault();
+    const q = new URLSearchParams({ tab: 'names', tld: $('tn').value.trim().toLowerCase().replace(/^\./, ''), price: $('tp').value, share: $('ts').value, open: $('to').checked ? '1' : '0' });
+    location.href = 'wallet.html?' + q;
+  };
+  $('tn').oninput = async () => {
+    const v = $('tn').value.trim().toLowerCase().replace(/^\./, '');
+    if (!params || v.length < 3) { $('tldstat').textContent = ''; return; }
+    const t = await rpc.call('aur_getTld', [v]).catch(() => null);
+    $('tldstat').textContent = t ? '.' + v + ' is already taken.' : 'Creating a new ending costs ' + formatAur(params.tld.price) + ' AUR.';
+  };
+
+  Aur.initNetPicker($('net'), $('rpc'), $('rpcform'));
+  $('rpcform').addEventListener('submit', (e) => { e.preventDefault(); connect($('rpc').value.trim().replace(/\/$/, '')); });
+  let saved = null; try { saved = localStorage.getItem('auren.rpc'); } catch { /* ignore */ }
+  Aur.detectRpc(saved).then((u) => { $('rpc').value = u; connect(u); if ($('net').syncPicker) $('net').syncPicker(); });
+})();
+</script>
+</body>
+</html>

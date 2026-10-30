@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Integrate AUREN into your wallet or app · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="START-HERE.html">Start here</a><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="wallet-guide.html">Wallet guide</a><a href="explorer-guide.html">Explorer guide</a><a href="staking-guide.html">Staking guide</a><a href="domains.html">Names, domains and your own TLD</a><a href="faq.html">FAQ</a><a href="troubleshooting.html">Troubleshooting</a><a href="glossary.html">Glossary</a><h4>Run a node</h4><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="validators.html">Running a validator</a><a href="cli.html">Command-line reference</a><h4>Build on AUREN</h4><a href="developer-quickstart.html">Developer quickstart</a><a href="integrate.html" class="on">Integrate AUREN into your wallet or app</a><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="integrate-auren-into-your-wallet-or-app">Integrate AUREN into your wallet or app</h1>
+<p>Everything a wallet, exchange, game or bot needs: the networks, the API, the SDKs and how to sign a transaction yourself.</p>
+<h2 id="pick-a-network">Pick a network</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th>Chain ID</th><th>Address prefix</th><th>Ethereum chain ID</th></tr></thead><tbody><tr><td>Mainnet</td><td><code>auren-mainnet-1</code></td><td><code>aur1…</code></td><td>77000</td></tr><tr><td>Testnet</td><td><code>auren-testnet-1</code></td><td><code>taur1…</code></td><td>77002</td></tr><tr><td>Devnet</td><td><code>auren-devnet-1</code></td><td><code>daur1…</code></td><td>77001</td></tr></tbody></table></div>
+<p><code>networks/networks.json</code> lists the official genesis hashes. Pin the genesis hash of the network you integrate with, so a wrong or malicious node is detected. A node serves its genesis at <code>GET /genesis</code>.</p>
+<p>Amounts everywhere are decimal strings in <b>sparks</b>: 1 AUR = 1,000,000,000 sparks.</p>
+<h2 id="the-api">The API</h2>
+<p>Every node serves one port (default <code>9650</code>):</p>
+<ul><li><b>REST</b> for reads, such as <code>GET /status</code>, <code>/account/{address}</code>, <code>/tx/{hash}</code>, <code>/tlds</code>.</li><li><b>JSON-RPC 2.0</b> at <code>POST /rpc</code> for everything, including sending transactions.</li><li><b>Ethereum JSON-RPC</b> on the same <code>/rpc</code> (<code>eth_*</code>), so ethers, viem, MetaMask and Hardhat work. Add the network with the chain ID from the table.</li></ul>
+<p>The full, machine-readable reference is the <a href="https://github.com/3289david/auren/blob/main/website/api/openapi.json">OpenAPI file</a>. Browse the methods in <a href="rpc-api.html">rpc-api.md</a>.</p>
+<div class="codebox"><pre><code>curl http://NODE:9650/status
+curl http://NODE:9650/account/daur1...
+curl -X POST http://NODE:9650/rpc -H 'content-type: application/json' \
+  -d '{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:1,&quot;method&quot;:&quot;aur_status&quot;,&quot;params&quot;:[]}'</code></pre></div>
+<h2 id="sdks">SDKs</h2>
+<div class="table-wrap"><table><thead><tr><th>Language</th><th>Where</th><th>Notes</th></tr></thead><tbody><tr><td>JavaScript (Node 20+)</td><td><code>sdk/js</code></td><td><code>Client</code>, <code>Wallet</code>, amounts in AUR</td></tr><tr><td>JavaScript (browser)</td><td><code>website/aurlib.js</code></td><td>the library the wallet uses; global <code>Aur</code></td></tr><tr><td>Python 3</td><td><code>sdk/python/auren.py</code></td><td>no dependencies, pure-Python Ed25519</td></tr><tr><td>Any language</td><td>this page</td><td>sign a transaction yourself, below</td></tr></tbody></table></div>
+<p>JavaScript:</p>
+<div class="codebox"><pre><code>const { Client, Wallet } = require('./sdk/js');
+const node = new Client('http://127.0.0.1:9650');
+const wallet = Wallet.generate('daur');            // or Wallet.fromSeed(seedHex, 'daur')
+console.log(wallet.address, await node.balance(wallet.address));
+await wallet.transfer(node, 'daur1...', '1.5');    // amounts in AUR
+await wallet.registerName(node, 'alice');          // alice.aur
+await wallet.createTld(node, 'david', { price: '1', ownerSharePercent: 80 });</code></pre></div>
+<p>Python:</p>
+<div class="codebox"><pre><code>from auren import Client, Wallet
+node = Client(&quot;http://127.0.0.1:9650&quot;)
+wallet = Wallet.generate(&quot;daur&quot;)
+wallet.transfer(node, &quot;daur1...&quot;, &quot;1.5&quot;)
+wallet.register_name(node, &quot;alice&quot;)</code></pre></div>
+<h2 id="keys-and-addresses">Keys and addresses</h2>
+<div class="table-wrap"><table><thead><tr><th>Scheme byte</th><th>Key</th><th>Use</th></tr></thead><tbody><tr><td>0</td><td>Ed25519</td><td>software wallets (the default)</td></tr><tr><td>2</td><td>ECDSA P-256 (WebAuthn)</td><td>phone passkeys and security keys</td></tr><tr><td>4</td><td>secp256k1 (Ethereum)</td><td>Ethereum wallets; the address is the same 20 bytes as <code>0x…</code></td></tr></tbody></table></div>
+<p>An address is Bech32 of <code>[scheme byte] + sha256(scheme byte ‖ public key)[0..20]</code> with the network prefix. Ethereum accounts also answer at their <code>0x</code> address (<code>GET /account/0x…</code>). One seed can serve every network; only the prefix changes.</p>
+<h2 id="sign-a-transaction-yourself">Sign a transaction yourself</h2>
+<p>A transaction is a JSON object:</p>
+<div class="codebox"><pre><code>{ &quot;chainId&quot;: &quot;auren-devnet-1&quot;, &quot;type&quot;: &quot;transfer&quot;, &quot;from&quot;: &quot;daur1…&quot;, &quot;nonce&quot;: 7,
+  &quot;maxFee&quot;: &quot;300000&quot;, &quot;tip&quot;: &quot;1000&quot;, &quot;body&quot;: { &quot;to&quot;: &quot;daur1…&quot;, &quot;amount&quot;: &quot;1500000000&quot; },
+  &quot;v&quot;: 1, &quot;pub&quot;: &quot;&lt;public key hex&gt;&quot;, &quot;sig&quot;: &quot;&lt;signature hex&gt;&quot; }</code></pre></div>
+<ol><li><b>Nonce:</b> use <code>pendingNonce</code> from <code>aur_getAccount</code>.</li><li><b>Fee:</b> <code>maxFee</code> must be at least the base fee for the type (from <code>aur_feeQuote</code>) plus your <code>tip</code>. Setting it to twice the quote is safe; unused fee is not charged. The fee is burned.</li><li><b>Sign:</b> build the object without <code>sig</code>, serialize it as <b>canonical JSON</b> (keys sorted, no spaces, amounts as decimal strings), prepend the bytes <code>AUREN/tx/v1</code> followed by a zero byte, and sign those bytes with your key. Put the signature (hex) in <code>sig</code>.</li><li><b>Check:</b> send it to <code>aur_simulate</code> first. It returns the effects, the fee and whether it would succeed, without changing anything.</li><li><b>Send:</b> <code>aur_sendTx</code>. The result has the transaction hash (<code>sha256</code> of the canonical JSON including <code>sig</code>).</li><li><b>Wait:</b> poll <code>aur_getTx(hash)</code> until <code>status</code> is <code>confirmed</code>; <code>receipt.status</code> is <code>1</code> on success.</li></ol>
+<p>Transaction types and their bodies are listed in <a href="protocol.html">protocol.md</a>. The common ones:</p>
+<div class="table-wrap"><table><thead><tr><th>Type</th><th>Body</th></tr></thead><tbody><tr><td><code>transfer</code></td><td><code>to</code>, <code>amount</code></td></tr><tr><td><code>delegate</code> / <code>undelegate</code></td><td><code>validator</code>, <code>amount</code></td></tr><tr><td><code>claim</code></td><td><code>validator</code></td></tr><tr><td><code>registerDomain</code></td><td><code>name</code> (<code>alice</code>, <code>alice.aur</code> or <code>alice.david</code>), <code>years</code></td></tr><tr><td><code>setDomainTarget</code></td><td><code>name</code>, <code>target</code></td></tr><tr><td><code>registerTld</code></td><td><code>tld</code>, <code>open</code>, <code>price</code>, <code>ownerShareBps</code></td></tr><tr><td><code>registerNode</code> / <code>nodeProof</code></td><td>see <a href="node-rewards.html">node-rewards.md</a></td></tr><tr><td><code>evm</code></td><td>smart-contract calls; use the Ethereum RPC instead</td></tr></tbody></table></div>
+<p>Reference implementations to copy: <code>signTx</code> in <code>src/tx.js</code> (JavaScript) and <code>Wallet.build</code> in <code>sdk/python/auren.py</code>. The two produce byte-identical signatures, which a test checks.</p>
+<h2 id="names">Names</h2>
+<ul><li>Look up: <code>GET /domain/{name}</code> or <code>aur_resolve</code> (with a Merkle proof). <code>website/anr.js</code> verifies proofs on the client, so a wallet does not have to trust the node.</li><li>Show a name for an address: <code>aur_reverse</code>, checked in both directions.</li><li>Register <code>.aur</code> names and your own name endings with <code>registerDomain</code> and <code>registerTld</code>; see <a href="domains.html">domains.md</a>. The website's <a href="https://github.com/3289david/auren/blob/main/website/names.html">Names page</a> links straight into the wallet, so you can send users there: <code>wallet.html?tab=names&amp;name=alice.aur</code>.</li></ul>
+<h2 id="smart-contracts-and-ethereum-tools">Smart contracts and Ethereum tools</h2>
+<p>Point any Ethereum tool at <code>http://NODE:9650/rpc</code> with the Ethereum chain ID above. Raw Ethereum transactions are accepted. See <a href="evm.html">evm.md</a>.</p>
+<h2 id="tips-for-wallet-makers">Tips for wallet makers</h2>
+<ul><li>Use <b><code>aur_simulate</code></b> before every send and show the user the fee and result.</li><li>Show amounts in AUR, never sparks. Round only for display.</li><li>Refuse to pay a name that resolves differently in two places (the <code>ambiguous</code> result of <code>aur_resolve</code> across namespaces).</li><li>Run or choose your own node for production, and pin the genesis hash.</li><li>Never log seeds. Keep them encrypted at rest.</li></ul>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/integrate.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#pick-a-network">Pick a network</a><a href="#the-api">The API</a><a href="#sdks">SDKs</a><a href="#keys-and-addresses">Keys and addresses</a><a href="#sign-a-transaction-yourself">Sign a transaction yourself</a><a href="#names">Names</a><a href="#smart-contracts-and-ethereum-tools">Smart contracts and Ethereum tools</a><a href="#tips-for-wallet-makers">Tips for wallet makers</a></aside>
+</div>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Staking guide · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><a href="index.html">Overview</a><h4>Start here</h4><a href="START-HERE.html">Start here</a><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="wallet-guide.html">Wallet guide</a><a href="explorer-guide.html">Explorer guide</a><a href="staking-guide.html" class="on">Staking guide</a><a href="domains.html">Names, domains and your own TLD</a><a href="faq.html">FAQ</a><a href="troubleshooting.html">Troubleshooting</a><a href="glossary.html">Glossary</a><h4>Run a node</h4><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="validators.html">Running a validator</a><a href="cli.html">Command-line reference</a><h4>Build on AUREN</h4><a href="developer-quickstart.html">Developer quickstart</a><a href="integrate.html">Integrate AUREN into your wallet or app</a><a href="rpc-api.html">Node API</a><a href="evm.html">EVM layer</a><a href="protocol.html">Protocol specification (v0.1)</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><h4>How it works</h4><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a></aside>
+  <article class="doc">
+<h1 id="staking-guide">Staking guide</h1>
+<p>Staking means locking your AUR to back a validator. Validators run the computers that confirm payments. In return, new AUR is shared with the validators and everyone who staked with them.</p>
+<h2 id="how-it-works">How it works</h2>
+<ol><li>You choose a validator in the wallet's <b>Stake</b> tab and enter an amount.</li><li>Your coins are locked. They still belong to you.</li><li>Rewards build up as blocks are confirmed. Press <b>Claim</b> to move them to your balance.</li><li>To get your coins back, press <b>Unstake</b>. They return after a waiting period (the &quot;unbonding&quot; period; 28 days by default on mainnet), shown under <b>Coming back to you</b>.</li></ol>
+<h2 id="choosing-a-validator">Choosing a validator</h2>
+<p>Look at three things in the table:</p>
+<ul><li><b>Share of network.</b> Spreading stake across many validators makes the network safer. Pick one that is not already huge. No validator can have more than a capped share of the voting power.</li><li><b>Fee cut (commission).</b> The part of your rewards the validator keeps.</li><li><b>Status.</b> Avoid ones marked <i>paused</i> (they missed too many blocks) or <i>banned</i> (they cheated and were penalised).</li></ul>
+<h2 id="risks">Risks</h2>
+<ul><li><b>Penalties.</b> If your validator cheats (signs two different blocks at the same height), part of the stake behind it is cut and burned. Pause-level mistakes such as long downtime have a smaller penalty. Choose reliable validators.</li><li><b>Waiting period.</b> You cannot spend staked coins until the unbonding period ends.</li><li><b>Unaudited software.</b> AUREN has not been independently audited yet. Only stake what you can afford to lose.</li></ul>
+<h2 id="rewards">Rewards</h2>
+<p>New AUR is issued each block (3% a year at the start, falling by 15% a year down to a floor of 0.5%). 10% of it goes to the node-reward pool (<a href="node-rewards.html">Node rewards</a>) and the rest to validators and the people who staked with them, after validator commission. Fees paid by users are burned, not paid out. Details: <a href="tokenomics.html">Tokenomics</a>.</p>
+<h2 id="run-your-own-validator">Run your own validator</h2>
+<p>If you want to run a validator yourself, read <a href="validators.html">Validators</a>. It needs a larger stake and a reliable computer.</p>
+    <p class="muted" style="margin-top:48px"><a href="https://github.com/3289david/auren/blob/main/docs/staking-guide.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#how-it-works">How it works</a><a href="#choosing-a-validator">Choosing a validator</a><a href="#risks">Risks</a><a href="#rewards">Rewards</a><a href="#run-your-own-validator">Run your own validator</a></aside>
+</div>
+</body>
+</html>

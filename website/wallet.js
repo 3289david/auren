@@ -14,6 +14,8 @@
   let rpc = null, status = null, params = null;
   let wallets = store.get('auren.wallets') || []; // [{ name, pub, keystore }]
   let key = null, address = null, account = null, tab = 'send', idle = null, note = null;
+  const deep = new URLSearchParams(location.search);
+  if (['send', 'receive', 'stake', 'activity', 'names', 'govern', 'security', 'backup'].includes(deep.get('tab'))) tab = deep.get('tab');
 
   // ------------------------------------------------------------ plumbing
   const touch = () => { clearTimeout(idle); if (key) idle = setTimeout(() => { key = null; address = null; note = { cls: 'ok', html: 'Wallet locked after 10 minutes of inactivity.' }; render(); }, 600000); };
@@ -266,7 +268,7 @@
         if (w.kind === 'webauthn') key = { kind: 'webauthn', scheme: 2, credId: w.credId, rpId: w.rpId, pub: w.pub }; // the device confirms each transaction
         else key = await Aur.keyFromSeed(await Aur.decryptSeed(w.keystore, $('upw').value));
         address = await Aur.pubToAddress(key.pub, status.addressPrefix, key.scheme || 0);
-        note = null; tab = 'send'; touch(); render();
+        note = null; tab = deep.get('tab') || 'send'; touch(); render();
       } catch (err) { notify('That password did not work.', 'err'); }
     };
     $('addnew').onclick = () => viewOnboard();
@@ -431,6 +433,8 @@
       $('nmstat').textContent = q.error ? q.error : `${d ? `Taken (owner ${short(d.owner, 8)})` : 'Available'} · ${formatAur(q.price)} AUR for ${y} year(s) (${q.note})`;
     };
     $('nm').oninput = upd; $('yr').oninput = upd;
+    if (deep.get('name')) { $('nm').value = deep.get('name'); upd(); }
+    if (deep.get('tld')) { $('tn').value = deep.get('tld'); if (deep.get('price')) $('tp').value = deep.get('price'); if (deep.get('share')) $('ts').value = deep.get('share'); $('to').checked = deep.get('open') !== '0'; $('tldf').scrollIntoView(); }
     $('namef').onsubmit = async (e) => {
       e.preventDefault();
       const n = $('nm').value.trim().toLowerCase(), y = Number($('yr').value);

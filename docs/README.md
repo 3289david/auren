@@ -1,5 +1,7 @@
 # AUREN documentation
 
+**New here? Read [Start here](START-HERE.md).** Then [Wallet guide](wallet-guide.md), [FAQ](faq.md) and [Troubleshooting](troubleshooting.md). Building something? [Developer quickstart](developer-quickstart.md).
+
 ## Start here
 
 | I want to... | Read |
@@ -17,6 +19,9 @@
 
 | Topic | Read |
 |---|---|
+| Build your first app | [developer-quickstart.md](developer-quickstart.md) |
+| Integrate into a wallet or app (SDKs, signing) | [integrate.md](integrate.md) |
+| Command-line reference | [cli.md](cli.md) |
 | JSON-RPC and REST API | [rpc-api.md](rpc-api.md) |
 | Smart contracts and Ethereum tools | [evm.md](evm.md) |
 | Transactions and encoding | [protocol.md](protocol.md) |

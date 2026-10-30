@@ -1,0 +1,8 @@
+{
+  "name": "auren-sdk",
+  "version": "0.7.0",
+  "description": "AUREN SDK: client, wallet, names and TLDs for JavaScript (Node 20+, no dependencies).",
+  "main": "index.js",
+  "license": "MIT",
+  "engines": { "node": ">=20" }
+}

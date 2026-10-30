@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.0
+
+- **SDKs and API for integrators:** `sdk/js` (Node) and `sdk/python/auren.py`, both dependency-free, with identical signatures (a test checks it); OpenAPI spec at `website/api/openapi.json`; `docs/integrate.md` and `docs/developer-quickstart.md`.
+- **Names page** (`names.html`): search a name, see price and availability, register in the wallet with a deep link (`wallet.html?tab=names&name=alice.aur`), create your own name ending, list all endings.
+- **Network switching fixed:** choosing Testnet or Mainnet no longer silently connects to a local devnet; it connects only to a node that answers for that network, otherwise it says none is reachable.
+- **Docs:** Start here, Wallet guide, Explorer guide, Staking guide, FAQ, Troubleshooting, Glossary, CLI reference, Developer quickstart. All published on the website.
+
 ## 0.6.4
 
 - **New wallet design:** one step per page (welcome, save recovery key, set password, or add an existing wallet, or use a device key), one clean column, a big balance with Send / Receive / Stake / Activity buttons, a Receive page with Copy address and the faucet.
