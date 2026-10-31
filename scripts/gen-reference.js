@@ -37,6 +37,7 @@ const WHAT = {
   domain: 'Name prices by length (3, 4, 5+ letters) and the longest registration',
   tld: 'Cost to create a name ending, and the most an ending owner may keep',
   node: 'Node rewards: bond, epoch length, share of issuance',
+  rpc: 'Random draw (RPC): share of issuance and how many tickets are drawn per block',
 };
 const fmt = (k, v) => {
   if (typeof v === 'object' && v !== null) return '';

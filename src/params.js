@@ -46,6 +46,9 @@ const DEFAULTS = {
   // node rewards (src/noderew.js): bonded full nodes that prove they store the chain share `poolBps` of issuance each epoch
   node: { bond: (10000n * AUR).toString(), epochBlocks: 14400, poolBps: 1000 },
 
+  // Randomized Proof Consensus rewards (src/draw.js): every block a random committee of ticket holders is paid
+  rpc: { poolBps: 500, committeeSize: 7 },
+
   // optional .aur naming module (burned fees, per year)
   domain: { price3: (100n * AUR).toString(), price4: (20n * AUR).toString(), price5: AUR.toString(), maxYears: 10 },
 };

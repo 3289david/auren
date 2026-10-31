@@ -46,6 +46,8 @@
 
 **Do I earn anything by running a node?** Yes. Start your node with Earn turned on. It locks a deposit, proves each epoch that it stores the chain and shares a pool of new AUR. See [Node rewards](node-rewards.md).
 
+**What is the random draw?** Every block a few nodes are picked at random and paid. A node needs a bond and a storage proof (a ticket); hardware and coin balance do not change the odds. See [Random draw](rpc-consensus.md).
+
 **Will it use a lot of space or data?** Very little on the test networks. A phone should stay plugged in.
 
 **Can I run a node on my phone?** Yes, with the AUREN Node app for 64-bit Android.

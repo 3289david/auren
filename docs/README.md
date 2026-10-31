@@ -13,6 +13,7 @@
 | Register a domain or create my own TLD | [domains.md](domains.md) |
 | Download or build the Windows and Android apps | [BUILD-APPS.md](BUILD-APPS.md) |
 | Earn AUR by running a node | [node-rewards.md](node-rewards.md) |
+| Earn AUR from the random draw (RPC) | [rpc-consensus.md](rpc-consensus.md) |
 | Become a validator | [validators.md](validators.md) |
 
 ## Build on AUREN

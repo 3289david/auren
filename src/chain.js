@@ -12,6 +12,7 @@ const { nextBaseFee, DIMENSIONS } = require('./fees');
 const { scheduleLanes } = require('./scheduler');
 const C = require('./consensus');
 const NR = require('./noderew');
+const DRAW = require('./draw');
 
 const HEADER_VERSION = 1;
 const emptyHash = sha256hex('');
@@ -157,7 +158,9 @@ function executeBlock(state, p) {
     const mintTotal = (supply * issuanceRatePpm(params, height)) / (1000000n * BigInt(params.blocksPerYear));
     const nodeCut = (mintTotal * BigInt(params.node.poolBps)) / 10000n;
     if (nodeCut > 0n) { state.set('meta', 'nodePool', (state.get('meta', 'nodePool') || 0n) + nodeCut); minted += nodeCut; }
-    const valMint = mintTotal - nodeCut;
+    const rpcCut = (mintTotal * BigInt(params.rpc.poolBps)) / 10000n;
+    if (rpcCut > 0n) { state.set('meta', 'rpcPool', (state.get('meta', 'rpcPool') || 0n) + rpcCut); minted += rpcCut; }
+    const valMint = mintTotal - nodeCut - rpcCut;
     for (const ent of lastValset) {
       if (!signed.has(ent.operator)) continue;
       const v = state.get('val', ent.operator);
@@ -173,6 +176,7 @@ function executeBlock(state, p) {
     }
   }
   NR.settleEpoch(state, params, height, getAcct, putAcct);
+  DRAW.runDraw(state, params, height, chainId, lastCommit, getAcct, putAcct);
   supply = supply + minted - burned;
   state.set('meta', 'supply', supply);
   state.set('meta', 'burned', state.get('meta', 'burned') + burned);
@@ -395,6 +399,16 @@ class Chain {
     return jsonify({
       pool: this.state.get('meta', 'nodePool') || 0n, bond: P.node.bond, epochBlocks: P.node.epochBlocks, poolBps: P.node.poolBps,
       epoch: ep, epochEndsAtHeight: (ep + 1) * P.node.epochBlocks, challengeHeight: ch, nodes: addr ? nodes.filter((n) => n.address === addr) : nodes,
+    });
+  }
+  /** Random-draw (RPC) status: the beacon, the pool, who holds a ticket and the last draw. */
+  getDrawInfo() {
+    const P = this.params, h = this.height + 1;
+    const holders = DRAW.ticketHolders(this.state, P, h);
+    return jsonify({
+      beacon: this.state.get('meta', 'beacon') || DRAW.genesisBeacon(this.chainId), pool: this.state.get('meta', 'rpcPool') || 0n,
+      poolBps: P.rpc.poolBps, committeeSize: P.rpc.committeeSize, epoch: NR.epochOf(h, P),
+      ticketHolders: holders.map(([a, n]) => ({ address: a, payout: n.payout, provenEpoch: n.provenEpoch })), lastDraw: this.state.get('meta', 'lastDraw') || null,
     });
   }
   getUnbonding(addr) {

@@ -16,6 +16,7 @@ Batches (arrays, ≤ 50) are supported.
 | `aur_status` | | chain ID, height, base fees, transfer fee quote, supply/burned/bonded, issuance rate, validator concentration, peers, mempool |
 | `aur_getParams` | | resolved protocol parameters |
 | `aur_getNodes` | `[address?]` | node-reward pool, epoch, challenged block and registered nodes |
+| `aur_getDraw` | | random-draw status: beacon, pool, ticket holders and the last draw |
 | `aur_getTlds` | | every TLD (built-in `.aur` first): owner, open, price, owner share, name count |
 | `aur_getTld` | `[tld]` | one TLD's rules, or `null` |
 | `aur_getBlock` | `[height \| "latest"]` | block + commit certificate |
@@ -33,7 +34,7 @@ Execution failure codes (in the receipt, `status: 0`): `INSUFFICIENT_BALANCE`, `
 
 ## REST (GET, JSON)
 
-`/txs?limit=25&before={height}` (newest transactions across blocks) · `/richlist?limit=50` (accounts by balance) · `/account/0x…` (Ethereum-style address) · `/status` · `/validators` · `/fees` · `/params` · `/block/{height|latest}` · `/blocks?limit=20&before={height}` · `/account/{address}` · `/account/{address}/txs?limit=25` (newest first, any address involved in the tx) · `/tx/{hash}` · `/domain/{name}` (`label` or `label.tld`) · `/nodes` · `/tlds` · `/tld/{tld}` · `/metrics` (Prometheus text)
+`/txs?limit=25&before={height}` (newest transactions across blocks) · `/richlist?limit=50` (accounts by balance) · `/account/0x…` (Ethereum-style address) · `/status` · `/validators` · `/fees` · `/params` · `/block/{height|latest}` · `/blocks?limit=20&before={height}` · `/account/{address}` · `/account/{address}/txs?limit=25` (newest first, any address involved in the tx) · `/tx/{hash}` · `/domain/{name}` (`label` or `label.tld`) · `/nodes` · `/draw` · `/tlds` · `/tld/{tld}` · `/metrics` (Prometheus text)
 
 `POST /tx` accepts a signed transaction body.
 

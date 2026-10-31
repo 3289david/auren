@@ -158,6 +158,13 @@
     return `${back}<h2>Node rewards</h2><p class="note">Nodes that store the chain and prove it each epoch share the pool. Epoch ${n.epoch} ends at block ${fmt(n.epochEndsAtHeight)}. ${n.challengeHeight ? 'Challenged block this epoch: ' + link('block=' + n.challengeHeight, '#' + fmt(n.challengeHeight), '') + '.' : ''}</p>` + kv([['Pool', formatAur(n.pool, 4) + ' AUR'], ['Bond to join', formatAur(n.bond, 0) + ' AUR'], ['Epoch length', fmt(n.epochBlocks) + ' blocks'], ['Share of issuance', (n.poolBps / 100) + '%']]) + `<div class="table-wrap"><table><thead><tr><th>Node</th><th>Pays to</th><th>Bond</th><th>This epoch</th><th>Last proven epoch</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }
 
+  async function viewDraw() {
+    const d = await rpc.get('/draw');
+    const last = d.lastDraw;
+    const rows = d.ticketHolders.map((t) => `<tr><td>${A(t.address)}</td><td>${A(t.payout)}</td><td>${t.provenEpoch}</td><td>${last && last.winners.includes(t.address) ? '<span class="tag live">won the last draw</span>' : ''}</td></tr>`).join('') || '<tr><td colspan="4" class="msg">No ticket holders yet. A node gets a ticket after it is bonded and proves it stores the chain.</td></tr>';
+    return `${back}<h2>Random draw</h2><p class="note">Every block, ${d.committeeSize} ticket holders are drawn at random and paid. Hardware, balance and stake do not change anyone's chance. The draw uses a random beacon that nobody can know before the previous block is final, so you can check it yourself.</p>` + kv([['Pool', formatAur(d.pool, 6) + ' AUR'], ['Share of issuance', (d.poolBps / 100) + '%'], ['Committee size', String(d.committeeSize)], ['Ticket holders', String(d.ticketHolders.length)], ['Random beacon', '<span class="mono">' + esc(d.beacon.slice(0, 24)) + '…</span>'], ['Last draw', last ? 'block ' + link('block=' + last.height, String(last.height)) + ', ' + last.winners.length + ' winners, ' + formatAur(last.each, 6) + ' AUR each' : 'none yet']]) + `<div class="table-wrap"><table><thead><tr><th>Ticket holder</th><th>Pays to</th><th>Proved in epoch</th><th>Last draw</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+
   async function viewProposals() {
     const r = await rpc.get('/proposals');
     const g = r.governance;
@@ -243,7 +250,7 @@
   // ---------------------------------------------------------------- routing
   function parseRoute() {
     const q = new URLSearchParams(location.search);
-    for (const k of ['block', 'tx', 'address', 'name', 'proposals', 'blocks', 'txs', 'validators', 'rich', 'tlds', 'nodes']) if (q.get(k)) return { k, v: q.get(k) };
+    for (const k of ['block', 'tx', 'address', 'name', 'proposals', 'blocks', 'txs', 'validators', 'rich', 'tlds', 'nodes', 'draw']) if (q.get(k)) return { k, v: q.get(k) };
     return null;
   }
 
@@ -255,7 +262,7 @@
       $('home').hidden = !!route;
       if (!route) { $('view').innerHTML = ''; await home(); return; }
       status = await rpc.call('aur_status'); stats(status);
-      const html = await ({ block: viewBlock, tx: viewTx, address: viewAddress, name: viewName, proposals: viewProposals, blocks: viewBlocks, txs: viewTxs, validators: viewValidators, rich: viewRich, tlds: viewTlds, nodes: viewNodes })[route.k](route.v);
+      const html = await ({ block: viewBlock, tx: viewTx, address: viewAddress, name: viewName, proposals: viewProposals, blocks: viewBlocks, txs: viewTxs, validators: viewValidators, rich: viewRich, tlds: viewTlds, nodes: viewNodes, draw: viewDraw })[route.k](route.v);
       $('view').innerHTML = html;
       $('conn').textContent = `${status.network} · connected`;
     } catch (e) {

@@ -22,7 +22,7 @@ const { ethMethods } = require('./evm/rpc');
 const { hexOf, ChainBackend } = require('./evm/host');
 const { nameValid, fullName } = require('./tld');
 
-const VERSION = '0.8.0';
+const VERSION = '0.9.0';
 const MAX_BODY = 8 * 1024 * 1024;
 
 class AurenNode extends EventEmitter {
@@ -410,6 +410,7 @@ class AurenNode extends EventEmitter {
       aur_resolve: ([name]) => c.resolveWithProof(String(name).toLowerCase()),
       aur_getTlds: () => c.listTlds(),
       aur_getNodes: (p) => c.getNodeInfo(p && p[0]),
+      aur_getDraw: () => c.getDrawInfo(),
       aur_getTld: ([t]) => c.getTld(String(t).toLowerCase().replace(/^\./, '')),
       aur_reverse: ([addr]) => c.reverse(addr),
       aur_getGenesis: () => c.genesis,
@@ -477,6 +478,7 @@ class AurenNode extends EventEmitter {
         if (p === '/params') return this._send(res, 200, this.rpcMethods.aur_getParams());
         if (p === '/txs') return this._send(res, 200, this.recentTxs(Math.min(Number(url.searchParams.get('limit') || 25), 100), Number(url.searchParams.get('before') || Infinity)));
         if (p === '/richlist') return this._send(res, 200, this.richList(Math.min(Number(url.searchParams.get('limit') || 50), 200)));
+        if (p === '/draw') return this._send(res, 200, this.chain.getDrawInfo());
         if (p === '/nodes') return this._send(res, 200, this.chain.getNodeInfo());
         if (p === '/tlds') return this._send(res, 200, this.chain.listTlds());
         const tm = /^\/tld\/\.?([a-z0-9]+)$/.exec(p);

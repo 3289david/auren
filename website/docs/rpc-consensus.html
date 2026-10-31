@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Randomized Proof Consensus (RPC): the random draw · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><input type="search" id="dsearch" placeholder="Search the docs" autocomplete="off" aria-label="Search the docs"><div id="dresults" hidden></div><div id="dnav"><a href="index.html">Overview</a><h4>Start here</h4><a href="START-HERE.html">Start here</a><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="wallet-guide.html">Wallet guide</a><a href="explorer-guide.html">Explorer guide</a><a href="staking-guide.html">Staking guide</a><a href="domains.html">Names, domains and your own TLD</a><a href="faq.html">FAQ</a><a href="troubleshooting.html">Troubleshooting</a><a href="glossary.html">Glossary</a><h4>Run a node</h4><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="rpc-consensus.html" class="on">Randomized Proof Consensus (RPC): the random draw</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="validators.html">Running a validator</a><a href="cli.html">Command-line reference</a><h4>Build on AUREN</h4><a href="developer-quickstart.html">Developer quickstart</a><a href="build-a-wallet.html">Build a wallet app</a><a href="accept-payments.html">Accept AUR payments (merchant guide)</a><a href="smart-contracts.html">Deploy a smart contract</a><a href="integrate.html">Integrate AUREN into your wallet or app</a><a href="rpc-api.html">Node API</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><a href="evm.html">EVM layer</a><h4>Reference</h4><a href="transactions.html">Transaction types</a><a href="parameters.html">Network parameters</a><a href="errors.html">Error codes</a><a href="protocol.html">Protocol specification (v0.1)</a><h4>How it works</h4><a href="architecture.html">How AUREN works (architecture)</a><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a><h4>Project</h4><a href="changelog.html">Changelog</a><a href="contributing.html">Contributing</a><a href="security-policy.html">Security policy</a></div></aside>
+  <article class="doc">
+<h1 id="randomized-proof-consensus-rpc-the-random-draw">Randomized Proof Consensus (RPC): the random draw</h1>
+<p>A new way to earn AUR that does not depend on how powerful your computer is or how many coins you hold. Every block, a small group of nodes is drawn at random and paid. A phone and a supercomputer have exactly the same chance.</p>
+<p>Reference implementation, simulations and the full specification: <b>https://github.com/3289david/rpc-consensus</b></p>
+<h2 id="in-one-minute">In one minute</h2>
+<ol><li>Run a node with <b>Earn</b> turned on (the node app, or <code>auren join &lt;network&gt; --earn</code>).</li><li>Your node <b>bonds</b> a small deposit and <b>proves it stores the chain</b> once per epoch (<a href="node-rewards.html">Node rewards</a>). That proof is your <b>ticket</b>.</li><li>Each block, the network draws a <b>committee</b> of ticket holders using a <b>random beacon</b> that nobody can predict. Drawn nodes share that block's pool, paid straight to their reward address.</li><li>You do nothing extra. The node does steps 2 and 3 for you.</li></ol>
+<p>Look at it live in the explorer under <b>Draw</b>.</p>
+<h2 id="why-it-is-hardware-neutral">Why it is hardware-neutral</h2>
+<ul><li>The chance of being drawn is <b>the same for every ticket</b>. A faster computer does not get more tickets, and holding more coins does not either.</li><li>A ticket is cheap to verify. A phone can hold one.</li><li>Staking AUR is not needed to be drawn. The bond is a deposit you get back, not a bet.</li></ul>
+<h2 id="the-hard-problem-fake-nodes">The hard problem: fake nodes</h2>
+<p>If every identity had the same chance and identities were free, one person could create thousands and win almost every draw. That is the <b>Sybil problem</b>, and no open system avoids it for free. RPC raises the cost of each extra identity:</p>
+<div class="table-wrap"><table><thead><tr><th>Defence</th><th>What it does</th></tr></thead><tbody><tr><td><b>Bond</b></td><td>Each identity locks a deposit (<code>node.bond</code>). Ten thousand fake identities need ten thousand deposits.</td></tr><tr><td><b>Contribution proof</b></td><td>A ticket exists only if the node proved it stores the chain this epoch or last. A ticket cannot be made without the data.</td></tr><tr><td><b>Epoch expiry</b></td><td>Tickets expire after about one epoch, so an old proof cannot be reused forever.</td></tr><tr><td><b>One ticket per identity per epoch</b></td><td>Proofs are tied to the node's own address, so one proof cannot serve two identities.</td></tr></tbody></table></div>
+<p>Be honest about the limit: these make fake identities <b>cost something</b>, but they do not make them impossible. An attacker with enough capital for many bonds can still hold many tickets, just as in any stake-based system. What RPC changes is that <b>a bond buys a ticket, not extra power per coin</b>, and that hardware cannot buy tickets at all. See <a href="https://github.com/3289david/rpc-consensus/blob/main/docs/SPEC.md">the specification</a> for the analysis.</p>
+<h2 id="how-the-draw-works">How the draw works</h2>
+<div class="codebox"><pre><code>previous beacon + the signatures that finalized the last block
+                  |
+                  v
+         new beacon (sha256)
+                  |
+                  v
+   draw k distinct tickets, equal weight
+                  |
+                  v
+   pay the block's pool equally to the winners</code></pre></div>
+<ul><li><b>Beacon.</b> <code>beacon(h) = sha256(beacon(h-1) | sorted precommit signatures of block h-1)</code>. It cannot be computed before block h-1 is final, and every node computes the same value.</li><li><b>Draw.</b> For <code>i = 0..k-1</code>, pick an index from <code>sha256(beacon | i)</code> among the remaining ticket holders (sorted by address). Anyone can recompute it.</li><li><b>Payout.</b> The pool grows by <code>rpc.poolBps</code> of each block's issuance and is paid to the winners' payout addresses. If nobody holds a ticket, the pool keeps growing, so a quiet network never loses the reward.</li></ul>
+<h3 id="what-is-and-is-not-proven">What is and is not proven</h3>
+<div class="table-wrap"><table><thead><tr><th>Property</th><th>Status</th></tr></thead><tbody><tr><td>Deterministic and verifiable by anyone</td><td>Yes</td></tr><tr><td>Equal chance for every ticket, hardware-neutral</td><td>Yes (tested)</td></tr><tr><td>Predicting a draw before the previous block is final</td><td>Not possible</td></tr><tr><td>Bias-free beacon</td><td><b>Not fully.</b> The block proposer chooses which two-thirds of precommits to include, so it has a small amount of influence over the beacon. A threshold-signature beacon (threshold BLS or a distributed verifiable random function) removes this and is the planned upgrade.</td></tr><tr><td>Finality</td><td>The draw does not decide blocks. <a href="consensus.html">BFT consensus</a> still finalizes every block.</td></tr></tbody></table></div>
+<h2 id="settings">Settings</h2>
+<div class="table-wrap"><table><thead><tr><th>Setting</th><th>Default</th><th>Meaning</th></tr></thead><tbody><tr><td><code>rpc.poolBps</code></td><td>500 (5%)</td><td>Share of each block's issuance that goes to the draw</td></tr><tr><td><code>rpc.committeeSize</code></td><td>7</td><td>How many tickets are drawn per block</td></tr><tr><td><code>node.bond</code></td><td>see <a href="node-rewards.html">Node rewards</a></td><td>Deposit per identity</td></tr><tr><td><code>node.epochBlocks</code></td><td>see <a href="node-rewards.html">Node rewards</a></td><td>Epoch length (ticket lifetime)</td></tr></tbody></table></div>
+<p>The draw's share comes out of the validators' part of new issuance, so total issuance does not change: validators receive issuance minus the node-reward pool (10%) minus the draw pool (5%).</p>
+<h2 id="compared-with-the-other-ways-to-earn">Compared with the other ways to earn</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th>Staking</th><th>Running a validator</th><th>Node rewards</th><th>Random draw</th></tr></thead><tbody><tr><td>Needs coins</td><td>yes</td><td>yes (large)</td><td>a deposit</td><td>a deposit</td></tr><tr><td>Needs a good computer</td><td>no</td><td>yes</td><td>stores the chain</td><td>stores the chain</td></tr><tr><td>Payout</td><td>steady, by stake</td><td>steady, by stake</td><td>split evenly each epoch</td><td>lumpy: random each block</td></tr><tr><td>Chance depends on hardware</td><td>no</td><td>partly</td><td>no</td><td>no</td></tr></tbody></table></div>
+<p>The draw pays the same people as node rewards, but in a different shape: instead of an even split once per epoch, small winnings arrive randomly every block.</p>
+<h2 id="check-a-draw-yourself">Check a draw yourself</h2>
+<p>Take the beacon from the explorer's Draw page (or <code>GET /draw</code>) and the ticket-holder list, then run the same <code>pick</code> function from the reference repository. You will get the same committee, which is how anyone can check that the network did not cheat.</p>
+<div class="codebox"><pre><code>git clone https://github.com/3289david/rpc-consensus
+cd rpc-consensus
+node examples/04-verify-draw.js</code></pre></div>
+<h2 id="transactions-and-api">Transactions and API</h2>
+<p>No new transaction types: tickets come from <code>registerNode</code> and <code>nodeProof</code> (<a href="node-rewards.html">Node rewards</a>). Read status with <code>GET /draw</code> or <code>aur_getDraw</code> (<a href="rpc-api.html">RPC API</a>).</p>
+<h2 id="where-this-came-from">Where this came from</h2>
+<p>RPC (Randomized Proof Consensus) started as a design proposal for an independent chain with probabilistic validator selection, a distributed random beacon, BFT finality and hardware-neutral participation. AUREN keeps its proven BFT proof-of-stake core and adds the parts of RPC that can be built safely today: <b>tickets from a contribution proof, a verifiable random beacon and a random draw that pays participants</b>. The open research problems (a threshold-signature beacon and a stronger scarce resource for tickets) are listed in the specification.</p>
+    <div class="pn"><a href="node-rewards.html"><small>Previous</small>Node rewards: earn AUR by running a node</a><a class="next" href="BUILD-APPS.html"><small>Next</small>Build the apps yourself</a></div>
+    <p class="muted" style="margin-top:28px"><a href="https://github.com/3289david/auren/blob/main/docs/rpc-consensus.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#in-one-minute">In one minute</a><a href="#why-it-is-hardware-neutral">Why it is hardware-neutral</a><a href="#the-hard-problem-fake-nodes">The hard problem: fake nodes</a><a href="#how-the-draw-works">How the draw works</a><a href="#settings">Settings</a><a href="#compared-with-the-other-ways-to-earn">Compared with the other ways to earn</a><a href="#check-a-draw-yourself">Check a draw yourself</a><a href="#transactions-and-api">Transactions and API</a><a href="#where-this-came-from">Where this came from</a></aside>
+</div>
+<script src="docs.js"></script>
+</body>
+</html>

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.0
+
+- **Random draw (RPC):** a new way to earn. Every block a committee of ticket holders (bonded nodes that proved storage) is drawn uniformly from a verifiable random beacon and paid from a pool (`rpc.poolBps`, default 5% of issuance; `rpc.committeeSize`, default 7). Hardware, balance and stake do not change the chance. `GET /draw`, `aur_getDraw`, explorer **Draw** page, `docs/rpc-consensus.md`. Reference implementation and simulations: https://github.com/3289david/rpc-consensus.
+- Validators now receive issuance minus the node pool and the draw pool.
+
 ## 0.8.0
 
 - **Official addresses only.** Each network has one public address plus a mirror: devnet `devnet.auren.im` / `devnet.krl.kr`, testnet `testnet.auren.im` / `testnet.krl.kr`, mainnet `mainnet.auren.im` / `mainnet.krl.kr`. Wallets, the explorer, the Names page, the CLI, the SDK examples and both apps connect only to these. The "custom node" option, the node address box, `--rpc`, and every localhost address in the interface and docs are gone.
