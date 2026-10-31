@@ -286,11 +286,8 @@ public class MainActivity extends Activity {
             org.json.JSONObject j = new org.json.JSONObject(sb.toString());
             double nano = 1000000000.0;
             StringBuilder o = new StringBuilder();
-            o.append(j.optBoolean("ticket") ? "You have a ticket: you can be drawn every block.
-" : "Joining the network. You do not need any coins to start.
-");
-            o.append("free".equals(j.optString("tier")) ? "Free tier: no coins needed. At " + (j.optLong("bond") / (long) nano) + " AUR the miner upgrades itself.
-" : "");
+            o.append(j.optBoolean("ticket") ? "You have a ticket: you can be drawn every block.\n" : "Joining the network. You do not need any coins to start.\n");
+            o.append("free".equals(j.optString("tier")) ? "Free tier: no coins needed. At " + (j.optLong("bond") / (long) nano) + " AUR the miner upgrades itself.\n" : "");
             o.append("Draws won: ").append(j.optInt("wins")).append("\n");
             o.append("Won in draws: ").append(String.format("%.4f", j.optLong("drawEarned") / nano)).append(" AUR\n");
             o.append("Balance at your reward address: ").append(String.format("%.4f", j.optLong("balance") / nano)).append(" AUR\n");
