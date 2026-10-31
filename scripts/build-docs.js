@@ -81,7 +81,7 @@ function render(md) {
 
 const GROUPS = [
   ['Start here', ['START-HERE', 'GETTING-STARTED', 'wallet-guide', 'explorer-guide', 'staking-guide', 'domains', 'faq', 'troubleshooting', 'glossary']],
-  ['Run a node', ['RUN-A-NODE', 'node-rewards', 'rpc-consensus', 'BUILD-APPS', 'networks', 'validators', 'cli']],
+  ['Run a node', ['RUN-A-NODE', 'miner', 'node-rewards', 'rpc-consensus', 'BUILD-APPS', 'networks', 'validators', 'cli']],
   ['Build on AUREN', ['developer-quickstart', 'build-a-wallet', 'accept-payments', 'smart-contracts', 'integrate', 'rpc-api', 'name-resolution', 'evm']],
   ['Reference', ['transactions', 'parameters', 'errors', 'protocol']],
   ['How it works', ['architecture', 'whitepaper', 'consensus', 'fee-market', 'tokenomics', 'governance', 'security', 'hardware-wallets']],

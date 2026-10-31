@@ -23,7 +23,7 @@ Download the package from the official site's **Run a node** page (`/run-a-node.
 ./auren join testnet
 ```
 
-**Android:** install **Termux** (F-Droid), copy the package in, then `sh install/android/termux-setup.sh`. This runs a real node inside Termux. There is no standalone Android app yet: an APK needs the Android SDK and a signing key, which this project does not ship.
+**Android:** install the **AUREN Node** app (or **AUREN Miner** to earn). It is one standalone app: nothing else needs to be installed. Needs a 64-bit phone.
 
 The first run creates `~/.auren/testnet` (Windows: `C:\Users\<you>\.auren\testnet`) and syncs from the network's seed nodes. Leave the window open.
 
@@ -47,7 +47,7 @@ Your node also serves the website, wallet and explorer: open the address printed
 
 - **Windows:** `Install-AUREN.ps1` can create a sign-in task. Remove it with `schtasks /Delete /TN "AUREN Node (testnet)" /F`.
 - **Linux:** `deploy/auren-node.service` (systemd). Use `ExecStart=/usr/bin/node bin/auren.js join testnet`.
-- **Android:** Termux keeps running with a wake lock (`termux-wake-lock`); disable battery optimization for Termux.
+- **Android:** the app keeps the node running with a notification. Allow notifications and turn off battery optimization for the app.
 
 ## Update
 

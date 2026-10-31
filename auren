@@ -1,4 +1,4 @@
 #!/bin/sh
-# AUREN launcher for Linux, macOS and Android (Termux). Needs only Node.js 20+. No npm, no install step.
+# AUREN launcher for Linux and macOS. Needs only Node.js 20+. No npm, no install step.
 if ! command -v node >/dev/null 2>&1; then echo "Node.js 20 or newer is required: https://nodejs.org" >&2; exit 1; fi
 exec node "$(dirname "$0")/bin/auren.js" "$@"

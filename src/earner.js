@@ -18,6 +18,8 @@ class Earner {
     this.address = pubToAddress(this.kp.pub, node.chain.params.addressPrefix);
     this.payout = payout || this.address;
     this.sent = { register: 0, proof: { epoch: -1, height: 0 }, drip: -1000 };
+    this.stats = { wins: 0, earned: 0n, lastWinHeight: 0, startedAt: Date.now(), countedDraw: 0 };
+    try { this._status(); } catch { /* best effort */ }
     node.log(`node rewards: this node's address is ${this.address}; rewards are paid to ${this.payout}`);
   }
 
@@ -32,8 +34,35 @@ class Earner {
     return this.node.onTx(tx).catch(() => {});
   }
 
-  /** Called after every block. Cheap when there is nothing to do. */
+  /** Called after every block. Does the work, counts draw wins and writes the status file the apps read. */
   tick() {
+    try { this._tick(); } finally { try { this._status(); } catch { /* status is best effort */ } }
+  }
+
+  _status() {
+    const ch = this.node.chain, P = ch.params, h = ch.height, st = ch.state;
+    const n = st.get('node', this.address);
+    const ep = NR.epochOf(h + 1, P);
+    const d = st.get('meta', 'lastDraw');
+    if (d && d.height > this.stats.countedDraw) {
+      this.stats.countedDraw = d.height;
+      if (d.winners.includes(this.address)) { this.stats.wins++; this.stats.earned += d.each; this.stats.lastWinHeight = d.height; }
+    }
+    const acct = getAcct(st, this.payout);
+    const out = {
+      updated: Date.now(), startedAt: this.stats.startedAt, network: ch.chainId, address: this.address, payout: this.payout,
+      height: h, epoch: ep, peers: this.node.peers ? this.node.peers.size : 0, syncing: !!this.node.syncing,
+      bond: P.node.bond.toString(), registered: !!n, ticket: !!(n && n.provenEpoch >= 1 && ep - n.provenEpoch <= 1),
+      provenEpoch: n ? n.provenEpoch : -1, balance: acct.balance.toString(), spendable: spendable(acct, h + 1).toString(),
+      wins: this.stats.wins, drawEarned: this.stats.earned.toString(), lastWinHeight: this.stats.lastWinHeight,
+      pool: (st.get('meta', 'rpcPool') || 0n).toString(), committeeSize: P.rpc.committeeSize,
+    };
+    const f = path.join(this.node.home, 'miner-status.json');
+    fs.writeFileSync(f + '.tmp', JSON.stringify(out));
+    fs.renameSync(f + '.tmp', f);
+  }
+
+  _tick() {
     const ch = this.node.chain, P = ch.params, h = ch.height;
     const st = ch.state, n = st.get('node', this.address);
     if (!n) {

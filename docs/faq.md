@@ -50,7 +50,9 @@
 
 **Will it use a lot of space or data?** Very little on the test networks. A phone should stay plugged in.
 
-**Can I run a node on my phone?** Yes, with the AUREN Node app for 64-bit Android.
+**Can I run a node on my phone?** Yes, with the AUREN Node app for 64-bit Android, or the AUREN Miner app if you want to earn. Nothing else needs to be installed.
+
+**What is the Miner app?** A one-button app for Windows, Mac and Android that runs a node and earns AUR through the random draw. See [Miner](miner.md).
 
 ## For developers
 

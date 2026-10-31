@@ -10,9 +10,9 @@
     'pkg-tgz': /^auren-.*\.tar\.gz$/, 'pkg-zip': /^auren-.*\.zip$/,
   };
   const ua = navigator.userAgent;
-  const os = /Android/i.test(ua) ? 'apk' : /Windows/i.test(ua) ? 'win' : 'pkg';
+  const os = /Android/i.test(ua) ? 'apk' : /Windows/i.test(ua) ? 'win' : /Mac/i.test(ua) ? 'mac' : 'pkg';
   const links = [...document.querySelectorAll('[data-dl]')];
-  links.forEach((a) => { a.href = PAGE; if (a.dataset.dl.endsWith(os) || (os === 'pkg' && a.dataset.dl === 'pkg-tgz')) a.classList.add('primary'); });
+  links.forEach((a) => { a.href = PAGE; if (a.dataset.dl.endsWith(os) || a.dataset.dl.includes('-' + os + '-') || (os === 'pkg' && a.dataset.dl === 'pkg-tgz')) a.classList.add('primary'); });
   const mb = (n) => (n / 1048576 >= 1 ? (n / 1048576).toFixed(0) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB');
   fetch(`https://api.github.com/repos/${REPO}/releases/latest`, { headers: { accept: 'application/vnd.github+json' } })
     .then((r) => r.json()).then((rel) => {

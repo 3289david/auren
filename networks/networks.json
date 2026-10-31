@@ -27,7 +27,7 @@
       "https://testnet.krl.kr"
     ],
     "description": "The AUREN testnet: the official place to try everything before mainnet.",
-    "genesisHash": "59e1ba3e7f3346f02039d8c9dda3e679492c44f9694b4b6e2c7615315ac73c87"
+    "genesisHash": "e50d022be42f259b481a595ae6397cc4174752f813ade79d79f2a2b19869de8a"
   },
   "mainnet": {
     "chainId": "auren-mainnet-1",

@@ -41,8 +41,9 @@ public class MainActivity extends Activity {
     private TextView statusText, statusSub, log;
     private View dot;
     private Button toggle, netTest, netDev;
-    private boolean running;
+    private boolean running, miner;
     private String network = "testnet";
+    private TextView stats;
 
     @Override protected void onCreate(Bundle b) {
         super.onCreate(b);
@@ -56,6 +57,8 @@ public class MainActivity extends Activity {
             finish();
             return;
         }
+        miner = mode.equals("miner");
+        if (android.os.Build.VERSION.SDK_INT >= 33) requestPermissions(new String[] { "android.permission.POST_NOTIFICATIONS" }, 1);
         buildNodeUi();
     }
 
@@ -121,9 +124,9 @@ public class MainActivity extends Activity {
         TextView brand = text("AUREN", 13, ACCENT, true);
         brand.setLetterSpacing(0.2f);
         root.addView(brand);
-        TextView title = text("Run a node", 30, INK, true);
+        TextView title = text(miner ? "Mine AUR" : "Run a node", 30, INK, true);
         root.addView(title);
-        TextView sub = text("Help keep the network running, and earn AUR while you do.", 15, MUTED, false);
+        TextView sub = text(miner ? "Your device joins the network and is drawn at random to earn AUR. Any phone has the same chance as any computer." : "Help keep the network running. Want to earn AUR too? Get the AUREN Miner app.", 15, MUTED, false);
         sub.setPadding(0, dp(4), 0, dp(20));
         root.addView(sub);
 
@@ -167,13 +170,13 @@ public class MainActivity extends Activity {
 
         final Switch earn = new Switch(this);
         earn.setText("Earn AUR");
+        earn.setChecked(miner);
         earn.setTextSize(16);
         earn.setTextColor(INK);
-        earn.setChecked(true);
-        set.addView(earn);
+        if (miner) set.addView(earn);
         TextView earnNote = text("Locks a small deposit and shares a pool of new AUR with nodes that store the chain.", 13, MUTED, false);
         earnNote.setPadding(0, dp(4), 0, dp(10));
-        set.addView(earnNote);
+        if (miner) set.addView(earnNote);
         final EditText payout = new EditText(this);
         payout.setHint("Address for rewards (optional)");
         payout.setTextSize(15);
@@ -181,10 +184,10 @@ public class MainActivity extends Activity {
         payout.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         payout.setBackground(box(BG, LINE, 10));
         payout.setPadding(dp(12), dp(10), dp(12), dp(10));
-        set.addView(payout);
+        if (miner) set.addView(payout);
         root.addView(set);
 
-        toggle = button("Start node", true);
+        toggle = button(miner ? "Start mining" : "Start node", true);
         root.addView(toggle);
         Button wallet = button("Open wallet", false);
         Button explorer = button("Open explorer", false);
@@ -193,6 +196,14 @@ public class MainActivity extends Activity {
         wallet.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { open("wallet.html"); } });
         explorer.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { open("explorer.html"); } });
 
+        if (miner) {
+            LinearLayout sc = card();
+            sc.addView(text("Earnings", 13, MUTED, true));
+            stats = text("Start mining to see your earnings.", 15, INK, false);
+            stats.setPadding(0, dp(8), 0, 0);
+            sc.addView(stats);
+            root.addView(sc);
+        }
         // details
         LinearLayout det = card();
         TextView dh = text("Details", 13, MUTED, true);
@@ -241,6 +252,7 @@ public class MainActivity extends Activity {
                     if (line.contains("node rewards")) earning = true;
                 }
                 final boolean on = NodeService.isRunning();
+                final String statsText = miner ? readStats() : null;
                 final String blockNo = last;
                 final boolean earn = earning;
                 ui.post(new Runnable() {
@@ -249,15 +261,38 @@ public class MainActivity extends Activity {
                         statusText.setText(!on ? "Stopped" : (blockNo != null ? "Running" : "Starting…"));
                         dot.setBackground(box(!on ? MUTED : (blockNo != null ? OK : ACCENT), 0, 6));
                         statusSub.setText(!on ? "Choose a network and press Start." : (blockNo != null ? "Block " + blockNo + (earn ? "  ·  earning AUR" : "") : "Connecting to the network…"));
-                        toggle.setText(on ? "Stop node" : "Start node");
+                        toggle.setText(on ? (miner ? "Stop mining" : "Stop node") : (miner ? "Start mining" : "Start node"));
                         toggle.setBackground(on ? box(Color.WHITE, BAD, 12) : box(INK, 0, 12));
                         toggle.setTextColor(on ? BAD : Color.WHITE);
                         log.setText(tail.length() == 0 ? "Nothing yet." : tail);
+                        if (miner && stats != null && statsText != null) stats.setText(statsText);
                         ui.postDelayed(new Runnable() { public void run() { poll(); } }, 2000);
                     }
                 });
             }
         }).start();
+    }
+
+    /** Reads the status file the node writes (see src/earner.js) and turns it into plain words. */
+    private String readStats() {
+        try {
+            File f = new File(getFilesDir(), "data-" + network + "/miner-status.json");
+            if (!f.exists()) return null;
+            BufferedReader r = new BufferedReader(new FileReader(f));
+            StringBuilder sb = new StringBuilder();
+            String l;
+            while ((l = r.readLine()) != null) sb.append(l);
+            r.close();
+            org.json.JSONObject j = new org.json.JSONObject(sb.toString());
+            double nano = 1000000000.0;
+            StringBuilder o = new StringBuilder();
+            o.append(j.optBoolean("ticket") ? "You have a ticket: you can be drawn every block.\n" : (j.optBoolean("registered") ? "Registered. Waiting for your first proof to earn a ticket.\n" : "Not registered yet. Send " + (j.optLong("bond") / (long) nano) + " AUR plus a little for fees to this address, and the app does the rest:\n" + j.optString("address") + "\n"));
+            o.append("Draws won: ").append(j.optInt("wins")).append("\n");
+            o.append("Won in draws: ").append(String.format("%.4f", j.optLong("drawEarned") / nano)).append(" AUR\n");
+            o.append("Balance at your reward address: ").append(String.format("%.4f", j.optLong("balance") / nano)).append(" AUR\n");
+            o.append("Block ").append(j.optLong("height")).append(" · ").append(j.optInt("peers")).append(" connected nodes");
+            return o.toString();
+        } catch (Exception e) { return null; }
     }
 
     private static String tail(File f, int n) {

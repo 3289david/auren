@@ -4,8 +4,9 @@ Downloads are on the [releases page](https://github.com/3289david/auren/releases
 
 ```bash
 node scripts/package.js        # auren-<version>.zip and .tar.gz (needs only Node.js to run)
-node scripts/build-exe.js      # AUREN-Node-<version>.exe and AUREN-Wallet-<version>.exe (build on the target OS)
-node android/build.js          # AUREN-Node-<version>.apk and AUREN-Wallet-<version>.apk
+node scripts/build-exe.js      # AUREN-Node / Wallet / Miner .exe (build on the target OS)
+node android/build.js          # AUREN-Node / Wallet / Miner .apk
+node scripts/build-miner-mac.js  # AUREN-Miner-<version>-mac-arm64.tar.gz and -x64.tar.gz (any OS)
 ```
 
 Outputs go to `dist/`. Nothing from npm ends up inside the apps.
@@ -24,7 +25,8 @@ The first run unpacks the program into `%LOCALAPPDATA%\AUREN`. The files are not
 `android/build.js` uses only the Android SDK command-line tools (aapt2, javac, d8, zipalign, apksigner): no Gradle. It needs the JDK, the Android SDK (platform 34 and build-tools) and Python 3.
 
 - **AUREN Wallet**: a WebView around the bundled wallet and explorer. The pages ship inside the app. Keys stay in the app's storage.
-- **AUREN Node**: bundles the Node.js runtime for Android (the Termux build, arm64 and x86_64) and runs `auren join` as a foreground service. Choose the network, turn on Earn, tap Start. It also opens the wallet and explorer served by the node. It needs a 64-bit phone.
+- **AUREN Node**: a full node. The app carries its own Node.js runtime for Android (arm64 and x86_64) as native libraries, so nothing else needs to be installed, and runs `auren join` as a foreground service.
+- **AUREN Miner**: the same engine with a one-button screen that shows your earnings (tickets, random-draw wins, balance).
 
-The node app targets Android API 28 so that the bundled runtime may start from the app's private folder, as Termux does. APKs are signed with a key generated on your machine (`dist/android/auren-release.jks`, never committed). Android asks you to allow installs from the source.
+Both apps target Android 14 (API 34). The Node.js runtime is packaged as `lib*.so` files, the only place Android lets apps run programs from on every version, and the build patches library names so they fit. APKs are signed with a key generated on your machine (`dist/android/auren-release.jks`, never committed). Android asks you to allow installs from the source.
 

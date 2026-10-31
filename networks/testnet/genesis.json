@@ -1,7 +1,7 @@
 {
   "chainId": "auren-testnet-1",
   "network": "testnet",
-  "genesisTime": 1793180507446,
+  "genesisTime": 1793445420805,
   "params": {
     "addressPrefix": "taur",
     "minSelfStake": "10000000000000",
@@ -17,12 +17,12 @@
       "downtimeWindow": 1000,
       "maxMissedBps": 5000
     },
+    "evmChainId": 77002,
     "security": {
       "minDelayBlocks": 1800,
       "limitWindowBlocks": 43200,
       "maxGuardians": 9
     },
-    "evmChainId": 77002,
     "governance": {
       "votingBlocks": 43200,
       "timelockBlocks": 7200,
@@ -43,55 +43,55 @@
   },
   "accounts": [
     {
-      "address": "taur1qp5nwzxhqqenksm7t6zqglpgvdhnusemm5rgec65",
+      "address": "taur1qpj9vxnx5krctxamhyfkh4q37v0q2vp3lu8fjz0n",
       "balance": "100000000000000"
     },
     {
-      "address": "taur1qp78vzlefj9fnl9mss5cpvhtgazmhlqrssf9espj",
+      "address": "taur1qq3f8sshac77n3lncwe2vyctwd06reqjvgkey5xg",
       "balance": "100000000000000"
     },
     {
-      "address": "taur1qp90j509jscyf7jq8qrazcfhhtk76348sswaqr4m",
+      "address": "taur1qq5u0jeh4v6wv6rsjg6d5rnr2wgxz2kf7yxzfgph",
       "balance": "100000000000000000"
     },
     {
-      "address": "taur1qqpfpdcpt9p2al44y4y5zmjpyjvd5eydmuvdzrde",
-      "balance": "200000000000000000"
-    },
-    {
-      "address": "taur1qrn0cl07chlc3kjumkm3ntv8pdwsdx5rp5pd6zdn",
+      "address": "taur1qqr3678nxqzgpudsvwrr64zel252edtufv0dfwks",
       "balance": "100000000000000"
     },
     {
-      "address": "taur1qzfq38tqjudhpzp0ma7c6xeeze43cpw7cqhpzxsy",
+      "address": "taur1qrhucr9a0vdsgw8kw026lg9vfz0kzp6a35yf8x08",
+      "balance": "200000000000000000"
+    },
+    {
+      "address": "taur1qz7s8t9kjld69rzxdcqpqx6998h8f4n25qkfwq2l",
       "balance": "100000000000000"
     }
   ],
   "validators": [
     {
-      "operator": "taur1qp5nwzxhqqenksm7t6zqglpgvdhnusemm5rgec65",
-      "consPub": "7a9bd5011abd7ade2bc4b70eaa469b24ed07d545010aa2c53e1c2f9dad05e41a",
+      "operator": "taur1qqr3678nxqzgpudsvwrr64zel252edtufv0dfwks",
+      "consPub": "8574715039f7460d6431eeb2251490deece3dfb02fbca141dbc588de5e235975",
       "moniker": "testnet-validator-0",
       "commissionBps": 500,
       "selfStake": "1000000000000000"
     },
     {
-      "operator": "taur1qp78vzlefj9fnl9mss5cpvhtgazmhlqrssf9espj",
-      "consPub": "e45a75a55eb3a522a42b455009b88afc7173783432a9d861dfa0dcc931444274",
+      "operator": "taur1qpj9vxnx5krctxamhyfkh4q37v0q2vp3lu8fjz0n",
+      "consPub": "c5cede13a20221e15965e22b93d71058598d92641ca3cd6fd7e10223b9944b09",
       "moniker": "testnet-validator-1",
       "commissionBps": 500,
       "selfStake": "1000000000000000"
     },
     {
-      "operator": "taur1qrn0cl07chlc3kjumkm3ntv8pdwsdx5rp5pd6zdn",
-      "consPub": "99b37f934a9f9d632c366d1687fe7efe928d9f8f9f763223d2b56dfd49f22b9a",
+      "operator": "taur1qq3f8sshac77n3lncwe2vyctwd06reqjvgkey5xg",
+      "consPub": "f33532064db5076f0920fde3a2a13f97c53053bdcdab9c4bc0dd65dbebe44bd9",
       "moniker": "testnet-validator-2",
       "commissionBps": 500,
       "selfStake": "1000000000000000"
     },
     {
-      "operator": "taur1qzfq38tqjudhpzp0ma7c6xeeze43cpw7cqhpzxsy",
-      "consPub": "87babef57324a05f4af19e2255b784ab5d4650d1dc8c21fad509f3b3b22ed758",
+      "operator": "taur1qz7s8t9kjld69rzxdcqpqx6998h8f4n25qkfwq2l",
+      "consPub": "cf3f4849558e798a667ef257af40465e727b4b1e0e846754f7b841ba1c8f862f",
       "moniker": "testnet-validator-3",
       "commissionBps": 500,
       "selfStake": "1000000000000000"

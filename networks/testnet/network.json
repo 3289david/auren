@@ -2,28 +2,28 @@
   "chainId": "auren-testnet-1",
   "network": "testnet",
   "addressPrefix": "taur",
-  "genesisHash": "59e1ba3e7f3346f02039d8c9dda3e679492c44f9694b4b6e2c7615315ac73c87",
-  "genesisTime": 1793180507446,
+  "genesisHash": "e50d022be42f259b481a595ae6397cc4174752f813ade79d79f2a2b19869de8a",
+  "genesisTime": 1793445420805,
   "validators": [
     {
-      "operator": "taur1qp5nwzxhqqenksm7t6zqglpgvdhnusemm5rgec65",
+      "operator": "taur1qqr3678nxqzgpudsvwrr64zel252edtufv0dfwks",
       "moniker": "testnet-validator-0",
-      "consPub": "7a9bd5011abd7ade2bc4b70eaa469b24ed07d545010aa2c53e1c2f9dad05e41a"
+      "consPub": "8574715039f7460d6431eeb2251490deece3dfb02fbca141dbc588de5e235975"
     },
     {
-      "operator": "taur1qp78vzlefj9fnl9mss5cpvhtgazmhlqrssf9espj",
+      "operator": "taur1qpj9vxnx5krctxamhyfkh4q37v0q2vp3lu8fjz0n",
       "moniker": "testnet-validator-1",
-      "consPub": "e45a75a55eb3a522a42b455009b88afc7173783432a9d861dfa0dcc931444274"
+      "consPub": "c5cede13a20221e15965e22b93d71058598d92641ca3cd6fd7e10223b9944b09"
     },
     {
-      "operator": "taur1qrn0cl07chlc3kjumkm3ntv8pdwsdx5rp5pd6zdn",
+      "operator": "taur1qq3f8sshac77n3lncwe2vyctwd06reqjvgkey5xg",
       "moniker": "testnet-validator-2",
-      "consPub": "99b37f934a9f9d632c366d1687fe7efe928d9f8f9f763223d2b56dfd49f22b9a"
+      "consPub": "f33532064db5076f0920fde3a2a13f97c53053bdcdab9c4bc0dd65dbebe44bd9"
     },
     {
-      "operator": "taur1qzfq38tqjudhpzp0ma7c6xeeze43cpw7cqhpzxsy",
+      "operator": "taur1qz7s8t9kjld69rzxdcqpqx6998h8f4n25qkfwq2l",
       "moniker": "testnet-validator-3",
-      "consPub": "87babef57324a05f4af19e2255b784ab5d4650d1dc8c21fad509f3b3b22ed758"
+      "consPub": "cf3f4849558e798a667ef257af40465e727b4b1e0e846754f7b841ba1c8f862f"
     }
   ]
 }

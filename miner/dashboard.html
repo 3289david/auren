@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AUREN Miner</title>
+<style>
+  :root { --bg:#f7f7f5; --card:#fff; --line:#e6e6e1; --text:#16161a; --muted:#6b6b73; --accent:#9a7410; --ok:#167a55; --bad:#b8332f; color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0e0e11; --card:#141418; --line:#26262d; --text:#ececef; --muted:#9a9aa4; --accent:#e0b84f; --ok:#4fcf9d; --bad:#ef7471; color-scheme: dark; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  main { max-width: 520px; margin: 0 auto; padding: 28px 20px 48px; }
+  .brand { color:var(--accent); font-weight:650; letter-spacing:.2em; font-size:.78rem; }
+  h1 { margin:2px 0 4px; font-size:1.9rem; letter-spacing:-.02em; }
+  .sub { color:var(--muted); margin:0 0 18px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin-bottom:14px; }
+  .row { display:flex; align-items:center; gap:10px; }
+  .dot { width:12px; height:12px; border-radius:50%; background:var(--muted); flex:none; }
+  .dot.on { background:var(--ok); } .dot.wait { background:var(--accent); }
+  .big { font-size:1.4rem; font-weight:650; }
+  .muted { color:var(--muted); font-size:.88rem; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .stat small { display:block; color:var(--muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; }
+  .stat b { font-size:1.25rem; font-variant-numeric:tabular-nums; }
+  button { font:inherit; cursor:pointer; border-radius:12px; border:1px solid var(--line); background:var(--card); color:var(--text); padding:14px; width:100%; font-weight:650; font-size:1rem; }
+  button.primary { background:var(--text); color:var(--bg); border-color:var(--text); }
+  button.stop { color:var(--bad); border-color:var(--bad); }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  .seg { display:flex; gap:8px; margin:8px 0 14px; } .seg button { padding:10px; font-weight:500; }
+  .seg button.on { background:var(--text); color:var(--bg); border-color:var(--text); }
+  input { width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--text); font:inherit; }
+  label { display:block; font-size:.78rem; color:var(--muted); margin:10px 0 4px; font-weight:600; }
+  code { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.82rem; word-break:break-all; }
+  .addr { background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin:8px 0; }
+  details { margin-top:6px; } summary { cursor:pointer; color:var(--muted); font-size:.85rem; }
+  pre { white-space:pre-wrap; font-size:.72rem; color:var(--muted); margin:8px 0 0; max-height:200px; overflow:auto; }
+  .err { color:var(--bad); font-size:.88rem; min-height:1.2em; }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">AUREN</div>
+  <h1>Miner</h1>
+  <p class="sub">Your computer joins the network and is drawn at random to earn AUR. A faster computer has no better chance than a slower one.</p>
+
+  <div class="card">
+    <div class="row"><span id="dot" class="dot"></span><span id="state" class="big">Stopped</span></div>
+    <div id="stateSub" class="muted" style="margin-top:4px">Choose a network and press Start.</div>
+  </div>
+
+  <div class="card" id="setup">
+    <label>Network</label>
+    <div class="seg" id="seg"></div>
+    <label for="payout">Address for your rewards (optional)</label>
+    <input id="payout" placeholder="Leave empty to use this miner's own address" autocomplete="off">
+    <div id="err" class="err"></div>
+  </div>
+
+  <button id="toggle" class="primary">Start mining</button>
+
+  <div class="card" style="margin-top:14px" id="earn" hidden>
+    <div class="muted" style="font-weight:600;margin-bottom:8px">EARNINGS</div>
+    <div class="grid">
+      <div class="stat"><small>Draws won</small><b id="wins">0</b></div>
+      <div class="stat"><small>Won in draws</small><b id="drawEarned">0 AUR</b></div>
+      <div class="stat"><small>Reward balance</small><b id="balance">0 AUR</b></div>
+      <div class="stat"><small>Ticket</small><b id="ticket">no</b></div>
+    </div>
+    <div id="fund" hidden>
+      <div class="muted" style="margin-top:12px">To get your ticket, send <b id="need"></b> AUR (plus a little for fees) to this miner's address. It is a refundable deposit. The app does the rest.</div>
+      <div class="addr"><code id="addr"></code></div>
+      <button id="copy" style="padding:10px;font-weight:500">Copy address</button>
+    </div>
+    <div class="muted" style="margin-top:12px" id="net"></div>
+  </div>
+
+  <details><summary>Details</summary><pre id="log"></pre></details>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+let running = false, busyCfg = false;
+const aur = (s) => { const n = Number(s) / 1e9; return n.toLocaleString('en-US', { maximumFractionDigits: 4 }) + ' AUR'; };
+async function api(path, body) { const r = await fetch(path, body === undefined ? undefined : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); return r.json(); }
+function seg(networks, current) {
+  $('seg').innerHTML = networks.map((n) => '<button data-n="' + n + '" class="' + (n === current ? 'on' : '') + '">' + n[0].toUpperCase() + n.slice(1) + '</button>').join('');
+  $('seg').querySelectorAll('button').forEach((b) => { b.onclick = async () => { const j = await api('/api/config', { network: b.dataset.n }); $('err').textContent = j.error || ''; poll(); }; });
+}
+async function poll() {
+  let s; try { s = await api('/api/status'); } catch { return; }
+  running = s.running;
+  seg(s.networks, s.config.network);
+  if (document.activeElement !== $('payout')) $('payout').value = s.config.payout;
+  $('payout').disabled = running; $('seg').querySelectorAll('button').forEach((b) => { b.disabled = running; });
+  const m = s.miner;
+  $('toggle').textContent = running ? 'Stop mining' : 'Start mining';
+  $('toggle').className = running ? 'stop' : 'primary';
+  $('dot').className = 'dot ' + (!running ? '' : (m && !m.stale ? 'on' : 'wait'));
+  $('state').textContent = !running ? 'Stopped' : (m && !m.stale ? (m.syncing ? 'Syncing' : 'Mining') : 'Starting…');
+  $('stateSub').textContent = !running ? 'Choose a network and press Start.' : (m && !m.stale ? 'Block ' + m.height.toLocaleString('en-US') + ' · ' + (m.ticket ? 'you can be drawn every block' : m.registered ? 'waiting for your first proof' : 'needs a deposit to get a ticket') : 'Connecting to the network…');
+  $('earn').hidden = !(running && m);
+  if (m) {
+    $('wins').textContent = m.wins; $('drawEarned').textContent = aur(m.drawEarned); $('balance').textContent = aur(m.balance);
+    $('ticket').textContent = m.ticket ? 'yes' : (m.registered ? 'soon' : 'no');
+    $('fund').hidden = m.registered; $('need').textContent = (Number(m.bond) / 1e9).toLocaleString('en-US'); $('addr').textContent = m.address;
+    $('net').textContent = m.peers + ' connected nodes · pool ' + aur(m.pool) + ' · ' + m.committeeSize + ' drawn per block';
+  }
+  $('log').textContent = s.log.join('\n');
+}
+$('toggle').onclick = async () => {
+  if (running) { await api('/api/stop', {}); }
+  else { const c = await api('/api/config', { payout: $('payout').value }); if (c.error) { $('err').textContent = c.error; return; } await api('/api/start', {}); }
+  poll();
+};
+$('copy').onclick = async () => { try { await navigator.clipboard.writeText($('addr').textContent); $('copy').textContent = 'Copied'; setTimeout(() => { $('copy').textContent = 'Copy address'; }, 1500); } catch { /* select by hand */ } };
+poll(); setInterval(poll, 2000);
+</script>
+</body>
+</html>

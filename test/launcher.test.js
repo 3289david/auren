@@ -39,5 +39,5 @@ test('status reports "not running" (exit 1) when no node is listening', () => {
 
 test('shipped files: launchers, installers and the user guide exist', () => {
   const root = path.join(__dirname, '..');
-  for (const f of ['auren', 'auren.cmd', 'install/windows/Run-AUREN-Node.cmd', 'install/windows/Install-AUREN.ps1', 'install/android/termux-setup.sh', 'website/run-a-node.html', 'docs/RUN-A-NODE.md', 'docs/GETTING-STARTED.md']) assert.ok(fs.existsSync(path.join(root, f)), f);
+  for (const f of ['auren', 'auren.cmd', 'install/windows/Run-AUREN-Node.cmd', 'install/windows/Install-AUREN.ps1', 'website/run-a-node.html', 'docs/RUN-A-NODE.md', 'docs/GETTING-STARTED.md']) assert.ok(fs.existsSync(path.join(root, f)), f);
 });

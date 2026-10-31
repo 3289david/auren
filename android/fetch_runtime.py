@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Download the Node.js runtime for Android (Termux build, same Node line as desktop) and its libraries.
+"""Download the Node.js runtime for Android (an Android build of the same Node line as desktop) and its libraries.
+
+The binary is the Android build published by the Termux project; the AUREN apps bundle it, so users do not need Termux.
 
 Usage: python android/fetch_runtime.py <aarch64|x86_64> <out-dir>
 
@@ -95,7 +97,7 @@ def main():
                 if not p.startswith(prefix):
                     continue
                 rel = p[len(prefix):]
-                if not (rel == "bin/node" or rel.startswith("lib/")):
+                if not (rel == "bin/node" or rel.startswith("lib/") or rel == "etc/tls/cert.pem"):
                     continue
                 if m.issym():
                     links[rel] = os.path.normpath(os.path.join(os.path.dirname(rel), m.linkname)).replace("\\", "/")
@@ -115,8 +117,10 @@ def main():
             r = by_name.get(need)
             if r and r not in keep:
                 keep.add(r); todo.append(r)
+    keep.add("etc/tls/cert.pem")
     files = {r: b for r, b in files.items() if r in keep}
     shutil.rmtree(out, ignore_errors=True)
+    files["etc/tls/cert.pem"] = files.get("etc/tls/cert.pem", b"")
     for rel, b in files.items():
         dst = os.path.join(out, rel)
         os.makedirs(os.path.dirname(dst), exist_ok=True)

@@ -286,3 +286,7 @@ button.linklike { background: none; border: 0; color: var(--text); text-decorati
 .doc .codebox .copy { opacity: 0; transition: opacity .15s; }
 .doc .codebox:hover .copy, .doc .codebox .copy:focus { opacity: 1; }
 .doc table td code { white-space: nowrap; }
+
+.earn-item { padding: 14px 0; border-top: 1px solid var(--line); }
+.earn-item:first-of-type { border-top: 0; }
+.earn-item p { margin: 4px 0 10px; }

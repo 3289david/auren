@@ -15,7 +15,7 @@
   let wallets = store.get('auren.wallets') || []; // [{ name, pub, keystore }]
   let key = null, address = null, account = null, tab = 'send', idle = null, note = null;
   const deep = new URLSearchParams(location.search);
-  if (['send', 'receive', 'stake', 'activity', 'names', 'govern', 'security', 'backup'].includes(deep.get('tab'))) tab = deep.get('tab');
+  if (['send', 'receive', 'stake', 'activity', 'earn', 'names', 'govern', 'security', 'backup'].includes(deep.get('tab'))) tab = deep.get('tab');
 
   // ------------------------------------------------------------ plumbing
   const touch = () => { clearTimeout(idle); if (key) idle = setTimeout(() => { key = null; address = null; note = { cls: 'ok', html: 'Wallet locked after 10 minutes of inactivity.' }; render(); }, 600000); };
@@ -275,7 +275,7 @@
   }
 
   // ------------------------------------------------------------ dashboard
-  const TABS = [['send', 'Send'], ['receive', 'Receive'], ['stake', 'Stake'], ['activity', 'Activity'], ['names', 'Names'], ['govern', 'Vote'], ['security', 'Security'], ['backup', 'Backup']];
+  const TABS = [['send', 'Send'], ['receive', 'Receive'], ['stake', 'Stake'], ['activity', 'Activity'], ['earn', 'Earn'], ['names', 'Names'], ['govern', 'Vote'], ['security', 'Security'], ['backup', 'Backup']];
 
   function viewDashboard() {
     const w = wallets.find((x) => x.pub === key.pub);
@@ -290,6 +290,19 @@
     $('lock').onclick = () => { key = null; address = null; note = null; render(); };
     document.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => { tab = b.dataset.tab; viewDashboard(); }));
     refreshAccount().then(renderTab);
+  }
+
+  async function tabEarn(body) {
+    body.innerHTML = '<h3 style="margin-top:0">Earn AUR</h3><p class="note">Three ways to earn. You can do all of them.</p><p class="msg">Loading…</p>';
+    let draw = null;
+    try { draw = await rpc.get('/draw'); } catch { /* older node */ }
+    const rel = 'https://github.com/3289david/auren/releases/latest';
+    body.innerHTML = '<h3 style="margin-top:0">Earn AUR</h3><p class="note">Three ways to earn. You can do all of them.</p>' +
+      '<div class="earn-item"><b>Stake</b><p class="note">Back a validator and earn a share of new AUR. Your coins stay yours and come back after a waiting period.</p><button class="btn small" id="go-stake">Open Stake</button></div>' +
+      '<div class="earn-item"><b>Run a node</b><p class="note">Help keep the network running. Nodes that prove they store the chain share a pool of new AUR every epoch.</p><a class="btn small" href="' + rel + '" target="_blank" rel="noopener">Get AUREN Node</a></div>' +
+      '<div class="earn-item"><b>Mine with the random draw</b><p class="note">Every block a few nodes are drawn at random and paid. A phone has the same chance as a supercomputer, and you need no coins beyond a refundable deposit.' +
+      (draw ? ' Right now ' + draw.ticketHolders.length + ' nodes hold a ticket, ' + draw.committeeSize + ' are drawn per block, and the pool holds ' + formatAur(draw.pool, 4) + ' AUR.' : '') + '</p><a class="btn small primary" href="' + rel + '" target="_blank" rel="noopener">Get AUREN Miner</a> <a class="btn small" href="docs/miner.html">How it works</a></div>';
+    $('go-stake').onclick = () => { tab = 'stake'; viewDashboard(); };
   }
 
   function tabReceive(body) {
@@ -315,7 +328,7 @@
   function renderTab() {
     const body = $('tabbody');
     if (!body) return;
-    ({ send: tabSend, receive: tabReceive, stake: tabStake, names: tabNames, govern: tabGovern, security: tabSecurity, activity: tabActivity, backup: tabBackup })[tab](body);
+    ({ send: tabSend, receive: tabReceive, stake: tabStake, earn: tabEarn, names: tabNames, govern: tabGovern, security: tabSecurity, activity: tabActivity, backup: tabBackup })[tab](body);
   }
 
   const tipInput = '<label for="tip">Extra tip (AUR, optional): pay a little more to go first when the network is busy</label><input type="text" id="tip" value="0.000001" inputmode="decimal">';

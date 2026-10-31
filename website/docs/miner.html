@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AUREN Miner · AUREN docs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="../index.html"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="#e8b84a" stroke-width="5"/><path d="M19 44 L32 17 L45 44" fill="none" stroke="#e8b84a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 36.5 H39" stroke="#e8b84a" stroke-width="5" stroke-linecap="round"/></svg>AUREN</a>
+  <nav class="nav-links"><a href="../index.html">Home</a><a href="index.html" aria-current="page">Docs</a><a href="../explorer.html">Explorer</a><a href="../run-a-node.html">Run a node</a><a class="btn small primary" href="../wallet.html">Wallet</a></nav>
+</div></header>
+<div class="wrap docs">
+  <aside class="docs-nav"><input type="search" id="dsearch" placeholder="Search the docs" autocomplete="off" aria-label="Search the docs"><div id="dresults" hidden></div><div id="dnav"><a href="index.html">Overview</a><h4>Start here</h4><a href="START-HERE.html">Start here</a><a href="GETTING-STARTED.html">Getting started with AUREN</a><a href="wallet-guide.html">Wallet guide</a><a href="explorer-guide.html">Explorer guide</a><a href="staking-guide.html">Staking guide</a><a href="domains.html">Names, domains and your own TLD</a><a href="faq.html">FAQ</a><a href="troubleshooting.html">Troubleshooting</a><a href="glossary.html">Glossary</a><h4>Run a node</h4><a href="RUN-A-NODE.html">Run an AUREN node</a><a href="miner.html" class="on">Miner</a><a href="node-rewards.html">Node rewards: earn AUR by running a node</a><a href="rpc-consensus.html">Randomized Proof Consensus (RPC): the random draw</a><a href="BUILD-APPS.html">Build the apps yourself</a><a href="networks.html">Networks: devnet, testnet, mainnet</a><a href="validators.html">Running a validator</a><a href="cli.html">Command-line reference</a><h4>Build on AUREN</h4><a href="developer-quickstart.html">Developer quickstart</a><a href="build-a-wallet.html">Build a wallet app</a><a href="accept-payments.html">Accept AUR payments (merchant guide)</a><a href="smart-contracts.html">Deploy a smart contract</a><a href="integrate.html">Integrate AUREN into your wallet or app</a><a href="rpc-api.html">Node API</a><a href="name-resolution.html">ANR-1: AUREN Name Resolution (fixing name-service fragmentation)</a><a href="evm.html">EVM layer</a><h4>Reference</h4><a href="transactions.html">Transaction types</a><a href="parameters.html">Network parameters</a><a href="errors.html">Error codes</a><a href="protocol.html">Protocol specification (v0.1)</a><h4>How it works</h4><a href="architecture.html">How AUREN works (architecture)</a><a href="whitepaper.html">Whitepaper (v0.1, draft)</a><a href="consensus.html">Consensus: Auren BFT-PoS (two-phase, Tendermint-style)</a><a href="fee-market.html">Adaptive Execution Market</a><a href="tokenomics.html">Tokenomics</a><a href="governance.html">On-chain governance</a><a href="security.html">Security architecture</a><a href="hardware-wallets.html">Hardware keys and passkeys</a><h4>Operate</h4><a href="deploy.html">Deploying the official public network (CORE TEAM ONLY)</a><a href="LAUNCH.html">Launching a network: the complete path (CORE TEAM ONLY)</a><a href="roadmap.html">Roadmap</a><h4>Project</h4><a href="changelog.html">Changelog</a><a href="contributing.html">Contributing</a><a href="security-policy.html">Security policy</a></div></aside>
+  <article class="doc">
+<h1 id="auren-miner">AUREN Miner</h1>
+<p>The AUREN Miner is a one-button app for <b>Windows, Mac and Android</b> that earns AUR for you with the <a href="rpc-consensus.html">random draw</a>. Press <b>Start mining</b> and leave it running.</p>
+<h2 id="what-mining-means-here">What &quot;mining&quot; means here</h2>
+<p>It is not a race. Nothing burns electricity trying to solve puzzles. Your device joins the network, keeps a copy of the chain data and proves it every epoch. Every block, a few of those devices are <b>drawn at random</b> and paid. A phone has the same chance as a gaming PC or a supercomputer. See <a href="rpc-consensus.html">Random draw</a> for how it works and why it is fair.</p>
+<h2 id="get-it">Get it</h2>
+<div class="table-wrap"><table><thead><tr><th>Device</th><th>Download</th></tr></thead><tbody><tr><td>Windows</td><td><code>AUREN-Miner-&lt;version&gt;.exe</code></td></tr><tr><td>Mac (Apple chip)</td><td><code>AUREN-Miner-&lt;version&gt;-mac-arm64.tar.gz</code></td></tr><tr><td>Mac (Intel)</td><td><code>AUREN-Miner-&lt;version&gt;-mac-x64.tar.gz</code></td></tr><tr><td>Android (64-bit)</td><td><code>AUREN-Miner-&lt;version&gt;.apk</code></td></tr></tbody></table></div>
+<p>All are on the <a href="https://github.com/3289david/auren/releases/latest">releases page</a> and the website's Download section.</p>
+<h2 id="use-it">Use it</h2>
+<ol><li><b>Open the app</b> and pick a network (Testnet or Devnet).</li><li>Optionally enter an <b>address for your rewards</b>. Leave it empty to pay the miner's own address. To get paid in your wallet, paste your wallet address.</li><li>Press <b>Start mining</b>.</li><li>The app shows an address and the deposit it needs. Send that deposit (plus a little for fees) to the address. It is a refundable deposit, not a fee. The app registers itself and proves storage automatically. On test networks the node also asks the faucet for coins.</li><li>After the first proof you hold a <b>ticket</b> and can be drawn every block. The screen shows your draws won, what you won in draws, and the balance at your reward address.</li></ol>
+<p>To stop, press <b>Stop mining</b>. Your deposit comes back after the unbonding period if you also unregister (<code>aurenctl node unregister</code>).</p>
+<h2 id="mac-notes">Mac notes</h2>
+<p>Double-click <b>AUREN Miner.command</b> inside the extracted folder. The folder carries its own Node.js runtime, so nothing else needs to be installed. macOS may say it cannot verify the developer because the app is not notarized. Right-click the file, choose <b>Open</b>, then <b>Open</b>.</p>
+<h2 id="windows-notes">Windows notes</h2>
+<p>Windows SmartScreen may warn because the exe is not code-signed. Choose <b>More info</b>, then <b>Run anyway</b>. The miner opens in its own window (Edge or Chrome in app mode).</p>
+<h2 id="android-notes">Android notes</h2>
+<p>Allow notifications so the miner can run in the background, and turn off battery optimization for the app. Keep the phone plugged in if you leave it running overnight. The app includes everything it needs; no other app has to be installed.</p>
+<h2 id="node-miner-and-wallet-which-one">Node, Miner and Wallet: which one?</h2>
+<div class="table-wrap"><table><thead><tr><th>App</th><th>For</th></tr></thead><tbody><tr><td><b>Wallet</b></td><td>Hold, send and receive AUR; stake; names</td></tr><tr><td><b>Node</b></td><td>Run a full node for the network (no earning screen)</td></tr><tr><td><b>Miner</b></td><td>Run a node that earns, with a simple earnings screen</td></tr></tbody></table></div>
+<h2 id="questions">Questions</h2>
+<p><b>Does it use a lot of power?</b> No. There is no hashing race. The device syncs blocks and answers one small storage challenge per epoch.</p>
+<p><b>How much will I earn?</b> It depends on how many tickets exist: the pool each block is split between a few random winners, so with more miners each earns less often. See <a href="rpc-consensus.html">Random draw</a> for the expected earnings formula.</p>
+<p><b>Why a deposit?</b> Fake identities would otherwise be free and could dominate the draw. A refundable deposit per identity makes that costly while keeping the odds equal for everyone.</p>
+<p><b>Where is my key?</b> The miner makes its own key inside its data folder (<code>~/.auren/miner</code> on desktop). Rewards go to the reward address you chose, so the key itself holds only the deposit.</p>
+    <div class="pn"><a href="RUN-A-NODE.html"><small>Previous</small>Run an AUREN node</a><a class="next" href="node-rewards.html"><small>Next</small>Node rewards: earn AUR by running a node</a></div>
+    <p class="muted" style="margin-top:28px"><a href="https://github.com/3289david/auren/blob/main/docs/miner.md">Edit this page on GitHub</a></p>
+  </article>
+  <aside class="docs-toc"><h4>On this page</h4><a href="#what-mining-means-here">What &quot;mining&quot; means here</a><a href="#get-it">Get it</a><a href="#use-it">Use it</a><a href="#mac-notes">Mac notes</a><a href="#windows-notes">Windows notes</a><a href="#android-notes">Android notes</a><a href="#node-miner-and-wallet-which-one">Node, Miner and Wallet: which one?</a><a href="#questions">Questions</a></aside>
+</div>
+<script src="docs.js"></script>
+</body>
+</html>

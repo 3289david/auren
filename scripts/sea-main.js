@@ -99,6 +99,7 @@ async function node(args) {
   const args = process.argv.slice(2);
   const child = process.env.AUREN_RUN_SCRIPT;
   if (child) { delete process.env.AUREN_RUN_SCRIPT; return runScript(child, args); }
+  if (/miner/i.test(path.basename(process.execPath))) return runScript(path.join(appDir, 'miner', 'miner.js'), []);
   if (/wallet/i.test(path.basename(process.execPath))) return wallet();
   return node(args);
 })().catch((e) => { console.error(`error: ${e.message}`); process.exitCode = 1; });

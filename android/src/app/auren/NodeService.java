@@ -5,6 +5,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -38,7 +39,10 @@ public class NodeService extends Service {
             return START_NOT_STICKY;
         }
         if (i == null || isRunning()) return START_STICKY;
-        startForeground(1, notification("Starting node…"));
+        try {
+            if (Build.VERSION.SDK_INT >= 29) startForeground(1, notification("Starting…"), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
+            else startForeground(1, notification("Starting…"));
+        } catch (Exception e) { /* the node still runs; Android may hide the notification */ }
         PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
         lock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "auren:node");
         lock.acquire();
@@ -52,13 +56,13 @@ public class NodeService extends Service {
     private Notification notification(String text) {
         Notification.Builder b;
         if (Build.VERSION.SDK_INT >= 26) {
-            NotificationChannel ch = new NotificationChannel("node", "AUREN node", NotificationManager.IMPORTANCE_LOW);
+            NotificationChannel ch = new NotificationChannel("node", "AUREN", NotificationManager.IMPORTANCE_LOW);
             ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).createNotificationChannel(ch);
             b = new Notification.Builder(this, "node");
         } else {
             b = new Notification.Builder(this);
         }
-        return b.setContentTitle("AUREN node").setContentText(text).setSmallIcon(android.R.drawable.stat_notify_sync).setOngoing(true).build();
+        return b.setContentTitle("AUREN").setContentText(text).setSmallIcon(android.R.drawable.stat_notify_sync).setOngoing(true).build();
     }
 
     private static String abi() {
@@ -87,19 +91,18 @@ public class NodeService extends Service {
     private void runNode(String net, String peers, boolean earn, String payout) {
         File logFile = new File(getFilesDir(), "node.log");
         try {
-            File usr = new File(getFilesDir(), "usr"), app = new File(getFilesDir(), "app"), stamp = new File(getFilesDir(), "installed");
+            File app = new File(getFilesDir(), "app"), stamp = new File(getFilesDir(), "installed");
+            File libs = new File(getApplicationInfo().nativeLibraryDir);
             String want = String.valueOf(getPackageManager().getPackageInfo(getPackageName(), 0).lastUpdateTime);
             if (!stamp.exists() || !readAll(stamp).equals(want)) {
-                deleteTree(usr); deleteTree(app);
-                unzip("runtime-" + abi() + ".zip", usr);
+                deleteTree(app);
                 unzip("auren.zip", app);
-                new File(usr, "bin/node").setExecutable(true, false);
                 FileOutputStream s = new FileOutputStream(stamp);
                 s.write(want.getBytes("UTF-8"));
                 s.close();
             }
             ArrayList<String> cmd = new ArrayList<String>();
-            cmd.add(new File(usr, "bin/node").getAbsolutePath());
+            cmd.add(new File(libs, "libnode_bin.so").getAbsolutePath());
             cmd.add(new File(app, "bin/auren.js").getAbsolutePath());
             cmd.add("join"); cmd.add(net);
             cmd.add("--home"); cmd.add(new File(getFilesDir(), "data-" + net).getAbsolutePath());
@@ -107,8 +110,10 @@ public class NodeService extends Service {
             if (peers != null && peers.length() > 0) { cmd.add("--peers"); cmd.add(peers); }
             if (earn) { cmd.add("--earn"); if (payout != null && payout.length() > 0) cmd.add(payout); }
             ProcessBuilder pb = new ProcessBuilder(cmd);
-            pb.environment().put("LD_LIBRARY_PATH", new File(usr, "lib").getAbsolutePath());
+            pb.environment().put("LD_LIBRARY_PATH", libs.getAbsolutePath());
             pb.environment().put("HOME", getFilesDir().getAbsolutePath());
+            File ca = new File(app, "certs/cacert.pem");
+            if (ca.exists()) { pb.environment().put("SSL_CERT_FILE", ca.getAbsolutePath()); pb.environment().put("NODE_EXTRA_CA_CERTS", ca.getAbsolutePath()); }
             pb.environment().put("TMPDIR", getCacheDir().getAbsolutePath());
             pb.redirectErrorStream(true);
             pb.redirectOutput(logFile);

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.10.0
+
+- **AUREN Miner** for Windows, Mac and Android: a one-button app that runs a node that earns AUR and shows draws won, balance and ticket status. `docs/miner.md`. Mac builds ship the official Node.js runtime for macOS (`scripts/build-miner-mac.js`).
+- **Android apps fixed and simplified.** The Node.js runtime now ships as native libraries inside the APK (the one place every Android version lets apps run programs from), the apps target Android 14, and nothing else needs to be installed. Termux is no longer mentioned or required; the Termux setup script is removed.
+- **Fixed the Android sync failure:** the Android Node.js build has no root certificates, so every HTTPS connection to the network failed and the node never synced. The apps now ship a certificate bundle. Verified on an Android 14 emulator syncing the live testnet.
+- **Testnet genesis updated to the live network** (`e50d022b…`, served by testnet.krl.kr). The repository previously pinned a different genesis, so nodes could not join the real testnet.
+- **Node app** is a plain node; earning moved to the Miner. The node writes a status file for the apps (`miner-status.json`).
+- Wallet: new **Earn** tab (stake, run a node, mine). Website: Miner download buttons for Windows, Mac and Android.
+
 ## 0.9.0
 
 - **Random draw (RPC):** a new way to earn. Every block a committee of ticket holders (bonded nodes that proved storage) is drawn uniformly from a verifiable random beacon and paid from a pool (`rpc.poolBps`, default 5% of issuance; `rpc.committeeSize`, default 7). Hardware, balance and stake do not change the chance. `GET /draw`, `aur_getDraw`, explorer **Draw** page, `docs/rpc-consensus.md`. Reference implementation and simulations: https://github.com/3289david/rpc-consensus.

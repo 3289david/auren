@@ -21,7 +21,7 @@ You need **only Node.js 20+**. Unpack the download, then:
 ./auren status
 ```
 
-Windows users can instead right-click `install\windows\Install-AUREN.ps1` → *Run with PowerShell*, then open **AUREN Node** from the Start Menu. Android: `sh install/android/termux-setup.sh` inside Termux (no standalone APK yet).
+Windows users can instead right-click `install\windows\Install-AUREN.ps1` → *Run with PowerShell*, then open **AUREN Node** from the Start Menu. Android: install the **AUREN Node** or **AUREN Miner** app from the releases page.
 
 ## One mainnet, one testnet, one devnet
 

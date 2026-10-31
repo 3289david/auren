@@ -17,7 +17,7 @@ fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 
 // payload = the same file set as the zip package
-const include = ['bin', 'src', 'website', 'networks/networks.json', 'networks/devnet', 'networks/testnet/genesis.json', 'networks/testnet/network.json', 'networks/mainnet', 'docs', 'README.md', 'LICENSE', 'package.json', 'CHANGELOG.md'];
+const include = ['bin', 'src', 'miner', 'website', 'networks/networks.json', 'networks/devnet', 'networks/testnet/genesis.json', 'networks/testnet/network.json', 'networks/mainnet', 'docs', 'README.md', 'LICENSE', 'package.json', 'CHANGELOG.md'];
 const skip = (p) => /(^|[\\/])(_private|downloads|node_modules|\.devnet)([\\/]|$)/.test(p);
 const files = {};
 function walk(rel) {
@@ -36,7 +36,7 @@ fs.writeFileSync(cfg, JSON.stringify({ main: path.join(__dirname, 'sea-main.js')
 let r = spawnSync(process.execPath, ['--experimental-sea-config', cfg], { stdio: 'inherit' });
 if (r.status !== 0) process.exit(r.status || 1);
 
-for (const name of [`AUREN-Node-${version}`, `AUREN-Wallet-${version}`]) {
+for (const name of [`AUREN-Node-${version}`, `AUREN-Wallet-${version}`, `AUREN-Miner-${version}`]) {
   const exe = path.join(out, name + ext);
   fs.copyFileSync(process.execPath, exe);
   const args = ['--yes', 'postject@1.0.0-alpha.6', exe, 'NODE_SEA_BLOB', blob, '--sentinel-fuse', 'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2'];
