@@ -3,7 +3,7 @@
 ## The wallet cannot connect
 
 - Check your internet connection.
-- Pick a network in the selector and press **Connect**.
+- Pick a network in the selector at the top.
 - If the message says the network is not reachable, its public address is not answering right now. Try again in a minute, or pick the other network. Mainnet has not launched yet.
 
 ## "That password did not work"
