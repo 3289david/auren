@@ -408,7 +408,7 @@ class Chain {
     return jsonify({
       beacon: this.state.get('meta', 'beacon') || DRAW.genesisBeacon(this.chainId), pool: this.state.get('meta', 'rpcPool') || 0n,
       poolBps: P.rpc.poolBps, committeeSize: P.rpc.committeeSize, epoch: NR.epochOf(h, P),
-      ticketHolders: holders.map(([a, n]) => ({ address: a, payout: n.payout, provenEpoch: n.provenEpoch })), lastDraw: this.state.get('meta', 'lastDraw') || null,
+      freeSeats: P.rpc.freeSeats, ticketHolders: holders.map(([a, n]) => ({ address: a, payout: n.payout, provenEpoch: n.provenEpoch, tier: n.bond > 0n ? 'full' : 'free' })), lastDraw: this.state.get('meta', 'lastDraw') || null,
     });
   }
   getUnbonding(addr) {

@@ -22,10 +22,10 @@ All are on the [releases page](https://github.com/3289david/auren/releases/lates
 1. **Open the app** and pick a network (Testnet or Devnet).
 2. Optionally enter an **address for your rewards**. Leave it empty to pay the miner's own address. To get paid in your wallet, paste your wallet address.
 3. Press **Start mining**.
-4. The app shows an address and the deposit it needs. Send that deposit (plus a little for fees) to the address. It is a refundable deposit, not a fee. The app registers itself and proves storage automatically. On test networks the node also asks the faucet for coins.
-5. After the first proof you hold a **ticket** and can be drawn every block. The screen shows your draws won, what you won in draws, and the balance at your reward address.
+4. **You do not need any coins.** The app joins the **free tier** by itself, with no deposit and no fee, and proves storage automatically.
+5. After the first proof you hold a **ticket** and can be drawn every block. Some seats in every draw are reserved for free-tier miners, so you can earn from your very first day. The screen shows your draws won, what you won in draws, and the balance at your reward address.
 
-To stop, press **Stop mining**. Your deposit comes back after the unbonding period if you also unregister (`aurenctl node unregister`).
+When the miner's own balance reaches the deposit amount (rewards are paid to the miner's own address unless you chose another), it **upgrades itself to the full tier** with more seats per draw. To stop, press **Stop mining**.
 
 ## Mac notes
 
@@ -53,6 +53,6 @@ Allow notifications so the miner can run in the background, and turn off battery
 
 **How much will I earn?** It depends on how many tickets exist: the pool each block is split between a few random winners, so with more miners each earns less often. See [Random draw](rpc-consensus.md) for the expected earnings formula.
 
-**Why a deposit?** Fake identities would otherwise be free and could dominate the draw. A refundable deposit per identity makes that costly while keeping the odds equal for everyone.
+**Why is there a free tier and a full tier?** A brand-new network has no coins, so nobody could start if a deposit were required. The free tier lets anyone start with nothing. Fake identities would otherwise be free, so the free tier is limited: only a few free joins per epoch, and only the reserved free seats in each draw. Miners who post the refundable deposit get the remaining seats.
 
 **Where is my key?** The miner makes its own key inside its data folder (`~/.auren/miner` on desktop). Rewards go to the reward address you chose, so the key itself holds only the deposit.

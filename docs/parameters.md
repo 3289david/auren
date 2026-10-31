@@ -60,6 +60,9 @@ Amounts shown in AUR are stored as sparks (1 AUR = 1,000,000,000 sparks). Fees a
 | `rpc` |  | Random draw (RPC): share of issuance and how many tickets are drawn per block |
 | `rpc.poolBps` | `500` |  |
 | `rpc.committeeSize` | `7` |  |
+| `rpc.freeSeats` | `2` |  |
+| `rpc.freeRegsPerEpoch` | `100` |  |
+| `rpc.freeTxPerBlock` | `10` |  |
 | `domain` |  | Name prices by length (3, 4, 5+ letters) and the longest registration |
 | `domain.price3` | `100 AUR` |  |
 | `domain.price4` | `20 AUR` |  |

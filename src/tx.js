@@ -265,10 +265,21 @@ const TYPES = {
   // ----- node rewards (src/noderew.js, docs/node-rewards.md) -----
   registerNode: {
     cost: { compute: 60000, state: 300 },
-    check: (b, p) => { if (!isValidAddress(b.payout, p.addressPrefix)) throw new TxInvalid('BAD_BODY', 'invalid payout address'); },
-    access: (tx) => [`acct:${tx.from}`, `node:${tx.from}`],
+    check: (b, p) => {
+      if (!isValidAddress(b.payout, p.addressPrefix)) throw new TxInvalid('BAD_BODY', 'invalid payout address');
+      if (b.free !== undefined && typeof b.free !== 'boolean') throw new TxInvalid('BAD_BODY', 'free must be true or false');
+    },
+    access: (tx) => (tx.body.free ? [`acct:${tx.from}`, `node:${tx.from}`, 'meta:freeRegs'] : [`acct:${tx.from}`, `node:${tx.from}`]),
     run({ state, height, params }, tx) {
       if (state.has('node', tx.from)) throw new TxFail('NODE_EXISTS');
+      if (tx.body.free) { // the free tier: no deposit, no fee, limited joins per epoch
+        const ep = NR.epochOf(height, params), fr = state.get('meta', 'freeRegs');
+        const used = fr && fr.epoch === ep ? fr.n : 0;
+        if (used >= params.rpc.freeRegsPerEpoch) throw new TxFail('FREE_FULL');
+        state.set('meta', 'freeRegs', { epoch: ep, n: used + 1 });
+        state.set('node', tx.from, { bond: 0n, payout: tx.body.payout, since: height, provenEpoch: -1 });
+        return {};
+      }
       const a = getAcct(state, tx.from);
       if (spendable(a, height) < params.node.bond) throw new TxFail('INSUFFICIENT_BOND');
       a.balance -= params.node.bond;
@@ -285,8 +296,26 @@ const TYPES = {
       const n = state.get('node', tx.from);
       if (!n) throw new TxFail('NOT_A_NODE');
       state.del('node', tx.from);
+      if (n.bond === 0n) return {};
       state.set('unb', `${String(height + params.unbondingBlocks).padStart(12, '0')}|${tx.from}|${tx.nonce}`,
         { delegator: tx.from, validator: null, amount: n.bond, created: height });
+      return {};
+    },
+  },
+  bondNode: { // a free-tier node posts the deposit and joins the full tier
+    cost: { compute: 50000, state: 200 },
+    check: () => {},
+    access: (tx) => [`acct:${tx.from}`, `node:${tx.from}`],
+    run({ state, height, params }, tx) {
+      const n = state.get('node', tx.from);
+      if (!n) throw new TxFail('NOT_A_NODE');
+      if (n.bond > 0n) throw new TxFail('ALREADY_BONDED');
+      const a = getAcct(state, tx.from);
+      if (spendable(a, height) < params.node.bond) throw new TxFail('INSUFFICIENT_BOND');
+      a.balance -= params.node.bond;
+      putAcct(state, tx.from, a);
+      n.bond = params.node.bond;
+      state.set('node', tx.from, n);
       return {};
     },
   },
@@ -676,17 +705,30 @@ const costOf = (type, baseFee) => {
  * Execute one transaction against env.state. Pre-checks throw TxInvalid (the block containing the
  * tx would be invalid). Handler failures are recorded in the receipt: the fee is still charged.
  */
+/** Free transactions let a new participant with no coins join and earn. Joining the free tier and the free tier's storage proofs cost no fee. */
+function isFreeTx(state, tx) {
+  if (tx.type === 'registerNode') return tx.body.free === true;
+  if (tx.type === 'nodeProof') { const n = state.get('node', tx.from); return !!n && n.bond === 0n; }
+  return false;
+}
+
 function applyTx(env, tx) {
   const { state, params, height, baseFee } = env;
   const spec = TYPES[tx.type];
   const a = getAcct(state, tx.from);
   if (!isAuthorized(a, tx, params.addressPrefix)) throw new TxInvalid('NOT_AUTHORIZED');
   if (tx.nonce !== a.nonce) throw new TxInvalid('BAD_NONCE', `expected nonce ${a.nonce}, got ${tx.nonce}`);
-  const baseCost = costOfTx(tx, baseFee);
-  const maxFee = BigInt(tx.maxFee);
-  if (maxFee < baseCost) throw new TxInvalid('FEE_TOO_LOW', `maxFee ${maxFee} < required ${baseCost}`);
-  const tip = minB(BigInt(tx.tip), maxFee - baseCost);
-  if (spendable(a, height) < baseCost + tip) throw new TxInvalid('INSUFFICIENT_FEE_FUNDS');
+  let baseCost = costOfTx(tx, baseFee), tip;
+  if (isFreeTx(state, tx)) { // free tier: costs the sender nothing, but only a few per block
+    if ((env.freeUsed || 0) >= params.rpc.freeTxPerBlock) throw new TxInvalid('FREE_LIMIT', 'too many free transactions in this block');
+    env.freeUsed = (env.freeUsed || 0) + 1;
+    baseCost = 0n; tip = 0n;
+  } else {
+    const maxFee = BigInt(tx.maxFee);
+    if (maxFee < baseCost) throw new TxInvalid('FEE_TOO_LOW', `maxFee ${maxFee} < required ${baseCost}`);
+    tip = minB(BigInt(tx.tip), maxFee - baseCost);
+    if (spendable(a, height) < baseCost + tip) throw new TxInvalid('INSUFFICIENT_FEE_FUNDS');
+  }
   a.balance -= baseCost + tip;
   a.nonce += 1;
   putAcct(state, tx.from, a);
@@ -716,6 +758,6 @@ const accessSet = (tx) => TYPES[tx.type].access(tx);
 const clearSigCache = () => sigOk.clear();
 
 module.exports = {
-  clearSigCache, isAuthorized, TX_VERSION, TYPES, signTx, signingBytes, txHash, checkTx, applyTx, costOf, costOfTx, txCost, accessSet,
+  clearSigCache, isAuthorized, isFreeTx, TX_VERSION, TYPES, signTx, signingBytes, txHash, checkTx, applyTx, costOf, costOfTx, txCost, accessSet,
   getAcct, putAcct, spendable, delKey, settleSecurity,
 };

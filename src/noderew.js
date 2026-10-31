@@ -30,7 +30,7 @@ function settleEpoch(state, params, height, getAcct, putAcct) {
   const epoch = height / params.node.epochBlocks - 1;
   const pool = state.get('meta', 'nodePool') || 0n;
   const winners = [];
-  for (const [addr, n] of state.entries('node')) if (n.provenEpoch === epoch) winners.push([addr, n]);
+  for (const [addr, n] of state.entries('node')) if (n.provenEpoch === epoch && n.bond > 0n) winners.push([addr, n]); // the free tier earns from the random draw only
   if (pool <= 0n || winners.length === 0) return;
   const each = pool / BigInt(winners.length);
   if (each <= 0n) return;

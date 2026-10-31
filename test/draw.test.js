@@ -73,3 +73,74 @@ test('only ticket holders are paid, every block, and the money is conserved', ()
   assert.equal(bal(accts.dave), before.dave, 'dave earned nothing');
   conserved(chain);
 });
+
+// ---- the free tier: people with no coins can join and earn
+const { devAccount } = require('../src/devkit');
+const FREE = { blocksPerYear: 1000, node: { bond: (50n * AUR).toString(), epochBlocks: 10, poolBps: 1000 }, rpc: { poolBps: 500, committeeSize: 3, freeSeats: 1, freeRegsPerEpoch: 2, freeTxPerBlock: 10 } };
+const freeTx = (chain, who, type, body) => mkTx(chain, who, type, body, { maxFee: '0', tip: '0' });
+
+test('seat plan: free seats are reserved and capped, and unused seats go to the other tier', () => {
+  assert.deepEqual(D.seatPlan(10, 10, 7, 2), { bonded: 5, free: 2 });
+  assert.deepEqual(D.seatPlan(0, 10, 7, 2), { bonded: 0, free: 7 }, 'at the start nobody has coins: every seat goes to the free tier');
+  assert.deepEqual(D.seatPlan(10, 0, 7, 2), { bonded: 7, free: 0 });
+  assert.deepEqual(D.seatPlan(3, 10, 7, 2), { bonded: 3, free: 4 });
+  assert.deepEqual(D.seatPlan(10, 1, 7, 2), { bonded: 6, free: 1 });
+});
+
+test('a brand-new participant with zero coins joins for free, proves storage and earns from the draw', () => {
+  const s = makeTestChain({ params: FREE });
+  const { chain, validators } = s;
+  const zed = devAccount('zed'); // not in genesis: no coins at all
+  const bal = (a) => (chain.state.get('acct', a.address) || { balance: 0n }).balance;
+  const send = (tx) => produce(chain, validators, { candidates: [tx] }).res.receipts[0];
+  assert.equal(bal(zed), 0n);
+  assert.equal(send(freeTx(chain, zed, 'registerNode', { payout: zed.address, free: true })).status, 1, 'joins with no coins and no fee');
+  assert.equal(chain.state.get('node', zed.address).bond, 0n);
+  assert.equal(bal(zed), 0n, 'nothing was charged');
+  while (chain.height < 10) produce(chain, validators);
+  assert.equal(send(freeTx(chain, zed, 'nodeProof', { epoch: 1, digest: digestFor(chain, zed, 1) })).status, 1, 'the proof is free too');
+  const holders = D.ticketHolders(chain.state, chain.params, chain.height + 1);
+  assert.equal(holders.length, 1);
+  for (let k = 0; k < 6; k++) produce(chain, validators);
+  assert.ok(bal(zed) > 0n, 'earned AUR with none to start');
+  conserved(chain);
+});
+
+test('free joins are limited per epoch and a free account cannot spam paid-looking transactions', () => {
+  const s = makeTestChain({ params: FREE });
+  const { chain, validators } = s;
+  const send = (tx) => produce(chain, validators, { candidates: [tx] }).res.receipts[0];
+  const a = devAccount('f1'), b = devAccount('f2'), c = devAccount('f3');
+  assert.equal(send(freeTx(chain, a, 'registerNode', { payout: a.address, free: true })).status, 1);
+  assert.equal(send(freeTx(chain, b, 'registerNode', { payout: b.address, free: true })).status, 1);
+  assert.throws(() => { const { Mempool } = require('../src/mempool'); new Mempool(chain).add(freeTx(chain, c, 'registerNode', { payout: c.address, free: true })); }, { code: 'FREE_FULL' }, 'the third free join this epoch is refused');
+  // other transaction types are never free
+  const m = new (require('../src/mempool').Mempool)(chain);
+  assert.throws(() => m.add(freeTx(chain, c, 'transfer', { to: a.address, amount: '1' })), { code: 'FEE_TOO_LOW' }, 'only joining and proving are free');
+});
+
+test('free nodes get only the reserved seats once bonded nodes exist, and can upgrade by posting the deposit', () => {
+  const s = makeTestChain({ params: FREE });
+  const { chain, validators, accts } = s;
+  const send = (tx) => produce(chain, validators, { candidates: [tx] }).res.receipts[0];
+  const zed = devAccount('zed2');
+  assert.equal(send(mkTx(chain, accts.alice, 'registerNode', { payout: accts.alice.address })).status, 1);
+  assert.equal(send(mkTx(chain, accts.bob, 'registerNode', { payout: accts.bob.address })).status, 1);
+  assert.equal(send(mkTx(chain, accts.carol, 'registerNode', { payout: accts.carol.address })).status, 1);
+  assert.equal(send(freeTx(chain, zed, 'registerNode', { payout: zed.address, free: true })).status, 1);
+  while (chain.height < 10) produce(chain, validators);
+  for (const who of [accts.alice, accts.bob, accts.carol, zed]) {
+    const r = send(who === zed ? freeTx(chain, who, 'nodeProof', { epoch: 1, digest: digestFor(chain, who, 1) }) : mkTx(chain, who, 'nodeProof', { epoch: 1, digest: digestFor(chain, who, 1) }));
+    assert.equal(r.status, 1);
+  }
+  const holders = D.ticketHolders(chain.state, chain.params, chain.height + 1);
+  assert.equal(holders.length, 4);
+  const plan = D.seatPlan(3, 1, FREE.rpc.committeeSize, FREE.rpc.freeSeats);
+  assert.deepEqual(plan, { bonded: 2, free: 1 });
+  // upgrading needs the deposit in the node's own account
+  assert.equal(send(mkTx(chain, accts.alice, 'bondNode', {})).code, 'ALREADY_BONDED');
+  assert.equal(send(mkTx(chain, accts.dave, 'transfer', { to: zed.address, amount: (60n * AUR).toString() })).status, 1, 'zed receives the deposit (for example from rewards)');
+  assert.equal(send(mkTx(chain, zed, 'bondNode', {})).status, 1, 'and upgrades to the full tier');
+  assert.ok(chain.state.get('node', zed.address).bond === 50n * AUR);
+  conserved(chain);
+});

@@ -174,7 +174,7 @@ public class MainActivity extends Activity {
         earn.setTextSize(16);
         earn.setTextColor(INK);
         if (miner) set.addView(earn);
-        TextView earnNote = text("Locks a small deposit and shares a pool of new AUR with nodes that store the chain.", 13, MUTED, false);
+        TextView earnNote = text("No coins needed. Your device proves it stores the chain and is drawn at random to earn AUR.", 13, MUTED, false);
         earnNote.setPadding(0, dp(4), 0, dp(10));
         if (miner) set.addView(earnNote);
         final EditText payout = new EditText(this);
@@ -286,7 +286,11 @@ public class MainActivity extends Activity {
             org.json.JSONObject j = new org.json.JSONObject(sb.toString());
             double nano = 1000000000.0;
             StringBuilder o = new StringBuilder();
-            o.append(j.optBoolean("ticket") ? "You have a ticket: you can be drawn every block.\n" : (j.optBoolean("registered") ? "Registered. Waiting for your first proof to earn a ticket.\n" : "Not registered yet. Send " + (j.optLong("bond") / (long) nano) + " AUR plus a little for fees to this address, and the app does the rest:\n" + j.optString("address") + "\n"));
+            o.append(j.optBoolean("ticket") ? "You have a ticket: you can be drawn every block.
+" : "Joining the network. You do not need any coins to start.
+");
+            o.append("free".equals(j.optString("tier")) ? "Free tier: no coins needed. At " + (j.optLong("bond") / (long) nano) + " AUR the miner upgrades itself.
+" : "");
             o.append("Draws won: ").append(j.optInt("wins")).append("\n");
             o.append("Won in draws: ").append(String.format("%.4f", j.optLong("drawEarned") / nano)).append(" AUR\n");
             o.append("Balance at your reward address: ").append(String.format("%.4f", j.optLong("balance") / nano)).append(" AUR\n");

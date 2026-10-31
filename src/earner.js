@@ -23,13 +23,13 @@ class Earner {
     node.log(`node rewards: this node's address is ${this.address}; rewards are paid to ${this.payout}`);
   }
 
-  _send(type, body) {
-    const ch = this.node.chain, st = ch.state;
-    const a = getAcct(st, this.address);
+  /** Send a transaction signed by the node key. Free-tier transactions carry no fee. */
+  _send(type, body, free = false) {
+    const ch = this.node.chain;
     const base = costOf(type, ch.baseFee);
     const tx = signTx(this.kp, {
       chainId: ch.chainId, type, from: this.address, nonce: this.node.mempool.pendingNonce(this.address),
-      maxFee: (base * 3n + 1000n).toString(), tip: '1000', body,
+      maxFee: free ? '0' : (base * 3n + 1000n).toString(), tip: free ? '0' : '1000', body,
     });
     return this.node.onTx(tx).catch(() => {});
   }
@@ -52,9 +52,9 @@ class Earner {
     const out = {
       updated: Date.now(), startedAt: this.stats.startedAt, network: ch.chainId, address: this.address, payout: this.payout,
       height: h, epoch: ep, peers: this.node.peers ? this.node.peers.size : 0, syncing: !!this.node.syncing,
-      bond: P.node.bond.toString(), registered: !!n, ticket: !!(n && n.provenEpoch >= 1 && ep - n.provenEpoch <= 1),
+      bond: P.node.bond.toString(), tier: n ? (n.bond > 0n ? 'full' : 'free') : null, registered: !!n, ticket: !!(n && n.provenEpoch >= 1 && ep - n.provenEpoch <= 1),
       provenEpoch: n ? n.provenEpoch : -1, balance: acct.balance.toString(), spendable: spendable(acct, h + 1).toString(),
-      wins: this.stats.wins, drawEarned: this.stats.earned.toString(), lastWinHeight: this.stats.lastWinHeight,
+      ownBalance: getAcct(st, this.address).balance.toString(), wins: this.stats.wins, drawEarned: this.stats.earned.toString(), lastWinHeight: this.stats.lastWinHeight,
       pool: (st.get('meta', 'rpcPool') || 0n).toString(), committeeSize: P.rpc.committeeSize,
     };
     const f = path.join(this.node.home, 'miner-status.json');
@@ -66,19 +66,25 @@ class Earner {
     const ch = this.node.chain, P = ch.params, h = ch.height;
     const st = ch.state, n = st.get('node', this.address);
     if (!n) {
+      // Join. Nobody needs coins to start: with no deposit the node joins the free tier (no fee). If the node
+      // already holds the deposit it joins the full tier.
+      if (this.node.syncing || h - this.sent.register < 20) return;
       const a = getAcct(st, this.address);
       const need = P.node.bond + costOf('registerNode', ch.baseFee) * 3n + 1000n;
-      if (a.balance < need && this.node.config.faucet && h - this.sent.drip >= 100 && !this.node.syncing) {
-        this.sent.drip = h;
-        fetch(this.node.config.faucet.replace(/\/$/, '') + '/drip', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ address: this.address }), signal: AbortSignal.timeout(10000) })
-          .then((r) => this.node.log(`node rewards: faucet ${r.ok ? 'sent coins for the node bond' : 'refused (' + r.status + ')'}`)).catch(() => {});
-      }
-      if (h - this.sent.register >= 20 && spendable(a, h + 1) >= P.node.bond + costOf('registerNode', ch.baseFee) * 3n + 1000n) {
-        this.sent.register = h;
-        this.node.log(`node rewards: registering ${this.address} (bond ${P.node.bond / 1000000000n} AUR)`);
-        this._send('registerNode', { payout: this.payout });
-      }
+      const full = spendable(a, h + 1) >= need;
+      this.sent.register = h;
+      this.node.log(`node rewards: joining the ${full ? 'full' : 'free'} tier as ${this.address}`);
+      this._send('registerNode', full ? { payout: this.payout } : { payout: this.payout, free: true }, !full);
       return;
+    }
+    // A free-tier node upgrades itself once its own account holds the deposit (for example from rewards paid to it).
+    if (n.bond === 0n && h - (this.sent.bond || 0) >= 30) {
+      const a = getAcct(st, this.address);
+      if (spendable(a, h + 1) >= P.node.bond + costOf('bondNode', ch.baseFee) * 3n + 1000n) {
+        this.sent.bond = h;
+        this.node.log('node rewards: upgrading to the full tier (posting the deposit)');
+        this._send('bondNode', {});
+      }
     }
     const ep = NR.epochOf(h + 1, P);
     if (ep < 1 || n.provenEpoch === ep || n.since > ep * P.node.epochBlocks) return;
@@ -88,7 +94,7 @@ class Earner {
     if (!blk) return;
     this.sent.proof = { epoch: ep, height: h };
     this.node.log(`node rewards: proving storage of block ${chh} for epoch ${ep}`);
-    this._send('nodeProof', { epoch: ep, digest: NR.proofDigest(this.address, blk) });
+    this._send('nodeProof', { epoch: ep, digest: NR.proofDigest(this.address, blk) }, n.bond === 0n);
   }
 }
 

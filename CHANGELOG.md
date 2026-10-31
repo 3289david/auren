@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.0
+
+- **Start earning with no coins (free tier).** A new miner joins with no deposit and no fee, proves it stores the chain, and is drawn at random from day one. Some seats in every draw are reserved for the free tier (`rpc.freeSeats`), joins are limited per epoch (`rpc.freeRegsPerEpoch`) and free transactions per block (`rpc.freeTxPerBlock`). A free miner upgrades itself to the full tier (new `bondNode` transaction) once its own account holds the deposit. The Miner apps no longer ask people to send coins first. Tested end to end: a miner with 0 AUR won draws and earned.
+- **Network upgrade needed.** This changes consensus rules (free transactions). Validators must be upgraded before miners use the free tier; the history of existing chains replays unchanged.
+- Reference repository updated with the free tier and an example.
+
 ## 0.10.1
 
 - **No console windows.** The Windows apps are now real windowed programs: no command prompt opens. The Node app has its own window (start, stop, network, status) like the Miner. Closing an app window quits the app. The Mac Miner is a double-clickable `AUREN Miner.app` instead of a Terminal script.

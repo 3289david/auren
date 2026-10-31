@@ -4,6 +4,7 @@ What the network says when something does not work. A transaction can be **rejec
 
 | Code | Meaning |
 |---|---|
+| `ALREADY_BONDED` |  |
 | `ALREADY_PROVEN` | This node already proved storage this epoch |
 | `AMOUNT_TOO_SMALL` | The amount rounds to nothing |
 | `BAD_BODY` | A field in the transaction body is missing or invalid |
@@ -20,6 +21,8 @@ What the network says when something does not work. A transaction can be **rejec
 | `DAILY_LIMIT_EXCEEDED` | Over the account's daily limit |
 | `EXCEEDS_STAKE` | You asked to unstake more than you have |
 | `FEE_TOO_LOW` | maxFee is below the current fee |
+| `FREE_FULL` |  |
+| `FREE_LIMIT` |  |
 | `INSUFFICIENT_BALANCE` | Not enough balance |
 | `INSUFFICIENT_BOND` | Not enough to lock the node bond |
 | `INSUFFICIENT_DEPOSIT` | The proposal deposit is too small |

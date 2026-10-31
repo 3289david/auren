@@ -66,11 +66,7 @@
       <div class="stat"><small>Reward balance</small><b id="balance">0 AUR</b></div>
       <div class="stat"><small>Ticket</small><b id="ticket">no</b></div>
     </div>
-    <div id="fund" hidden>
-      <div class="muted" style="margin-top:12px">To get your ticket, send <b id="need"></b> AUR (plus a little for fees) to this miner's address. It is a refundable deposit. The app does the rest.</div>
-      <div class="addr"><code id="addr"></code></div>
-      <button id="copy" style="padding:10px;font-weight:500">Copy address</button>
-    </div>
+    <div class="muted" style="margin-top:12px" id="tierInfo"></div>
     <div class="muted" style="margin-top:12px" id="net"></div>
   </div>
 
@@ -103,12 +99,12 @@ async function poll() {
   const live = isNode ? nd : (m && !m.stale ? m : nd);
   $('dot').className = 'dot ' + (!running ? '' : (live ? 'on' : 'wait'));
   $('state').textContent = !running ? 'Stopped' : (live ? (live.syncing ? 'Syncing' : (isNode ? 'Running' : 'Mining')) : 'Starting…');
-  $('stateSub').textContent = !running ? 'Choose a network and press Start.' : (live ? 'Block ' + live.height.toLocaleString('en-US') + ' · ' + live.peers + ' connected nodes' + (!isNode && m ? ' · ' + (m.ticket ? 'you can be drawn every block' : m.registered ? 'waiting for your first proof' : 'needs a deposit to get a ticket') : '') : 'Connecting to the network…');
+  $('stateSub').textContent = !running ? 'Choose a network and press Start.' : (live ? 'Block ' + live.height.toLocaleString('en-US') + ' · ' + live.peers + ' connected nodes' + (!isNode && m ? ' · ' + (m.ticket ? 'you can be drawn every block' : 'getting your first ticket') : '') : 'Connecting to the network…');
   $('earn').hidden = !(running && m && !isNode);
   if (m) {
     $('wins').textContent = m.wins; $('drawEarned').textContent = aur(m.drawEarned); $('balance').textContent = aur(m.balance);
-    $('ticket').textContent = m.ticket ? 'yes' : (m.registered ? 'soon' : 'no');
-    $('fund').hidden = m.registered; $('need').textContent = (Number(m.bond) / 1e9).toLocaleString('en-US'); $('addr').textContent = m.address;
+    $('ticket').textContent = m.ticket ? 'yes' : 'soon';
+    $('tierInfo').textContent = !m.registered ? 'Joining the network. You do not need any coins to start.' : m.tier === 'free' ? 'You are on the free tier: no coins needed. Some seats in every draw are kept for free-tier miners. Once the miner holds ' + (Number(m.bond) / 1e9).toLocaleString('en-US') + ' AUR it upgrades itself to the full tier with more chances.' : 'You are on the full tier.';
     $('net').textContent = m.peers + ' connected nodes · pool ' + aur(m.pool) + ' · ' + m.committeeSize + ' drawn per block';
   }
   $('log').textContent = s.log.join('\n');
@@ -118,7 +114,6 @@ $('toggle').onclick = async () => {
   else { const c = await api('/api/config', { payout: $('payout').value }); if (c.error) { $('err').textContent = c.error; return; } await api('/api/start', {}); }
   poll();
 };
-$('copy').onclick = async () => { try { await navigator.clipboard.writeText($('addr').textContent); $('copy').textContent = 'Copied'; setTimeout(() => { $('copy').textContent = 'Copy address'; }, 1500); } catch { /* select by hand */ } };
 addEventListener('pagehide', () => { try { navigator.sendBeacon('/api/closing', '{}'); } catch { /* closing */ } });
 poll(); setInterval(poll, 2000);
 </script>

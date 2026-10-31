@@ -4,7 +4,7 @@ Anyone who runs a full node can earn AUR. You do not need to be a validator.
 
 ## How you earn
 
-1. **Bond.** Your node locks a bond (a deposit) once. You get it back when you stop (after the unbonding period).
+1. **Bond (optional).** Your node can lock a bond (a deposit) once and get it back when it stops. No coins? Join the free tier instead: no deposit and no fee. See [Random draw](rpc-consensus.md). Only bonded nodes share the epoch pool; the free tier earns from the random draw.
 2. **Prove.** Once per epoch the network picks one old block at random. Your node proves it still has that block's data. Only a node that really stores the chain can do this, and the proof is tied to your node's address, so it cannot be copied from another node.
 3. **Get paid.** Each block, a share of newly issued AUR goes into a **node reward pool**. At the end of every epoch the pool is split equally between all nodes that proved they store the chain, and paid to each node's payout address. If nobody proves, the pool rolls over to the next epoch.
 

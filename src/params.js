@@ -47,7 +47,9 @@ const DEFAULTS = {
   node: { bond: (10000n * AUR).toString(), epochBlocks: 14400, poolBps: 1000 },
 
   // Randomized Proof Consensus rewards (src/draw.js): every block a random committee of ticket holders is paid
-  rpc: { poolBps: 500, committeeSize: 7 },
+  // freeSeats: seats per draw reserved for the free tier (nodes with no deposit, so people with no coins can start earning).
+  // freeRegsPerEpoch / freeTxPerBlock bound how many free joins the network accepts, so they cannot be used to flood it.
+  rpc: { poolBps: 500, committeeSize: 7, freeSeats: 2, freeRegsPerEpoch: 100, freeTxPerBlock: 10 },
 
   // optional .aur naming module (burned fees, per year)
   domain: { price3: (100n * AUR).toString(), price4: (20n * AUR).toString(), price5: AUR.toString(), maxYears: 10 },

@@ -1,7 +1,8 @@
 'use strict';
 // Pending-transaction pool. Admission mirrors consensus checks so that gossip stays cheap.
 const { TxInvalid } = require('./util');
-const { checkTx, txHash, costOfTx, spendable, isAuthorized } = require('./tx');
+const { checkTx, txHash, costOfTx, spendable, isAuthorized, isFreeTx } = require('./tx');
+const NR = require('./noderew');
 
 const MAX_NONCE_GAP = 256;
 
@@ -26,9 +27,19 @@ class Mempool {
     if (!isAuthorized(acct, tx, chain.params.addressPrefix)) throw new TxInvalid('NOT_AUTHORIZED');
     if (tx.nonce < acct.nonce) throw new TxInvalid('NONCE_TOO_LOW', `account nonce is ${acct.nonce}`);
     if (tx.nonce > acct.nonce + MAX_NONCE_GAP) throw new TxInvalid('NONCE_TOO_HIGH');
-    const baseCost = costOfTx(tx, chain.baseFee);
-    if (BigInt(tx.maxFee) < baseCost) throw new TxInvalid('FEE_TOO_LOW', `maxFee must be at least ${baseCost} sparks at the current base fee`);
-    if (spendable(acct, chain.height + 1) < baseCost) throw new TxInvalid('INSUFFICIENT_FEE_FUNDS');
+    if (isFreeTx(chain.state, tx)) {
+      // free tier: no fee, so refuse anything that could not succeed (keeps the pool from filling with junk)
+      const P = chain.params;
+      if (tx.type === 'registerNode') {
+        if (chain.state.has('node', tx.from)) throw new TxInvalid('NODE_EXISTS');
+        const fr = chain.state.get('meta', 'freeRegs'), ep = NR.epochOf(chain.height + 1, P);
+        if ((fr && fr.epoch === ep ? fr.n : 0) >= P.rpc.freeRegsPerEpoch) throw new TxInvalid('FREE_FULL', 'the free tier is full this epoch; try again next epoch');
+      }
+    } else {
+      const baseCost = costOfTx(tx, chain.baseFee);
+      if (BigInt(tx.maxFee) < baseCost) throw new TxInvalid('FEE_TOO_LOW', `maxFee must be at least ${baseCost} sparks at the current base fee`);
+      if (spendable(acct, chain.height + 1) < baseCost) throw new TxInvalid('INSUFFICIENT_FEE_FUNDS');
+    }
 
     const q = this.bySender.get(tx.from) || new Map();
     const existing = q.get(tx.nonce);

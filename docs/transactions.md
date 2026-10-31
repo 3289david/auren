@@ -14,6 +14,7 @@ Every action on AUREN is a transaction of one of these types. Generated from the
 | `unjail` | Return a paused validator | (none) | 40,000 | 100 | 0.000045 |
 | `registerNode` | Bond a node to earn node rewards | `payout` | 60,000 | 300 | 0.000075 |
 | `unregisterNode` | Stop earning and unbond | (none) | 50,000 | 250 | 0.000063 |
+| `bondNode` |  |  | 50,000 | 200 | 0.00006 |
 | `nodeProof` | Prove a node stores the chain this epoch | `epoch`, `digest` | 60,000 | 150 | 0.000068 |
 | `registerTld` | Create a name ending | `tld`, `open`, `price`, `ownerShareBps` | 100,000 | 500 | 0.000125 |
 | `setTldPolicy` | Change an ending's price or rules | `tld`, `open`, `price`, `ownerShareBps` | 50,000 | 200 | 0.00006 |

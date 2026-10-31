@@ -6,8 +6,8 @@ Reference implementation, simulations and the full specification: **https://gith
 
 ## In one minute
 
-1. Run a node with **Earn** turned on (the node app, or `auren join <network> --earn`).
-2. Your node **bonds** a small deposit and **proves it stores the chain** once per epoch ([Node rewards](node-rewards.md)). That proof is your **ticket**.
+1. Run a node with **Earn** turned on (the Miner app, or `auren join <network> --earn`). **You need no coins.**
+2. Your node joins the **free tier** (no deposit, no fee) and **proves it stores the chain** once per epoch. That proof is your **ticket**. A node that holds the refundable deposit joins the **full tier** instead.
 3. Each block, the network draws a **committee** of ticket holders using a **random beacon** that nobody can predict. Drawn nodes share that block's pool, paid straight to their reward address.
 4. You do nothing extra. The node does steps 2 and 3 for you.
 
@@ -17,7 +17,23 @@ Look at it live in the explorer under **Draw**.
 
 - The chance of being drawn is **the same for every ticket**. A faster computer does not get more tickets, and holding more coins does not either.
 - A ticket is cheap to verify. A phone can hold one.
-- Staking AUR is not needed to be drawn. The bond is a deposit you get back, not a bet.
+- Staking AUR is not needed to be drawn, and neither is any deposit: the free tier needs no coins at all.
+
+## Starting with no coins: two tiers
+
+A new network has no coins, so a deposit-only design would lock everyone out. RPC has two tiers:
+
+| | Free tier | Full tier |
+|---|---|---|
+| Deposit | none | refundable (`node.bond`) |
+| Fee to join and prove | none | normal tiny fee |
+| Seats in each draw | `rpc.freeSeats` of `rpc.committeeSize` (default 2 of 7) | the rest |
+| Limits | `rpc.freeRegsPerEpoch` joins per epoch, `rpc.freeTxPerBlock` free transactions per block | none |
+| Epoch node-reward pool | no | yes |
+
+Seats a tier cannot fill go to the other, so at the very start, when nobody has coins, every seat goes to the free tier. A free node **upgrades itself** to the full tier once its own account holds the deposit (rewards paid to the node's address build it up).
+
+The cost of this is real and stated plainly: **free identities cost nothing**, so someone can run many of them and take the free seats. The limits bound the damage: free identities can take at most the reserved free seats once bonded miners exist, they can join only so fast, and they cannot influence block finality, which BFT proof-of-stake still decides. What they can do is dilute the free tier's share of the pool.
 
 ## The hard problem: fake nodes
 
@@ -26,7 +42,7 @@ If every identity had the same chance and identities were free, one person could
 | Defence | What it does |
 |---|---|
 | **Bond** | Each identity locks a deposit (`node.bond`). Ten thousand fake identities need ten thousand deposits. |
-| **Contribution proof** | A ticket exists only if the node proved it stores the chain this epoch or last. A ticket cannot be made without the data. |
+| **Contribution proof** | A ticket exists only if the node proved it stores the chain this epoch or last. A ticket cannot be made without the data (free tier included). |
 | **Epoch expiry** | Tickets expire after about one epoch, so an old proof cannot be reused forever. |
 | **One ticket per identity per epoch** | Proofs are tied to the node's own address, so one proof cannot serve two identities. |
 

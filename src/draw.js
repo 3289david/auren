@@ -43,6 +43,18 @@ function pick(beacon, n, k) {
 }
 
 /**
+ * How many of the k seats go to each tier. Free seats are reserved so people with no coins can earn, and capped so
+ * free identities cannot take everything once there are bonded participants. Seats a tier cannot fill go to the other.
+ */
+function seatPlan(nBonded, nFree, k, freeSeats) {
+  let free = Math.min(freeSeats, nFree);
+  const bonded = Math.min(k - free, nBonded);
+  const spare = k - free - bonded;
+  if (spare > 0) free = Math.min(nFree, free + spare);
+  return { bonded, free };
+}
+
+/**
  * Run the draw for the block being executed and pay the pool. Mutates state; returns nothing.
  * The pool only grows when there is nobody to pay, so a quiet network never loses the reward.
  */
@@ -52,13 +64,18 @@ function runDraw(state, params, height, chainId, lastCommit, getAcct, putAcct) {
   const holders = ticketHolders(state, params, height);
   const pool = state.get('meta', 'rpcPool') || 0n;
   if (!holders.length || pool <= 0n) return;
-  const idx = pick(beacon, holders.length, params.rpc.committeeSize);
-  const each = pool / BigInt(idx.length);
+  const bonded = holders.filter(([, n]) => n.bond > 0n), free = holders.filter(([, n]) => n.bond === 0n);
+  const plan = seatPlan(bonded.length, free.length, params.rpc.committeeSize, params.rpc.freeSeats);
+  const winners = [
+    ...pick(beacon, bonded.length, plan.bonded).map((i) => bonded[i]),
+    ...pick(beacon + '|free', free.length, plan.free).map((i) => free[i]),
+  ];
+  if (!winners.length) return;
+  const each = pool / BigInt(winners.length);
   if (each <= 0n) return;
-  const winners = idx.map((i) => holders[i]);
   for (const [, n] of winners) { const a = getAcct(state, n.payout); a.balance += each; putAcct(state, n.payout, a); }
-  state.set('meta', 'rpcPool', pool - each * BigInt(idx.length));
+  state.set('meta', 'rpcPool', pool - each * BigInt(winners.length));
   state.set('meta', 'lastDraw', { height, winners: winners.map(([addr]) => addr), each });
 }
 
-module.exports = { genesisBeacon, nextBeacon, ticketHolders, pick, runDraw };
+module.exports = { genesisBeacon, nextBeacon, ticketHolders, pick, seatPlan, runDraw };
