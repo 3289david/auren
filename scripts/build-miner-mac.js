@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 // Build the Mac miner: dist/AUREN-Miner-<version>-mac-arm64.tar.gz and -x64.tar.gz.
-// Each holds the official Node.js runtime for macOS (signed by the Node.js project) plus the miner, and a
-// double-clickable "AUREN Miner.command". It can be built on any OS because nothing is compiled.
+// Each holds "AUREN Miner.app": a double-clickable Mac app with the official Node.js runtime for macOS
+// (signed by the Node.js project) and the miner. It can be built on any OS because nothing is compiled.
 //
 // Needs network access to nodejs.org once. Mac users need nothing installed.
 const fs = require('node:fs');
@@ -75,17 +75,36 @@ function collect(rel, into) {
     const nodeFiles = untar(zlib.gunzipSync(fs.readFileSync(tgz)));
     const nodeBin = nodeFiles.find((f) => /\/bin\/node$/.test(f.name));
     if (!nodeBin) throw new Error('node binary not found in the macOS archive');
-    const top = `AUREN-Miner-${version}`;
+    // a real Mac app: double-click "AUREN Miner", no Terminal window
+    const app0 = 'AUREN Miner.app/Contents';
     const parts = [];
-    parts.push(tarEntry(`${top}/AUREN Miner.command`, Buffer.from(`#!/bin/bash
-# AUREN Miner: double-click this file. No installation needed.
-cd "$(dirname "$0")"
-xattr -dr com.apple.quarantine . 2>/dev/null
-exec ./runtime/node miner/miner.js
+    const png = fs.readFileSync(path.join(__dirname, 'icon-256.png'));
+    const icns = Buffer.concat([Buffer.from('icns'), (() => { const l = Buffer.alloc(4); l.writeUInt32BE(8 + 8 + png.length); return l; })(), Buffer.from('ic08'), (() => { const l = Buffer.alloc(4); l.writeUInt32BE(8 + png.length); return l; })(), png]);
+    parts.push(tarEntry(`${app0}/Info.plist`, Buffer.from(`<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleName</key><string>AUREN Miner</string>
+<key>CFBundleDisplayName</key><string>AUREN Miner</string>
+<key>CFBundleIdentifier</key><string>app.auren.miner</string>
+<key>CFBundleVersion</key><string>${version}</string>
+<key>CFBundleShortVersionString</key><string>${version}</string>
+<key>CFBundleExecutable</key><string>launcher</string>
+<key>CFBundleIconFile</key><string>icon</string>
+<key>CFBundlePackageType</key><string>APPL</string>
+<key>LSMinimumSystemVersion</key><string>11.0</string>
+<key>NSHighResolutionCapable</key><true/>
+</dict></plist>
+`), 0o644));
+    parts.push(tarEntry(`${app0}/MacOS/launcher`, Buffer.from(`#!/bin/bash
+# AUREN Miner for Mac. Runs the bundled Node.js; the app window is the whole interface.
+R="$(cd "$(dirname "$0")/../Resources" && pwd)"
+xattr -dr com.apple.quarantine "$R" 2>/dev/null
+export AUREN_APP_MODE=miner
+exec "$R/runtime/node" "$R/miner/miner.js"
 `), 0o755));
-    parts.push(tarEntry(`${top}/runtime/node`, nodeBin.data, 0o755));
-    parts.push(tarEntry(`${top}/README.txt`, Buffer.from('AUREN Miner for Mac\n\nDouble-click "AUREN Miner.command". If macOS says it cannot verify the developer, right-click the file, choose Open, then Open.\nYour mining data is kept in ~/.auren/miner.\nhttps://github.com/3289david/auren\n'), 0o644));
-    for (const f of app) parts.push(tarEntry(`${top}/${f.rel}`, f.data, 0o644));
+    parts.push(tarEntry(`${app0}/Resources/icon.icns`, icns, 0o644));
+    parts.push(tarEntry(`${app0}/Resources/runtime/node`, nodeBin.data, 0o755));
+    for (const f of app) parts.push(tarEntry(`${app0}/Resources/${f.rel}`, f.data, 0o644));
     parts.push(Buffer.alloc(1024));
     const file = path.join(out, `AUREN-Miner-${version}-mac-${arch}.tar.gz`);
     fs.writeFileSync(file, zlib.gzipSync(Buffer.concat(parts), { level: 9 }));

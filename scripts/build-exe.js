@@ -36,12 +36,31 @@ fs.writeFileSync(cfg, JSON.stringify({ main: path.join(__dirname, 'sea-main.js')
 let r = spawnSync(process.execPath, ['--experimental-sea-config', cfg], { stdio: 'inherit' });
 if (r.status !== 0) process.exit(r.status || 1);
 
+/**
+ * Make the exe a Windows GUI program (PE subsystem 2) so it opens no console window, like any ordinary app.
+ * The subsystem field is at offset 68 of the PE optional header.
+ */
+function setGuiSubsystem(file) {
+  const fd = fs.openSync(file, 'r+');
+  try {
+    const head = Buffer.alloc(4096);
+    fs.readSync(fd, head, 0, head.length, 0);
+    const pe = head.readUInt32LE(0x3c);
+    if (head.toString('ascii', pe, pe + 4) !== 'PE\0\0') throw new Error('not a PE file');
+    const at = pe + 24 + 68;
+    const buf = Buffer.alloc(2);
+    buf.writeUInt16LE(2, 0);
+    fs.writeSync(fd, buf, 0, 2, at);
+  } finally { fs.closeSync(fd); }
+}
+
 for (const name of [`AUREN-Node-${version}`, `AUREN-Wallet-${version}`, `AUREN-Miner-${version}`]) {
   const exe = path.join(out, name + ext);
   fs.copyFileSync(process.execPath, exe);
   const args = ['--yes', 'postject@1.0.0-alpha.6', exe, 'NODE_SEA_BLOB', blob, '--sentinel-fuse', 'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2'];
   r = spawnSync(win ? 'npx.cmd' : 'npx', args, { stdio: 'inherit', shell: win });
   if (r.status !== 0) { console.error('postject failed'); process.exit(r.status || 1); }
+  if (win) setGuiSubsystem(exe);
   console.log(`${path.basename(exe)}  ${(fs.statSync(exe).size / 1048576).toFixed(0)} MB`);
 }
 fs.rmSync(payload); fs.rmSync(blob); fs.rmSync(cfg);

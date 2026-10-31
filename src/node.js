@@ -22,7 +22,7 @@ const { ethMethods } = require('./evm/rpc');
 const { hexOf, ChainBackend } = require('./evm/host');
 const { nameValid, fullName } = require('./tld');
 
-const VERSION = '0.10.0';
+const VERSION = '0.10.1';
 const MAX_BODY = 8 * 1024 * 1024;
 
 class AurenNode extends EventEmitter {

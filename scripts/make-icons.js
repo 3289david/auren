@@ -45,6 +45,7 @@ function ico(sizes) {
 const web = path.join(__dirname, '..', 'website');
 fs.writeFileSync(path.join(web, 'favicon.ico'), ico([16, 32, 48]));
 fs.writeFileSync(path.join(web, 'apple-touch-icon.png'), png(180, [0x0e, 0x0e, 0x11]));
+fs.writeFileSync(path.join(__dirname, 'icon-256.png'), png(256, [0x0e, 0x0e, 0x11]));
 const res = path.join(__dirname, '..', 'android', 'res', 'mipmap-xxxhdpi');
 fs.mkdirSync(res, { recursive: true });
 fs.writeFileSync(path.join(res, 'ic_launcher.png'), png(192, [0x0e, 0x0e, 0x11]));

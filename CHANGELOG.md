@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.10.1
+
+- **No console windows.** The Windows apps are now real windowed programs: no command prompt opens. The Node app has its own window (start, stop, network, status) like the Miner. Closing an app window quits the app. The Mac Miner is a double-clickable `AUREN Miner.app` instead of a Terminal script.
+
 ## 0.10.0
 
 - **AUREN Miner** for Windows, Mac and Android: a one-button app that runs a node that earns AUR and shows draws won, balance and ticket status. `docs/miner.md`. Mac builds ship the official Node.js runtime for macOS (`scripts/build-miner-mac.js`).

@@ -10,6 +10,6 @@ function nodeArgs(script, args = [], env = process.env) {
 }
 const spawnNode = (cp, fn, script, args, opts = {}) => {
   const a = nodeArgs(script, args, opts.env || process.env);
-  return cp[fn](a.cmd, a.args, { ...opts, env: a.env });
+  return cp[fn](a.cmd, a.args, { windowsHide: true, ...opts, env: a.env });
 };
 module.exports = { isSea, nodeArgs, spawnNode };

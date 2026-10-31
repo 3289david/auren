@@ -39,7 +39,7 @@ const openUrl = (u) => {
       const exe = path.join(r, f);
       if (fs.existsSync(exe)) { spawn(exe, ['--app=' + u, '--window-size=480,820'], { stdio: 'ignore', detached: true }).unref(); return; }
     }
-    spawn('cmd', ['/c', 'start', '', u], { stdio: 'ignore', detached: true }).unref();
+    spawn('cmd', ['/c', 'start', '', u], { stdio: 'ignore', detached: true, windowsHide: true }).unref();
   } else spawn(process.platform === 'darwin' ? 'open' : 'xdg-open', [u], { stdio: 'ignore', detached: true }).unref();
 };
 const ask = (q) => new Promise((res) => {
@@ -48,16 +48,22 @@ const ask = (q) => new Promise((res) => {
 });
 
 function wallet() {
+  let lastSeen = Date.now(), closingAt = 0;
+  setInterval(() => { if ((closingAt && Date.now() - closingAt > 8000) || Date.now() - lastSeen > 180000) process.exit(0); }, 2000).unref();
   const web = path.join(appDir, 'website');
   const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.json': 'application/json', '.png': 'image/png', '.ico': 'image/x-icon' };
   const server = http.createServer((req, res) => {
     let p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+    if (p === '/__alive') { lastSeen = Date.now(); closingAt = 0; res.writeHead(204); return res.end(); }
+    if (p === '/__closing') { closingAt = Date.now(); res.writeHead(204); return res.end(); }
+    lastSeen = Date.now(); closingAt = 0;
     if (p === '/') p = '/wallet.html';
     const file = p === '/networks.json' ? path.join(appDir, 'networks', 'networks.json') : path.normalize(path.join(web, p));
     if (p !== '/networks.json' && !file.startsWith(web)) { res.writeHead(403); return res.end(); }
     fs.readFile(file, (err, data) => {
       if (err) { res.writeHead(404); return res.end('not found'); }
       res.writeHead(200, { 'content-type': TYPES[path.extname(file)] || 'application/octet-stream', 'cache-control': 'no-cache' });
+      if (path.extname(file) === '.html' && p !== '/index.html' && !p.startsWith('/docs/')) data = Buffer.from(String(data).replace('</body>', '<script>setInterval(function(){fetch("/__alive")},20000);addEventListener("pagehide",function(){try{navigator.sendBeacon("/__closing")}catch(e){}})</script></body>'));
       res.end(data);
     });
   });
@@ -65,33 +71,10 @@ function wallet() {
   server.on('error', (e) => { if (e.code === 'EADDRINUSE') listen(0); else throw e; });
   server.on('listening', () => {
     const url = `http://127.0.0.1:${server.address().port}/wallet.html`;
-    console.log('AUREN Wallet is open. Your keys stay on this computer. Close this window to quit.');
+    /* the wallet window is the whole interface */
     openUrl(url);
   });
   listen(8787);
-}
-
-const C = process.stdout.isTTY ? { b: '[1m', d: '[2m', g: '[33m', r: '[0m' } : { b: '', d: '', g: '', r: '' };
-
-async function node(args) {
-  const auren = path.join(appDir, 'bin', 'auren.js');
-  if (args.length) return runScript(auren, args);
-  console.log(`
-  ${C.g}${C.b}AUREN${C.r}  ${C.b}Node${C.r}
-  ${C.d}Help run the network and earn AUR while it runs.${C.r}
-`);
-  console.log(`  ${C.b}1${C.r}  Join the testnet and earn AUR  ${C.d}(recommended)${C.r}`);
-  console.log(`  ${C.b}2${C.r}  Join the testnet without earning`);
-  console.log(`  ${C.b}3${C.r}  Join the devnet`);
-  console.log(`  ${C.b}q${C.r}  Quit
-`);
-  const c = await ask('  Choose: ');
-  if (c === '1' || c === '') {
-    const a = await ask(`  Address for rewards ${C.d}(press Enter to use the node's own)${C.r}: `);
-    return runScript(auren, ['join', 'testnet', '--earn', ...(a ? [a] : [])]);
-  }
-  if (c === '2') return runScript(auren, ['join', 'testnet']);
-  if (c === '3') return runScript(auren, ['join', 'devnet', '--earn']);
 }
 
 (async () => {
@@ -99,7 +82,9 @@ async function node(args) {
   const args = process.argv.slice(2);
   const child = process.env.AUREN_RUN_SCRIPT;
   if (child) { delete process.env.AUREN_RUN_SCRIPT; return runScript(child, args); }
-  if (/miner/i.test(path.basename(process.execPath))) return runScript(path.join(appDir, 'miner', 'miner.js'), []);
+  if (/miner/i.test(path.basename(process.execPath))) { process.env.AUREN_APP_MODE = 'miner'; return runScript(path.join(appDir, 'miner', 'miner.js'), []); }
   if (/wallet/i.test(path.basename(process.execPath))) return wallet();
-  return node(args);
-})().catch((e) => { console.error(`error: ${e.message}`); process.exitCode = 1; });
+  if (args.length) return runScript(path.join(appDir, 'bin', 'auren.js'), args); // command-line use: AUREN-Node.exe join testnet
+  process.env.AUREN_APP_MODE = 'node';
+  return runScript(path.join(appDir, 'miner', 'miner.js'), []);
+})().catch((e) => { try { console.error(`error: ${e.message}`); } catch { /* no console */ } process.exitCode = 1; });

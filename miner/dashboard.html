@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AUREN Miner</title>
+<title>AUREN</title>
 <style>
   :root { --bg:#f7f7f5; --card:#fff; --line:#e6e6e1; --text:#16161a; --muted:#6b6b73; --accent:#9a7410; --ok:#167a55; --bad:#b8332f; color-scheme: light; }
   @media (prefers-color-scheme: dark) { :root { --bg:#0e0e11; --card:#141418; --line:#26262d; --text:#ececef; --muted:#9a9aa4; --accent:#e0b84f; --ok:#4fcf9d; --bad:#ef7471; color-scheme: dark; } }
@@ -40,8 +40,8 @@
 <body>
 <main>
   <div class="brand">AUREN</div>
-  <h1>Miner</h1>
-  <p class="sub">Your computer joins the network and is drawn at random to earn AUR. A faster computer has no better chance than a slower one.</p>
+  <h1 id="h1">Miner</h1>
+  <p class="sub" id="lead">Your computer joins the network and is drawn at random to earn AUR. A faster computer has no better chance than a slower one.</p>
 
   <div class="card">
     <div class="row"><span id="dot" class="dot"></span><span id="state" class="big">Stopped</span></div>
@@ -51,8 +51,8 @@
   <div class="card" id="setup">
     <label>Network</label>
     <div class="seg" id="seg"></div>
-    <label for="payout">Address for your rewards (optional)</label>
-    <input id="payout" placeholder="Leave empty to use this miner's own address" autocomplete="off">
+    <div id="payoutBox"><label for="payout">Address for your rewards (optional)</label>
+    <input id="payout" placeholder="Leave empty to use this miner's own address" autocomplete="off"></div>
     <div id="err" class="err"></div>
   </div>
 
@@ -75,6 +75,7 @@
   </div>
 
   <details><summary>Details</summary><pre id="log"></pre></details>
+  <p class="muted" style="margin-top:18px">Keep this window open (you can minimize it). Closing it stops the app.</p>
 </main>
 <script>
 const $ = (id) => document.getElementById(id);
@@ -91,13 +92,19 @@ async function poll() {
   seg(s.networks, s.config.network);
   if (document.activeElement !== $('payout')) $('payout').value = s.config.payout;
   $('payout').disabled = running; $('seg').querySelectorAll('button').forEach((b) => { b.disabled = running; });
-  const m = s.miner;
-  $('toggle').textContent = running ? 'Stop mining' : 'Start mining';
+  const m = s.miner, nd = s.node;
+  const isNode = s.mode === 'node';
+  document.title = isNode ? 'AUREN Node' : 'AUREN Miner';
+  $('h1').textContent = isNode ? 'Node' : 'Miner';
+  $('lead').textContent = isNode ? 'Help keep the network running. Your computer keeps a copy of the chain and checks every block. Want to earn AUR too? Get AUREN Miner.' : 'Your computer joins the network and is drawn at random to earn AUR. A faster computer has no better chance than a slower one.';
+  $('payoutBox').hidden = isNode;
+  $('toggle').textContent = running ? (isNode ? 'Stop node' : 'Stop mining') : (isNode ? 'Start node' : 'Start mining');
   $('toggle').className = running ? 'stop' : 'primary';
-  $('dot').className = 'dot ' + (!running ? '' : (m && !m.stale ? 'on' : 'wait'));
-  $('state').textContent = !running ? 'Stopped' : (m && !m.stale ? (m.syncing ? 'Syncing' : 'Mining') : 'Starting…');
-  $('stateSub').textContent = !running ? 'Choose a network and press Start.' : (m && !m.stale ? 'Block ' + m.height.toLocaleString('en-US') + ' · ' + (m.ticket ? 'you can be drawn every block' : m.registered ? 'waiting for your first proof' : 'needs a deposit to get a ticket') : 'Connecting to the network…');
-  $('earn').hidden = !(running && m);
+  const live = isNode ? nd : (m && !m.stale ? m : nd);
+  $('dot').className = 'dot ' + (!running ? '' : (live ? 'on' : 'wait'));
+  $('state').textContent = !running ? 'Stopped' : (live ? (live.syncing ? 'Syncing' : (isNode ? 'Running' : 'Mining')) : 'Starting…');
+  $('stateSub').textContent = !running ? 'Choose a network and press Start.' : (live ? 'Block ' + live.height.toLocaleString('en-US') + ' · ' + live.peers + ' connected nodes' + (!isNode && m ? ' · ' + (m.ticket ? 'you can be drawn every block' : m.registered ? 'waiting for your first proof' : 'needs a deposit to get a ticket') : '') : 'Connecting to the network…');
+  $('earn').hidden = !(running && m && !isNode);
   if (m) {
     $('wins').textContent = m.wins; $('drawEarned').textContent = aur(m.drawEarned); $('balance').textContent = aur(m.balance);
     $('ticket').textContent = m.ticket ? 'yes' : (m.registered ? 'soon' : 'no');
@@ -112,6 +119,7 @@ $('toggle').onclick = async () => {
   poll();
 };
 $('copy').onclick = async () => { try { await navigator.clipboard.writeText($('addr').textContent); $('copy').textContent = 'Copied'; setTimeout(() => { $('copy').textContent = 'Copy address'; }, 1500); } catch { /* select by hand */ } };
+addEventListener('pagehide', () => { try { navigator.sendBeacon('/api/closing', '{}'); } catch { /* closing */ } });
 poll(); setInterval(poll, 2000);
 </script>
 </body>

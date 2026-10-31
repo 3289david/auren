@@ -29,11 +29,11 @@ To stop, press **Stop mining**. Your deposit comes back after the unbonding peri
 
 ## Mac notes
 
-Double-click **AUREN Miner.command** inside the extracted folder. The folder carries its own Node.js runtime, so nothing else needs to be installed. macOS may say it cannot verify the developer because the app is not notarized. Right-click the file, choose **Open**, then **Open**.
+Extract the download and double-click **AUREN Miner**. It is a normal Mac app: no Terminal window opens. It carries its own Node.js runtime, so nothing else needs to be installed. macOS may say it cannot verify the developer because the app is not notarized. Right-click the app, choose **Open**, then **Open**.
 
 ## Windows notes
 
-Windows SmartScreen may warn because the exe is not code-signed. Choose **More info**, then **Run anyway**. The miner opens in its own window (Edge or Chrome in app mode).
+Windows SmartScreen may warn because the exe is not code-signed. Choose **More info**, then **Run anyway**. The miner opens in its own app window, with no console or command prompt. Keep the window open (you can minimize it); closing it quits the app.
 
 ## Android notes
 

@@ -15,8 +15,9 @@ Outputs go to `dist/`. Nothing from npm ends up inside the apps.
 
 `build-exe.js` uses Node's single executable support: it copies the `node` binary on your machine and injects the AUREN program into it.
 
-- **AUREN-Node**: double-click for a menu (join the testnet, earn AUR), or run it with arguments like the `auren` command: `AUREN-Node.exe join testnet --earn`.
-- **AUREN-Wallet**: opens the wallet in its own window (Edge or Chrome app mode; your default browser otherwise). Keys are stored on your computer.
+- **AUREN-Node**: opens a window with Start and Stop, the network and the node's status. It opens no console window. (With arguments it still works as the `auren` command: `AUREN-Node.exe join testnet`, but then it has no terminal output because it is a windowed program; use the package and `node bin/auren.js` for terminal use.)
+- **AUREN-Miner**: the same window plus earnings.
+- **AUREN-Wallet**: opens the wallet in its own window with no console (Edge or Chrome app mode; your default browser otherwise). Closing the window quits the app. Keys are stored on your computer.
 
 The first run unpacks the program into `%LOCALAPPDATA%\AUREN`. The files are not code-signed, so Windows SmartScreen may warn. Choose More info, then Run anyway. Needs network access once at build time to fetch the `postject` injector.
 
