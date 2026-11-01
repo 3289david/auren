@@ -23,7 +23,7 @@ All are on the [releases page](https://github.com/3289david/auren/releases/lates
 2. Optionally enter an **address for your rewards**. Leave it empty to pay the miner's own address. To get paid in your wallet, paste your wallet address.
 3. Press **Start mining**.
 4. **You do not need any coins.** The app joins the **free tier** by itself, with no deposit and no fee, and proves storage automatically.
-5. After the first proof you hold a **ticket** and can be drawn every block. Some seats in every draw are reserved for free-tier miners, so you can earn from your very first day. The screen shows your draws won, what you won in draws, and the balance at your reward address.
+5. **How long it takes:** the app joins at once. It then downloads the chain (a few minutes to about 20 minutes on a long-running network; the screen shows the progress), and you get your **ticket** at the start of the next epoch, which is at most one epoch away (about 1 hour on the testnet). After the first proof you hold a **ticket** and can be drawn every block. Some seats in every draw are reserved for free-tier miners, so you can earn from your very first day. The screen shows your draws won, what you won in draws, and the balance at your reward address.
 
 When the miner's own balance reaches the deposit amount (rewards are paid to the miner's own address unless you chose another), it **upgrades itself to the full tier** with more seats per draw. To stop, press **Stop mining**.
 

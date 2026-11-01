@@ -22,7 +22,7 @@ try { cfg = { ...cfg, ...JSON.parse(fs.readFileSync(cfgFile, 'utf8')) }; } catch
 if (!NETWORKS.includes(cfg.network)) cfg.network = 'testnet';
 const save = () => fs.writeFileSync(cfgFile, JSON.stringify(cfg, null, 2));
 
-let child = null, startedAt = 0, nodePort = 0;
+let child = null, startedAt = 0, nodePort = 0, wantRunning = false, restarts = [], lastError = '';
 const logLines = [];
 const log = (s) => { for (const l of String(s).split(/\r?\n/)) if (l.trim()) { logLines.push(l); if (logLines.length > 200) logLines.shift(); } };
 const homeDir = () => path.join(base, cfg.network);
@@ -31,8 +31,29 @@ function freePort() {
   return new Promise((res) => { const s = net.createServer(); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => res(p)); }); });
 }
 
+/** Stop a process and everything it started. */
+function killTree(pid) {
+  try {
+    if (process.platform === 'win32') cp.spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore' });
+    else process.kill(pid, 'SIGKILL');
+  } catch { /* already gone */ }
+}
+
+/** A node left running by an older version (or a crash) must not share the data folder with a new one. */
+function clearStale() {
+  try { const pid = Number(fs.readFileSync(path.join(homeDir(), 'node.lock'), 'utf8')); if (pid && pid !== process.pid) killTree(pid); } catch { /* no lock */ }
+  try {
+    if (process.platform === 'win32') {
+      const esc = homeDir().replace(/'/g, "''");
+      cp.spawnSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', "Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -ne " + process.pid + " -and $_.CommandLine -and $_.CommandLine.Contains('" + esc + "') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"], { windowsHide: true, stdio: 'ignore', timeout: 15000 });
+    } else cp.spawnSync('pkill', ['-f', homeDir()], { stdio: 'ignore' });
+  } catch { /* best effort */ }
+}
+
 async function start() {
   if (child) return;
+  wantRunning = true; lastError = '';
+  clearStale();
   const args = ['join', cfg.network];
   if (MODE === 'miner') { args.push('--earn'); if (cfg.payout) args.push(cfg.payout); }
   nodePort = await freePort();
@@ -42,9 +63,20 @@ async function start() {
   child = spawnNode(cp, 'spawn', path.join(root, 'bin', 'auren.js'), args, { stdio: ['ignore', 'pipe', 'pipe'] });
   startedAt = Date.now();
   child.stdout.on('data', log); child.stderr.on('data', log);
-  child.on('exit', (code) => { log(`stopped (${code})`); child = null; });
+  child.on('exit', (code) => {
+    log(`stopped (${code})`);
+    child = null;
+    // an unexpected stop: say why in plain words and try again (a few times), instead of just stopping
+    if (wantRunning) {
+      const why = [...logLines].reverse().find((l) => /^error:/.test(l));
+      lastError = why ? why.replace(/^error:\s*/, '') : 'The node stopped unexpectedly.';
+      const now = Date.now();
+      restarts = restarts.filter((t) => now - t < 300000);
+      if (restarts.length < 5) { restarts.push(now); log('restarting in 5 seconds…'); setTimeout(() => { if (wantRunning && !child) start(); }, 5000); } else wantRunning = false;
+    }
+  });
 }
-function stop() { if (child) { child.kill(); child = null; log('stopping…'); } }
+function stop() { wantRunning = false; if (child) { const c = child; child = null; log('stopping…'); killTree(c.pid); } }
 
 /** Height and peers straight from the running node (used by the Node app, and as a fallback). */
 async function nodeStatus() {
@@ -81,7 +113,7 @@ const server = http.createServer(async (req, res) => {
   closingAt = 0;
   if (req.method === 'POST' && req.url === '/api/quit') { send(200, { ok: true }); return quit(); }
   if (req.method === 'GET' && (req.url === '/' || req.url.startsWith('/?'))) return send(200, page, 'text/html; charset=utf-8');
-  if (req.method === 'GET' && req.url === '/api/status') return send(200, { mode: MODE, running: !!child, startedAt, config: cfg, networks: NETWORKS, miner: MODE === 'miner' ? minerStatus() : null, node: await nodeStatus(), log: logLines.slice(-40) });
+  if (req.method === 'GET' && req.url === '/api/status') return send(200, { mode: MODE, running: !!child || wantRunning, error: wantRunning ? '' : lastError, startedAt, config: cfg, networks: NETWORKS, miner: MODE === 'miner' ? minerStatus() : null, node: await nodeStatus(), log: logLines.slice(-40) });
   if (req.method === 'POST' && req.url === '/api/start') { await start(); return send(200, { ok: true }); }
   if (req.method === 'POST' && req.url === '/api/stop') { stop(); return send(200, { ok: true }); }
   if (req.method === 'POST' && req.url === '/api/config') {
@@ -116,4 +148,4 @@ server.listen(0, '127.0.0.1', async () => {
   if (cfg.autoStart) await start();
 });
 for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { stop(); process.exit(0); });
-process.on('exit', stop);
+process.on('exit', () => { wantRunning = false; if (child) killTree(child.pid); });

@@ -23,6 +23,17 @@ class BlockStore {
     }
   }
 
+  /** Keep only the first `n` blocks that follow each other from height 1 (drops duplicates, gaps and everything after a bad block). */
+  keepSequential(n) {
+    const keep = [];
+    let next = 1;
+    try { for (const rec of this.load()) { if (keep.length >= n) break; if (rec.block.header.height === next) { keep.push(JSON.stringify(rec)); next++; } } } catch { /* use what could be read */ }
+    this.close();
+    fs.writeFileSync(this.file + '.tmp', keep.length ? keep.join('\n') + '\n' : '');
+    fs.renameSync(this.file + '.tmp', this.file);
+    this.fd = fs.openSync(this.file, 'a');
+  }
+
   append(block, commit) {
     fs.writeSync(this.fd, JSON.stringify({ block, commit }) + '\n');
     fs.fsyncSync(this.fd);

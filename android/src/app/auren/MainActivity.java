@@ -291,7 +291,7 @@ public class MainActivity extends Activity {
             o.append("Draws won: ").append(j.optInt("wins")).append("\n");
             o.append("Won in draws: ").append(String.format("%.4f", j.optLong("drawEarned") / nano)).append(" AUR\n");
             o.append("Balance at your reward address: ").append(String.format("%.4f", j.optLong("balance") / nano)).append(" AUR\n");
-            o.append("Block ").append(j.optLong("height")).append(" · ").append(j.optInt("peers")).append(" connected nodes");
+            o.append(j.optLong("target") > j.optLong("height") + 5 ? "Downloading the chain: block " + j.optLong("height") + " of " + j.optLong("target") : "Block " + j.optLong("height")).append(" · ").append(j.optInt("peers")).append(" connected nodes");
             return o.toString();
         } catch (Exception e) { return null; }
     }

@@ -94,6 +94,14 @@ async function main() {
     if (flags.earn) { merged.earn = true; if (typeof flags.earn === 'string') merged.payout = flags.earn; }
     if (flags['tls-cert'] && flags['tls-key']) merged.tls = { cert: path.resolve(flags['tls-cert']), key: path.resolve(flags['tls-key']), port: Number(flags['tls-port'] || 443) };
     if (flags.website) merged.webRoot = path.join(ROOT, 'website'); // serve wallet + explorer from this node
+    // one node per data folder: two nodes writing the same block log corrupt it
+    const lockFile = path.join(home, 'node.lock');
+    try {
+      const other = Number(fs.readFileSync(lockFile, 'utf8'));
+      if (other && other !== process.pid) { try { process.kill(other, 0); console.error(`error: another node is already using this data folder (process ${other}). Stop it first.`); process.exit(2); } catch (e) { if (e.code === 'EPERM') process.exit(2); /* stale lock */ } }
+    } catch { /* no lock yet */ }
+    fs.writeFileSync(lockFile, String(process.pid));
+    process.on('exit', () => { try { if (Number(fs.readFileSync(lockFile, 'utf8')) === process.pid) fs.unlinkSync(lockFile); } catch { /* already gone */ } });
     const asValidator = consensusKey && merged.operator;
     const node = new AurenNode({ home, genesis, config: merged, consensusKey: asValidator ? consensusKey : null });
     await node.start();

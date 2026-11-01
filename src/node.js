@@ -22,7 +22,7 @@ const { ethMethods } = require('./evm/rpc');
 const { hexOf, ChainBackend } = require('./evm/host');
 const { nameValid, fullName } = require('./tld');
 
-const VERSION = '0.11.0';
+const VERSION = '0.11.1';
 const MAX_BODY = 8 * 1024 * 1024;
 
 class AurenNode extends EventEmitter {
@@ -67,12 +67,22 @@ class AurenNode extends EventEmitter {
 
   // ------------------------------------------------------------------ lifecycle
   async start() {
-    let n = 0;
-    for (const { block, commit } of this.store.load()) {
-      const res = this.chain.applyBlock(block, commit);
-      this._indexReceipts(block, res);
-      n++;
+    let n = 0, repaired = false;
+    try {
+      for (const { block, commit } of this.store.load()) {
+        const h = block.header && block.header.height;
+        if (h <= this.chain.height) { repaired = true; continue; } // a duplicate left by an older version
+        const res = this.chain.applyBlock(block, commit);
+        this._indexReceipts(block, res);
+        n++;
+      }
+    } catch (e) {
+      // the saved chain is damaged (for example two copies of the node once ran together). Keep the good part and
+      // download the rest from the network instead of refusing to start.
+      repaired = true;
+      this.log(`the saved chain was damaged after block ${this.chain.height} (${e.message}); keeping the good part and re-syncing`);
     }
+    if (repaired) this.store.keepSequential(this.chain.height);
     if (n) this.log(`replayed ${n} blocks, height ${this.chain.height}`);
     this.mempool.prune();
     const handler = (req, res) => { this._handle(req, res).catch((e) => this._send(res, 500, { error: e.message })); };

@@ -33,7 +33,7 @@ public class NodeService extends Service {
 
     @Override public int onStartCommand(Intent i, int flags, int id) {
         if (i != null && "stop".equals(i.getAction())) {
-            if (proc != null) proc.destroy();
+            if (proc != null) proc.destroyForcibly();
             stopForeground(true);
             stopSelf();
             return START_NOT_STICKY;
@@ -88,9 +88,29 @@ public class NodeService extends Service {
         z.close();
     }
 
+    /** A node left running by an older version or a crash must not share the data folder with a new one. */
+    private void killStale() {
+        File[] procs = new File("/proc").listFiles();
+        if (procs == null) return;
+        int me = android.os.Process.myPid();
+        for (File p : procs) {
+            if (!p.getName().matches("[0-9]+")) continue;
+            int pid = Integer.parseInt(p.getName());
+            if (pid == me) continue;
+            try {
+                java.io.FileInputStream in = new java.io.FileInputStream(new File(p, "cmdline"));
+                byte[] b = new byte[512];
+                int n = in.read(b);
+                in.close();
+                if (n > 0 && new String(b, 0, n).contains("libnode_bin.so")) android.os.Process.killProcess(pid);
+            } catch (Exception ignored) { /* not ours */ }
+        }
+    }
+
     private void runNode(String net, String peers, boolean earn, String payout) {
         File logFile = new File(getFilesDir(), "node.log");
         try {
+            killStale();
             File app = new File(getFilesDir(), "app"), stamp = new File(getFilesDir(), "installed");
             File libs = new File(getApplicationInfo().nativeLibraryDir);
             String want = String.valueOf(getPackageManager().getPackageInfo(getPackageName(), 0).lastUpdateTime);
@@ -106,7 +126,7 @@ public class NodeService extends Service {
             cmd.add(new File(app, "bin/auren.js").getAbsolutePath());
             cmd.add("join"); cmd.add(net);
             cmd.add("--home"); cmd.add(new File(getFilesDir(), "data-" + net).getAbsolutePath());
-            cmd.add("--port"); cmd.add("9650");
+            cmd.add("--port"); cmd.add("0");
             if (peers != null && peers.length() > 0) { cmd.add("--peers"); cmd.add(peers); }
             if (earn) { cmd.add("--earn"); if (payout != null && payout.length() > 0) cmd.add(payout); }
             ProcessBuilder pb = new ProcessBuilder(cmd);

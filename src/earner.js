@@ -51,7 +51,7 @@ class Earner {
     const acct = getAcct(st, this.payout);
     const out = {
       updated: Date.now(), startedAt: this.stats.startedAt, network: ch.chainId, address: this.address, payout: this.payout,
-      height: h, epoch: ep, peers: this.node.peers ? this.node.peers.size : 0, syncing: !!this.node.syncing,
+      height: h, target: this.node.peers ? Math.max(h, ...[...this.node.peers.values()].map((p) => p.height || 0)) : h, epoch: ep, peers: this.node.peers ? this.node.peers.size : 0, syncing: !!this.node.syncing,
       bond: P.node.bond.toString(), tier: n ? (n.bond > 0n ? 'full' : 'free') : null, registered: !!n, ticket: !!(n && n.provenEpoch >= 1 && ep - n.provenEpoch <= 1),
       provenEpoch: n ? n.provenEpoch : -1, balance: acct.balance.toString(), spendable: spendable(acct, h + 1).toString(),
       ownBalance: getAcct(st, this.address).balance.toString(), wins: this.stats.wins, drawEarned: this.stats.earned.toString(), lastWinHeight: this.stats.lastWinHeight,
@@ -68,7 +68,7 @@ class Earner {
     if (!n) {
       // Join. Nobody needs coins to start: with no deposit the node joins the free tier (no fee). If the node
       // already holds the deposit it joins the full tier.
-      if (this.node.syncing || h - this.sent.register < 20) return;
+      if (h - this.sent.register < 20) return; // joining does not need the chain: do it right away, even while downloading
       const a = getAcct(st, this.address);
       const need = P.node.bond + costOf('registerNode', ch.baseFee) * 3n + 1000n;
       const full = spendable(a, h + 1) >= need;

@@ -98,8 +98,9 @@ async function poll() {
   $('toggle').className = running ? 'stop' : 'primary';
   const live = isNode ? nd : (m && !m.stale ? m : nd);
   $('dot').className = 'dot ' + (!running ? '' : (live ? 'on' : 'wait'));
+  $('err').textContent = s.error ? 'The miner stopped: ' + s.error : '';
   $('state').textContent = !running ? 'Stopped' : (live ? (live.syncing ? 'Syncing' : (isNode ? 'Running' : 'Mining')) : 'Starting…');
-  $('stateSub').textContent = !running ? 'Choose a network and press Start.' : (live ? 'Block ' + live.height.toLocaleString('en-US') + ' · ' + live.peers + ' connected nodes' + (!isNode && m ? ' · ' + (m.ticket ? 'you can be drawn every block' : 'getting your first ticket') : '') : 'Connecting to the network…');
+  $('stateSub').textContent = !running ? 'Choose a network and press Start.' : (live ? (live.syncing && live.target > live.height ? 'Downloading the chain: block ' + live.height.toLocaleString('en-US') + ' of ' + live.target.toLocaleString('en-US') : 'Block ' + live.height.toLocaleString('en-US')) + ' · ' + live.peers + ' connected nodes' + (!isNode && m ? ' · ' + (m.ticket ? 'you can be drawn every block' : 'getting your first ticket') : '') : 'Connecting to the network…');
   $('earn').hidden = !(running && m && !isNode);
   if (m) {
     $('wins').textContent = m.wins; $('drawEarned').textContent = aur(m.drawEarned); $('balance').textContent = aur(m.balance);

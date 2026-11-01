@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.1
+
+- **Fixed: the miner stopped by itself with "expected height N".** Stopping the miner used to stop only its launcher and leave a second node running; the next Start then ran two nodes on one data folder, which corrupted the block log. Now the node runs inside the one program (nothing is left behind), a data folder can only be used by one node at a time, leftover nodes from older versions are cleaned up on start, and a damaged block log repairs itself (keeps the good part and downloads the rest) instead of refusing to start.
+- The miner restarts itself after an unexpected stop (up to 5 times in 5 minutes) and shows the reason in plain words.
+- Android: the node picks a free port, and a leftover node is stopped when mining starts.
+
 ## 0.11.0
 
 - **Start earning with no coins (free tier).** A new miner joins with no deposit and no fee, proves it stores the chain, and is drawn at random from day one. Some seats in every draw are reserved for the free tier (`rpc.freeSeats`), joins are limited per epoch (`rpc.freeRegsPerEpoch`) and free transactions per block (`rpc.freeTxPerBlock`). A free miner upgrades itself to the full tier (new `bondNode` transaction) once its own account holds the deposit. The Miner apps no longer ask people to send coins first. Tested end to end: a miner with 0 AUR won draws and earned.

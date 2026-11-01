@@ -93,9 +93,9 @@ async function main() {
     if (flags.earn) { args.push('--earn'); if (typeof flags.earn === 'string') args.push(flags.earn); if (meta.faucet && net !== 'mainnet') args.push('--faucet', meta.faucet); }
     for (const k of ['tls-cert', 'tls-key', 'tls-port', 'self-url']) if (flags[k]) args.push(`--${k}`, String(flags[k]));
     console.log(`\nJoining the AUREN ${net} (${meta.chainId}). Your node's data lives in ${home}\nPress Ctrl+C to stop. Check it any time with:  auren status --network ${net}\n`);
-    const child = spawnNode(cp, 'spawn', path.join(__dirname, 'auren-node.js'), args, { stdio: 'inherit' });
-    for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => child.kill(sig));
-    child.on('exit', (code) => { process.exitCode = code ?? 0; });
+    // run the node in this process (no child process): stopping this program stops the node, with nothing left behind
+    process.argv = [process.execPath, path.join(__dirname, 'auren-node.js'), ...args];
+    require('./auren-node.js');
     return;
   }
 
